@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 1
+**Completed:** 3
 **In Progress:** 0
-**Pending:** 60
+**Pending:** 58
 
 ---
 
@@ -21,8 +21,8 @@
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
 | 1.1 | PostgreSQL Schema | Create database schema with all tables, constraints, and indexes | 1-2 hrs | ☑ Completed | [View](./tasks/phase-01-database/task-1.1-postgresql-schema.md) |
-| 1.2 | Seed Data | Create sample projects, tasks, and tags for development | 1 hr | ☐ Pending | [View](./tasks/phase-01-database/task-1.2-seed-data.md) |
-| 1.3 | Docker Compose PostgreSQL | Set up PostgreSQL in Docker with persistent volume | 1 hr | ☐ Pending | [View](./tasks/phase-01-database/task-1.3-docker-compose-postgres.md) |
+| 1.2 | Seed Data | Create sample projects, tasks, and tags for development | 1 hr | ☑ Completed | [View](./tasks/phase-01-database/task-1.2-seed-data.md) |
+| 1.3 | Docker Compose PostgreSQL | Set up PostgreSQL in Docker with persistent volume | 1 hr | ☑ Completed | [View](./tasks/phase-01-database/task-1.3-docker-compose-postgres.md) |
 
 **Phase 1 Total:** 3-4 hours
 
@@ -32,7 +32,7 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 2.1 | ASP.NET + HotChocolate Setup | Create ASP.NET Core project with HotChocolate GraphQL | 1 hr | ☐ Pending | Create |
+| 2.1 | ASP.NET + HotChocolate Setup | Create ASP.NET Core project with HotChocolate GraphQL | 1 hr | ☐ Pending | [View](./tasks/phase-02-api-core/task-2.1-aspnet-hotchocolate-setup.md) |
 | 2.2 | Entity Framework Core Config | Configure EF Core with PostgreSQL provider and connection | 1 hr | ☐ Pending | Create |
 | 2.3 | Data Models | Implement C# entity models (TimeEntry, Project, ProjectTask, TagConfiguration) | 1-2 hrs | ☐ Pending | Create |
 | 2.4 | Bearer Auth Middleware | Add Bearer token authentication middleware | 1 hr | ☐ Pending | Create |
@@ -277,7 +277,7 @@
 
 ### Milestones
 
-- [ ] **Milestone 1:** Database Ready (Phase 1 complete)
+- [x] **Milestone 1:** Database Ready (Phase 1 complete)
 - [ ] **Milestone 2:** API Core Ready (Phases 2-3 complete)
 - [ ] **Milestone 3:** API Full Feature (Phases 4-6 complete)
 - [ ] **Milestone 4:** MCP Server Ready (Phases 7-9 complete)
@@ -286,9 +286,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 1, Task 1.2
+**Currently On:** Phase 2, Task 2.1 (ASP.NET + HotChocolate Setup)
 **Last Updated:** 2025-10-27
-**Overall Progress:** 1.6% (1/61 tasks)
+**Overall Progress:** 4.9% (3/61 tasks)
 
 ---
 
