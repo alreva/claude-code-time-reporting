@@ -33,4 +33,11 @@
     <ProjectReference Include="..\TimeReportingApi\TimeReportingApi.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Custom Roslyn analyzers -->
+    <ProjectReference Include="..\TimeReportingAnalyzers\TimeReportingAnalyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>
