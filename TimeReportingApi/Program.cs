@@ -1,3 +1,4 @@
+using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,10 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenLocalhost(5001);
 });
+
+// Add Entity Framework Core with PostgreSQL
+builder.Services.AddDbContext<TimeReportingDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("TimeReportingDb")));
 
 // Add services to the container
 builder.Services

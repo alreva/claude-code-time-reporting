@@ -1,8 +1,3 @@
-using System.Net;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Xunit;
-
 namespace TimeReportingApi.Tests.Integration;
 
 public class ApiSetupTests : IClassFixture<WebApplicationFactory<Program>>

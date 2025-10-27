@@ -24,14 +24,14 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.21" />
   </ItemGroup>
 
-  <ItemGroup Label="Future Dependencies - Commented Out">
-    <!-- These will be needed in Phase 2-3 when implementing database layer -->
-    <!--
+  <ItemGroup Label="Database Dependencies">
+    <!-- Entity Framework Core for PostgreSQL -->
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
-    -->
+  </ItemGroup>
 
+  <ItemGroup Label="Future Dependencies - Commented Out">
     <!-- These will be needed in Phase 4-5 when implementing business logic -->
     <!--
     <PackageVersion Include="Moq" Version="4.20.70" />

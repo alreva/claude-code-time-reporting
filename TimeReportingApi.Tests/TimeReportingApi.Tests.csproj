@@ -14,12 +14,19 @@
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Global usings for test project -->
     <Using Include="Xunit" />
+    <Using Include="FluentAssertions" />
+    <Using Include="Microsoft.EntityFrameworkCore" />
+    <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="System.Net" />
   </ItemGroup>
 
   <ItemGroup>
