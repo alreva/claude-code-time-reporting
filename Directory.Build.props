@@ -1,0 +1,42 @@
+<Project>
+
+  <!-- Common properties for all projects -->
+  <PropertyGroup>
+    <!-- Target Framework -->
+    <TargetFramework>net8.0</TargetFramework>
+
+    <!-- Language Features -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Build Configuration -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <NoWarn>$(NoWarn);NETSDK1057</NoWarn> <!-- Suppress preview SDK warning -->
+
+    <!-- Code Analysis -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+
+    <!-- Deterministic Builds -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- Assembly Metadata -->
+  <PropertyGroup>
+    <Company>Time Reporting System</Company>
+    <Product>Time Reporting with Claude Code</Product>
+    <Copyright>Copyright © 2025</Copyright>
+    <Authors>Time Reporting Team</Authors>
+  </PropertyGroup>
+
+  <!-- Package Defaults -->
+  <PropertyGroup>
+    <PackageProjectUrl>https://github.com/yourusername/time-reporting-system</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yourusername/time-reporting-system</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>
