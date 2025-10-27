@@ -123,6 +123,13 @@ show_task_progress() {
             printf "%${filled}s" | tr ' ' '█'
             printf "%${empty}s" | tr ' ' '░'
             printf "]\n"
+
+            # Check git sync status for TASK-INDEX.md
+            if git diff --quiet docs/TASK-INDEX.md 2>/dev/null && git diff --cached --quiet docs/TASK-INDEX.md 2>/dev/null; then
+                echo -e "  Git Sync:    ${GREEN}✓ Task list in sync with git${NC}"
+            else
+                echo -e "  Git Sync:    ${YELLOW}⚠ Task list has uncommitted changes${NC}"
+            fi
         else
             echo -e "  Progress:    ${YELLOW}Task tracking not initialized${NC}"
         fi
