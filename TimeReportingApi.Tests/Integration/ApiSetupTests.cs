@@ -1,22 +1,27 @@
+using TimeReportingApi.Tests.Fixtures;
+using TimeReportingApi.Tests.Handlers;
+
 namespace TimeReportingApi.Tests.Integration;
 
-public class ApiSetupTests : IClassFixture<WebApplicationFactory<Program>>
+public class ApiSetupTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TestWebApplicationFactory _factory;
+    private readonly string _testToken;
 
-    public ApiSetupTests(WebApplicationFactory<Program> factory)
+    public ApiSetupTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
+        _testToken = factory.BearerToken;
     }
 
     [Fact]
     public async Task GraphQL_Endpoint_ShouldBeAccessible()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = _factory.CreateDefaultClient(new AuthenticationHandler(_testToken));
 
         // Act
-        var response = await client.GetAsync("/graphql");
+        var response = await client.GetAsync("/graphql/");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -41,10 +46,10 @@ public class ApiSetupTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GraphQL_Endpoint_ShouldReturnGraphQLIDE()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = _factory.CreateDefaultClient(new AuthenticationHandler(_testToken));
 
         // Act
-        var response = await client.GetAsync("/graphql");
+        var response = await client.GetAsync("/graphql/");
         var content = await response.Content.ReadAsStringAsync();
 
         // Assert

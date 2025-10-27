@@ -1,5 +1,6 @@
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
+using TimeReportingApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+
+// Add Bearer token authentication
+app.UseBearerAuthentication();
 
 app.MapHealthChecks("/health");
 
