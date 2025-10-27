@@ -22,6 +22,62 @@ Write Test → Run /test (FAIL ❌) → Write Code → Run /test (PASS ✅) → 
 
 ---
 
+## 🔧 Environment-Specific Commands - CRITICAL
+
+**This environment uses Podman, NOT Docker Desktop.**
+
+### Container Commands
+
+**✅ ALWAYS USE:**
+- `podman compose up -d` (with space, not hyphen)
+- `podman compose down`
+- `podman compose ps`
+- `podman compose logs postgres`
+- `podman exec time-reporting-db <command>`
+
+**❌ NEVER USE:**
+- `docker-compose` (Docker daemon not running)
+- `podman-compose` (not installed)
+- `docker` commands (will fail)
+
+### Database Access
+
+**✅ ALWAYS USE:**
+```bash
+# Run SQL queries
+podman exec time-reporting-db psql -U postgres -d time_reporting -c "SELECT 1;"
+
+# Run SQL files
+podman exec -i time-reporting-db psql -U postgres -d time_reporting < file.sql
+
+# Interactive session (via slash command)
+/db-psql
+```
+
+**❌ NEVER USE:**
+- `psql` directly on host (not installed)
+- Assume PostgreSQL client is available locally
+
+### Database Container Info
+- **Container name:** `time-reporting-db`
+- **Image:** `postgres:16-alpine`
+- **Port:** `5432:5432`
+- **Database:** `time_reporting`
+- **User:** `postgres`
+
+### Preferred Pattern
+
+**ALWAYS prefer slash commands when available:**
+- `/db-start` - Starts PostgreSQL via guardrails
+- `/db-stop` - Stops PostgreSQL
+- `/db-logs` - Views logs
+- `/db-psql` - Interactive psql session
+- `/db-restart` - Restarts database
+
+Slash commands handle the Podman/Docker abstraction for you.
+
+---
+
 ## Project Overview
 
 A time reporting system that integrates Claude Code with a GraphQL-based time tracker. The system allows developers to track time spent on coding tasks through natural language commands via Claude Code.
