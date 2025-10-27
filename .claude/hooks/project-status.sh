@@ -100,7 +100,7 @@ show_task_progress() {
 
     if [ -f "docs/TASK-INDEX.md" ]; then
         # Count completed vs total tasks
-        local completed=$(grep -c "✅" docs/TASK-INDEX.md 2>/dev/null)
+        local completed=$(grep -c "☑ Completed" docs/TASK-INDEX.md 2>/dev/null)
         local total=$(grep -E "^\- \[" docs/TASK-INDEX.md 2>/dev/null | wc -l)
 
         # Trim whitespace using parameter expansion
@@ -141,8 +141,8 @@ show_task_progress() {
                 if [ -n "$committed_tasks" ]; then
                     local unmarked_tasks=""
                     while IFS= read -r task_num; do
-                        # Check if this task is marked with ✅ in TASK-INDEX.md
-                        if ! grep -q "Task ${task_num}.*✅" docs/TASK-INDEX.md 2>/dev/null; then
+                        # Check if this task is marked with ☑ Completed in TASK-INDEX.md
+                        if ! grep -q "| ${task_num} |.*☑ Completed" docs/TASK-INDEX.md 2>/dev/null; then
                             unmarked_tasks="${unmarked_tasks}${task_num} "
                         fi
                     done <<< "$committed_tasks"
