@@ -22,6 +22,103 @@ Write Test → Run /test (FAIL ❌) → Write Code → Run /test (PASS ✅) → 
 
 ---
 
+## 🤖 AUTONOMOUS DEVELOPMENT WORKFLOW
+
+**YOU ARE TRUSTED TO WORK AUTONOMOUSLY. Follow these rules:**
+
+### Rule 1: Automatic Commits After Task Completion
+**AFTER completing ANY task and ALL tests pass:**
+1. ✅ Run `/test` to verify all tests pass
+2. ✅ IMMEDIATELY commit changes with `git add` + `git commit`
+3. ✅ Use descriptive commit message: `"Complete Task X.Y: [Description] - All tests passing"`
+4. ✅ DO NOT ask for permission to commit - just do it
+
+**Example commit message:**
+```
+Complete Task 2.3: Implement C# Entity Models with TDD
+
+- Created TimeEntry, Project, ProjectTask, TagConfiguration entities
+- Configured Entity Framework with snake_case mapping
+- Added comprehensive unit tests for all models
+- All tests passing ✅
+```
+
+### Rule 2: Phase Planning Before Execution
+**When assigned a PHASE (e.g., "implement Phase 2"), FIRST do planning:**
+
+1. ✅ Read ALL tasks in the phase from `docs/TASK-INDEX.md` and task guides
+2. ✅ Identify tasks requiring user decisions:
+   - Authentication/IdP integration choices
+   - External service configurations
+   - Architecture decisions with multiple valid approaches
+   - Environment-specific settings
+3. ✅ Ask ALL questions upfront in a single message
+4. ✅ Document decisions in the relevant task files or create a decisions log
+5. ✅ THEN execute the entire phase autonomously
+
+**Planning template:**
+```
+📋 Phase X Planning Review
+
+Tasks in this phase:
+- Task X.1: [Description] - Ready to implement ✅
+- Task X.2: [Description] - Ready to implement ✅
+- Task X.3: [Description] - **NEEDS DECISION** ⚠️
+  Question: Which IdP provider? (Azure AD, Auth0, Custom?)
+- Task X.4: [Description] - Ready to implement ✅
+
+Questions for you:
+1. Task X.3 - IdP Integration: Which provider should we use?
+2. Task X.3 - Token format: JWT or opaque tokens?
+
+Once you answer, I'll document the decisions and execute all tasks autonomously.
+```
+
+### Rule 3: Autonomous Phase Execution (After Planning)
+**After planning and getting your decisions:**
+1. ✅ Execute ALL tasks in the phase sequentially
+2. ✅ DO NOT stop between tasks to ask for permission
+3. ✅ Complete the ENTIRE phase from start to finish
+4. ✅ Commit after EACH task when tests pass
+5. ✅ Only stop if you encounter an error you cannot resolve
+
+**Phase execution pattern:**
+```
+Phase 2 planning → User answers questions → Document decisions
+    ↓
+Task 2.1: TDD → Tests pass → Commit → Move to Task 2.2
+    ↓
+Task 2.2: TDD → Tests pass → Commit → Move to Task 2.3
+    ↓
+Task 2.3: TDD → Tests pass → Commit → Move to Task 2.4
+    ↓
+... continue until all phase tasks complete
+    ↓
+Report: "Phase 2 complete. All 5 tasks finished, all tests passing."
+```
+
+### Rule 4: What to Report During Execution
+**During autonomous execution:**
+- ✅ Show progress updates (currently on Task X.Y)
+- ✅ Show test results for each task
+- ✅ Show commit messages
+- ❌ DO NOT ask "shall I proceed to the next task?"
+- ❌ DO NOT wait for confirmation between tasks
+
+### Rule 5: Error Handling
+**If a task fails:**
+1. Attempt to fix the issue (up to 2-3 attempts)
+2. If still failing, report the error with details
+3. Ask for guidance or clarification
+4. DO NOT commit broken code
+
+**Remember:**
+- Plan phases FIRST, ask all questions upfront
+- Then execute autonomously with auto-commits
+- You are trusted to complete entire phases once decisions are made
+
+---
+
 ## 🔧 Environment-Specific Commands - CRITICAL
 
 **This environment uses Podman, NOT Docker Desktop.**
