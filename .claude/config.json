@@ -1,0 +1,7 @@
+{
+  "tool_hooks": {
+    "Bash": {
+      "pre": [".claude/hooks/pre_bash.sh"]
+    }
+  }
+}
