@@ -1,7 +1,7 @@
 # Task Index - Time Reporting System
 
-**Total Tasks:** 60
-**Completed:** 0
+**Total Tasks:** 61
+**Completed:** 1
 **In Progress:** 0
 **Pending:** 60
 
@@ -20,7 +20,7 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 1.1 | PostgreSQL Schema | Create database schema with all tables, constraints, and indexes | 1-2 hrs | ☐ Pending | [View](./tasks/phase-01-database/task-1.1-postgresql-schema.md) |
+| 1.1 | PostgreSQL Schema | Create database schema with all tables, constraints, and indexes | 1-2 hrs | ☑ Completed | [View](./tasks/phase-01-database/task-1.1-postgresql-schema.md) |
 | 1.2 | Seed Data | Create sample projects, tasks, and tags for development | 1 hr | ☐ Pending | [View](./tasks/phase-01-database/task-1.2-seed-data.md) |
 | 1.3 | Docker Compose PostgreSQL | Set up PostgreSQL in Docker with persistent volume | 1 hr | ☐ Pending | [View](./tasks/phase-01-database/task-1.3-docker-compose-postgres.md) |
 
@@ -28,7 +28,7 @@
 
 ---
 
-## Phase 2: GraphQL API - Core Setup (5 tasks)
+## Phase 2: GraphQL API - Core Setup (6 tasks)
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
@@ -37,8 +37,9 @@
 | 2.3 | Data Models | Implement C# entity models (TimeEntry, Project, ProjectTask, TagConfiguration) | 1-2 hrs | ☐ Pending | Create |
 | 2.4 | Bearer Auth Middleware | Add Bearer token authentication middleware | 1 hr | ☐ Pending | Create |
 | 2.5 | Health Check Endpoint | Create `/health` endpoint for Docker health checks | 30 min | ☐ Pending | Create |
+| 2.6 | Test Project & Database Test Infrastructure | Create xUnit test project with DatabaseFixture and integrate SQL schema tests | 1.5-2 hrs | ☐ Pending | [View](./tasks/phase-02-api-core/task-2.6-test-infrastructure.md) |
 
-**Phase 2 Total:** 4.5-5.5 hours
+**Phase 2 Total:** 6-7.5 hours
 
 **Key Deliverables:**
 - `TimeReportingApi/TimeReportingApi.csproj`
@@ -46,6 +47,9 @@
 - `TimeReportingApi/Models/` - Entity models
 - `TimeReportingApi/Data/TimeReportingDbContext.cs`
 - `TimeReportingApi/Middleware/BearerAuthMiddleware.cs`
+- `TimeReportingApi.Tests/TimeReportingApi.Tests.csproj`
+- `TimeReportingApi.Tests/Fixtures/DatabaseFixture.cs`
+- `TimeReportingApi.Tests/Integration/SqlSchemaValidationTests.cs`
 
 ---
 
@@ -249,7 +253,7 @@
 | Phase | Tasks | Estimated Hours |
 |-------|-------|-----------------|
 | Phase 1 | 3 | 3-4 |
-| Phase 2 | 5 | 4.5-5.5 |
+| Phase 2 | 6 | 6-7.5 |
 | Phase 3 | 5 | 4-6 |
 | Phase 4 | 5 | 7-9 |
 | Phase 5 | 5 | 5-6.5 |
@@ -260,12 +264,12 @@
 | Phase 10 | 4 | 5-6 |
 | Phase 11 | 5 | 5.5 |
 | Phase 12 | 5 | 5-6 |
-| **TOTAL** | **60** | **52-65 hours** |
+| **TOTAL** | **61** | **53.5-67 hours** |
 
 **Estimated Project Duration:**
-- **Full-time (8 hrs/day):** 6.5-8 working days
-- **Part-time (4 hrs/day):** 13-16 working days
-- **Side project (2 hrs/day):** 26-32 days
+- **Full-time (8 hrs/day):** 6.5-8.5 working days
+- **Part-time (4 hrs/day):** 13.5-17 working days
+- **Side project (2 hrs/day):** 27-34 days
 
 ---
 
@@ -282,9 +286,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 1, Task 1.1
-**Last Updated:** 2025-10-24
-**Overall Progress:** 0% (0/60 tasks)
+**Currently On:** Phase 1, Task 1.2
+**Last Updated:** 2025-10-27
+**Overall Progress:** 1.6% (1/61 tasks)
 
 ---
 

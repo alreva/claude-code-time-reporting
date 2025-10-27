@@ -28,6 +28,7 @@
       "Bash(pwd:*)",
       "Bash(mkdir:*)",
       "Bash(chmod:*)",
+      "Bash(.claude/hooks/db-guard.sh:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:microsoft.com)",

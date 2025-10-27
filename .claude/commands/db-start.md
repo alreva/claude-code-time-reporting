@@ -1,20 +1,14 @@
 ---
 description: Start PostgreSQL database
-allowed-tools: Bash(docker-compose:*), Bash(podman-compose:*)
+allowed-tools: Bash(.claude/hooks/db-guard.sh:*)
 ---
 
 Start the PostgreSQL database container.
 
 ### Execution
 
-**Using Docker:**
 ```bash
-docker-compose up -d postgres
-```
-
-**Using Podman:**
-```bash
-podman-compose up -d postgres
+.claude/hooks/db-guard.sh start
 ```
 
 ### Expected Output
