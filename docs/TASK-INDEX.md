@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 3
+**Completed:** 4
 **In Progress:** 0
-**Pending:** 58
+**Pending:** 57
 
 ---
 
@@ -32,7 +32,7 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 2.1 | ASP.NET + HotChocolate Setup | Create ASP.NET Core project with HotChocolate GraphQL | 1 hr | ☐ Pending | [View](./tasks/phase-02-api-core/task-2.1-aspnet-hotchocolate-setup.md) |
+| 2.1 | ASP.NET + HotChocolate Setup | Create ASP.NET Core project with HotChocolate GraphQL | 1 hr | ☑ Completed | [View](./tasks/phase-02-api-core/task-2.1-aspnet-hotchocolate-setup.md) |
 | 2.2 | Entity Framework Core Config | Configure EF Core with PostgreSQL provider and connection | 1 hr | ☐ Pending | Create |
 | 2.3 | Data Models | Implement C# entity models (TimeEntry, Project, ProjectTask, TagConfiguration) | 1-2 hrs | ☐ Pending | Create |
 | 2.4 | Bearer Auth Middleware | Add Bearer token authentication middleware | 1 hr | ☐ Pending | Create |
@@ -286,9 +286,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 2, Task 2.1 (ASP.NET + HotChocolate Setup)
+**Currently On:** Phase 2, Task 2.2 (Entity Framework Core Config)
 **Last Updated:** 2025-10-27
-**Overall Progress:** 4.9% (3/61 tasks)
+**Overall Progress:** 6.6% (4/61 tasks)
 
 ---
 
