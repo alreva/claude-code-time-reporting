@@ -124,11 +124,44 @@ show_task_progress() {
             printf "%${empty}s" | tr ' ' '░'
             printf "]\n"
 
-            # Check git sync status for TASK-INDEX.md
-            if git diff --quiet docs/TASK-INDEX.md 2>/dev/null && git diff --cached --quiet docs/TASK-INDEX.md 2>/dev/null; then
+            # Check git sync status for TASK-INDEX.md (bidirectional)
+            local sync_issue=""
+
+            # Check 1: TASK-INDEX.md has uncommitted changes
+            if ! git diff --quiet docs/TASK-INDEX.md 2>/dev/null || ! git diff --cached --quiet docs/TASK-INDEX.md 2>/dev/null; then
+                sync_issue="Task list has uncommitted changes"
+            fi
+
+            # Check 2: Recent commits mention completed tasks not marked in TASK-INDEX.md
+            local recent_commits=$(git log -10 --oneline --grep="Complete Task" 2>/dev/null || echo "")
+            if [ -n "$recent_commits" ]; then
+                # Extract task numbers from commit messages (e.g., "Complete Task 1.2" -> "1.2")
+                local committed_tasks=$(echo "$recent_commits" | grep -oE "Task [0-9]+\.[0-9]+" | sed 's/Task //' | sort -u)
+
+                if [ -n "$committed_tasks" ]; then
+                    local unmarked_tasks=""
+                    while IFS= read -r task_num; do
+                        # Check if this task is marked with ✅ in TASK-INDEX.md
+                        if ! grep -q "Task ${task_num}.*✅" docs/TASK-INDEX.md 2>/dev/null; then
+                            unmarked_tasks="${unmarked_tasks}${task_num} "
+                        fi
+                    done <<< "$committed_tasks"
+
+                    if [ -n "$unmarked_tasks" ]; then
+                        if [ -n "$sync_issue" ]; then
+                            sync_issue="${sync_issue}; Tasks committed but not marked: ${unmarked_tasks}"
+                        else
+                            sync_issue="Tasks committed but not marked complete: ${unmarked_tasks}"
+                        fi
+                    fi
+                fi
+            fi
+
+            # Display sync status
+            if [ -z "$sync_issue" ]; then
                 echo -e "  Git Sync:    ${GREEN}✓ Task list in sync with git${NC}"
             else
-                echo -e "  Git Sync:    ${YELLOW}⚠ Task list has uncommitted changes${NC}"
+                echo -e "  Git Sync:    ${YELLOW}⚠ ${sync_issue}${NC}"
             fi
         else
             echo -e "  Progress:    ${YELLOW}Task tracking not initialized${NC}"
