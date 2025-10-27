@@ -10,10 +10,6 @@
     <!-- HotChocolate GraphQL -->
     <PackageVersion Include="HotChocolate.AspNetCore" Version="15.1.11" />
     <PackageVersion Include="HotChocolate.AspNetCore.Authorization" Version="15.1.10" />
-
-    <!-- ASP.NET Core -->
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup Label="Test Dependencies">
