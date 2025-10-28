@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 19
+**Completed:** 24
 **In Progress:** 0
-**Pending:** 42
+**Pending:** 37
 
 ---
 
@@ -98,17 +98,19 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 5.1 | MoveTaskToProject Mutation | Implement `moveTaskToProject` with revalidation | 1-2 hrs | ☐ Pending | Create |
-| 5.2 | UpdateTags Mutation | Implement `updateTags` with tag validation | 1 hr | ☐ Pending | Create |
-| 5.3 | SubmitTimeEntry Mutation | Implement `submitTimeEntry` for workflow | 30 min | ☐ Pending | Create |
-| 5.4 | Approve/Decline Mutations | Implement `approveTimeEntry` and `declineTimeEntry` | 1 hr | ☐ Pending | Create |
-| 5.5 | Workflow Tests | Write integration tests for complete approval workflow | 1-2 hrs | ☐ Pending | Create |
+| 5.1 | MoveTaskToProject Mutation | Implement `moveTaskToProject` with revalidation | 1-2 hrs | ☑ Completed | Create |
+| 5.2 | UpdateTags Mutation | Implement `updateTags` with tag validation | 1 hr | ☑ Completed | Create |
+| 5.3 | SubmitTimeEntry Mutation | Implement `submitTimeEntry` for workflow | 30 min | ☑ Completed | Create |
+| 5.4 | Approve/Decline Mutations | Implement `approveTimeEntry` and `declineTimeEntry` | 1 hr | ☑ Completed | Create |
+| 5.5 | Workflow Tests | Write integration tests for complete approval workflow | 1-2 hrs | ☑ Completed | Create |
 
 **Phase 5 Total:** 5-6.5 hours
 
 **Key Deliverables:**
-- `TimeReportingApi/Services/WorkflowService.cs`
-- `TimeReportingApi.Tests/Services/WorkflowServiceTests.cs`
+- `TimeReportingApi/GraphQL/Mutation.cs` - All Phase 5 mutations implemented
+- `TimeReportingApi.Tests/GraphQL/MoveTaskToProjectMutationTests.cs` - 10 tests
+- `TimeReportingApi.Tests/GraphQL/UpdateTagsMutationTests.cs` - 8 tests
+- `TimeReportingApi.Tests/GraphQL/WorkflowMutationTests.cs` - 14 tests
 
 ---
 
@@ -280,16 +282,17 @@
 - [x] **Milestone 1:** Database Ready (Phase 1 complete)
 - [x] **Milestone 2:** API Core Ready (Phases 2-3 complete) ✅
 - [x] **Milestone 2.5:** API Mutations Part 1 (Phase 4 complete) ✅
-- [ ] **Milestone 3:** API Full Feature (Phases 4-6 complete)
-- [ ] **Milestone 4:** MCP Server Ready (Phases 7-9 complete)
-- [ ] **Milestone 5:** Auto-tracking Ready (Phase 10 complete)
-- [ ] **Milestone 6:** Production Ready (Phases 11-12 complete)
+- [x] **Milestone 3:** API Mutations Part 2 (Phase 5 complete) ✅
+- [ ] **Milestone 4:** API Full Feature (Phase 6 complete)
+- [ ] **Milestone 5:** MCP Server Ready (Phases 7-9 complete)
+- [ ] **Milestone 6:** Auto-tracking Ready (Phase 10 complete)
+- [ ] **Milestone 7:** Production Ready (Phases 11-12 complete)
 
 ### Current Status
 
-**Currently On:** Phase 5, Task 5.1 (MoveTaskToProject Mutation)
+**Currently On:** Phase 6, Task 6.1 (API Dockerfile)
 **Last Updated:** 2025-10-28
-**Overall Progress:** 31.1% (19/61 tasks)
+**Overall Progress:** 39.3% (24/61 tasks)
 
 ---
 
