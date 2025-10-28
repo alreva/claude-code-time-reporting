@@ -119,6 +119,134 @@ Report: "Phase 2 complete. All 5 tasks finished, all tests passing."
 
 ---
 
+## 📋 ARCHITECTURE DECISION RECORDS (ADRs)
+
+**When system design discussions lead to architectural decisions, you MUST create an ADR.**
+
+### What is an ADR?
+
+An Architecture Decision Record (ADR) captures an important architectural decision made along with its context and consequences.
+
+**An ADR documents:**
+- **Context**: What problem or situation led to this decision?
+- **Decision**: What did we decide to do?
+- **Rationale**: Why did we choose this approach?
+- **Consequences**: What are the trade-offs? (benefits and costs)
+- **Implementation**: How do we apply this decision?
+
+### When to Create an ADR
+
+**✅ Create an ADR when making decisions that:**
+- Affect the system's structure, patterns, or design principles
+- Have long-term impact on the codebase
+- Involve trade-offs between competing concerns
+- Future developers need to understand the "why" behind the "what"
+- Change a previous architectural approach
+
+**Examples of ADR-worthy decisions:**
+- ✅ Choosing shadow properties over explicit FK properties
+- ✅ Using C# for both API and MCP server (mono-stack)
+- ✅ Normalized relational schema vs JSONB
+- ✅ Entity naming conventions (ProjectTag vs TagConfiguration)
+- ❌ Renaming a variable (too small)
+- ❌ Fixing a bug (not architectural)
+- ❌ Adding a utility function (not a design decision)
+
+### ADR Recognition Pattern - CRITICAL
+
+**During conversations, you MUST recognize "ADR moments" and immediately announce them:**
+
+#### Pattern Recognition
+
+When the conversation involves:
+- **Design alternatives** with trade-offs being discussed
+- **"Should we use X or Y?"** questions about architecture
+- **Pattern/principle establishment** for the project
+- **Refactoring decisions** that change architectural approach
+- **Technology choices** between competing options
+
+**YOU MUST:**
+1. ✅ **Immediately announce**: "This feels like an ADR - we're making an architectural decision about [X]"
+2. ✅ **Continue the discussion** to reach a decision
+3. ✅ **Document the decision** as an ADR in `docs/adr/`
+4. ✅ **Update the index** in `docs/adr/README.md`
+5. ✅ **Commit the ADR** separately from implementation code
+
+#### Example Dialogue Flow
+
+```
+User: "I think we should use shadow properties for FKs to prevent conflicts"
+Claude: "This feels like an ADR - we're making an architectural decision about
+         foreign key property management. Let me explore this design decision..."
+
+[Discussion continues, decision is made]
+
+Claude: "I'm going to document this as ADR 0001: Shadow Foreign Keys"
+        [Creates docs/adr/0001-shadow-foreign-keys.md]
+        [Updates docs/adr/README.md index]
+        [Commits ADR]
+```
+
+#### What NOT to Document as ADRs
+
+❌ **Bug fixes** - Not architectural decisions
+❌ **Trivial choices** - Obvious decisions without trade-offs
+❌ **Implementation details** - "How" without "why"
+❌ **Temporary workarounds** - Not permanent decisions
+
+### ADR Creation Process
+
+**When you recognize an ADR moment:**
+
+1. **Announce the ADR moment**
+   ```
+   "This feels like an ADR - we're making an architectural decision about [topic]"
+   ```
+
+2. **Facilitate the decision**
+   - Ask clarifying questions if needed
+   - Explore trade-offs
+   - Discuss alternatives
+
+3. **Create the ADR**
+   - Use the template in `docs/adr/TEMPLATE.md`
+   - Number it sequentially (e.g., `0006-next-decision.md`)
+   - Follow the structure: Context → Decision → Rationale → Consequences → Implementation → Alternatives
+
+4. **Update the index**
+   - Add entry to the table in `docs/adr/README.md`
+
+5. **Commit separately**
+   - Commit message: `"ADR 00XX: [Title]"`
+   - Keep ADR commits separate from implementation
+
+### ADR Directory Structure
+
+```
+docs/adr/
+├── README.md                        # Index and process documentation
+├── TEMPLATE.md                      # Template for new ADRs
+├── 0001-shadow-foreign-keys.md     # Existing ADRs
+├── 0002-csharp-mono-stack.md
+├── 0003-naming-consistency.md
+├── 0004-normalized-schema.md
+├── 0005-relational-over-jsonb.md
+└── XXXX-new-decision.md             # Future ADRs
+```
+
+### Quick Reference: ADR vs Implementation
+
+| Aspect | ADR | Implementation |
+|--------|-----|----------------|
+| **What** | Why we chose approach X | How to implement approach X |
+| **When** | During design discussions | During coding tasks |
+| **Content** | Context, decision, trade-offs | Code, tests, documentation |
+| **Commit** | Separate ADR commit | Task completion commit |
+
+**Remember:** If you're discussing trade-offs and "should we use X or Y?" - it's probably an ADR moment!
+
+---
+
 ## 🔧 Environment-Specific Commands - CRITICAL
 
 **This environment uses Podman, NOT Docker Desktop.**
