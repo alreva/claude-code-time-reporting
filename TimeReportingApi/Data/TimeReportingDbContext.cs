@@ -110,7 +110,11 @@ public class TimeReportingDbContext : DbContext
 
             entity.Property(e => e.Status)
                 .HasColumnName("status")
-                .HasConversion<string>()
+                .HasConversion(
+                    v => System.Text.RegularExpressions.Regex.Replace(
+                        v.ToString(), "([a-z])([A-Z])", "$1_$2").ToUpperInvariant(),
+                    v => (TimeEntryStatus)Enum.Parse(typeof(TimeEntryStatus),
+                        v.Replace("_", ""), ignoreCase: true))
                 .IsRequired();
 
             entity.Property(e => e.DeclineComment)
@@ -145,6 +149,13 @@ public class TimeReportingDbContext : DbContext
 
             entity.HasIndex(e => new { e.UserId, e.StartDate })
                 .HasDatabaseName("idx_time_entries_user");
+
+            // Check constraints for data integrity
+            entity.ToTable(t => t.HasCheckConstraint("chk_standard_hours_positive", "standard_hours >= 0"));
+            entity.ToTable(t => t.HasCheckConstraint("chk_overtime_hours_positive", "overtime_hours >= 0"));
+            entity.ToTable(t => t.HasCheckConstraint("chk_date_range", "start_date <= completion_date"));
+            entity.ToTable(t => t.HasCheckConstraint("chk_status_valid",
+                "status IN ('NOT_REPORTED', 'SUBMITTED', 'APPROVED', 'DECLINED')"));
         });
     }
 
@@ -185,6 +196,10 @@ public class TimeReportingDbContext : DbContext
 
             entity.HasIndex(e => e.IsActive)
                 .HasDatabaseName("idx_projects_active");
+
+            entity.HasIndex(e => e.Name)
+                .IsUnique()
+                .HasDatabaseName("uq_projects_name");
         });
     }
 

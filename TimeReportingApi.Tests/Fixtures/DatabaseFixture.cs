@@ -1,17 +1,18 @@
 using Microsoft.Extensions.Configuration;
-using Npgsql;
 using TimeReportingApi.Data;
 
 namespace TimeReportingApi.Tests.Fixtures;
 
 /// <summary>
-/// Provides database test infrastructure with lifecycle management
+/// Provides database test infrastructure with lifecycle management.
+/// Uses EF Core migrations to ensure test database schema matches production.
 /// </summary>
 public class DatabaseFixture : IDisposable
 {
     public TimeReportingDbContext DbContext { get; private set; }
     public string ConnectionString { get; private set; }
-    private bool _schemaApplied = false;
+    private static bool _migrationApplied = false;
+    private static readonly object _migrationLock = new object();
 
     public DatabaseFixture()
     {
@@ -27,63 +28,25 @@ public class DatabaseFixture : IDisposable
 
         DbContext = new TimeReportingDbContext(options);
 
-        // Ensure database exists and schema is applied with constraints
-        EnsureDatabaseAndSchemaAsync().GetAwaiter().GetResult();
+        // Apply EF Core migrations to test database (once per test run)
+        ApplyMigrations();
     }
 
-    private async Task EnsureDatabaseAndSchemaAsync()
+    /// <summary>
+    /// Applies EF Core migrations to the test database.
+    /// This ensures test database has identical schema to production (database-agnostic).
+    /// </summary>
+    private void ApplyMigrations()
     {
-        if (_schemaApplied) return;
-
-        using var conn = new NpgsqlConnection(ConnectionString);
-        await conn.OpenAsync();
-
-        // Check if tables exist
-        var checkTablesCmd = new NpgsqlCommand(
-            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'",
-            conn);
-
-        var tableCount = Convert.ToInt32(await checkTablesCmd.ExecuteScalarAsync());
-
-        if (tableCount == 0)
+        lock (_migrationLock)
         {
-            // Apply SQL schema from db/schema/schema.sql
-            var projectRoot = GetProjectRoot();
-            var schemaPath = Path.Combine(projectRoot, "db/schema/schema.sql");
+            if (_migrationApplied) return;
 
-            if (File.Exists(schemaPath))
-            {
-                var schemaSql = await File.ReadAllTextAsync(schemaPath);
+            // Apply all pending migrations
+            DbContext.Database.Migrate();
 
-                // Execute schema SQL
-                using var cmd = new NpgsqlCommand(schemaSql, conn);
-                await cmd.ExecuteNonQueryAsync();
-            }
-            else
-            {
-                // Fallback to EF migration if schema file not found
-                await DbContext.Database.EnsureCreatedAsync();
-            }
+            _migrationApplied = true;
         }
-
-        _schemaApplied = true;
-    }
-
-    private static string GetProjectRoot()
-    {
-        var directory = Directory.GetCurrentDirectory();
-
-        while (directory != null && !Directory.GetFiles(directory, "*.sln").Any())
-        {
-            directory = Directory.GetParent(directory)?.FullName;
-        }
-
-        if (directory == null)
-        {
-            throw new InvalidOperationException("Could not find project root directory (no .sln file found)");
-        }
-
-        return directory;
     }
 
     /// <summary>

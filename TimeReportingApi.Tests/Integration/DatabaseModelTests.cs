@@ -76,10 +76,65 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         retrieved.Status.Should().Be(TimeEntryStatus.NotReported);
     }
 
-    // Note: Check constraint tests (negative hours, date range) are covered by
-    // SqlSchemaValidationTests which executes db/tests/test-schema.sql directly.
-    // EF Core's EnsureCreated() doesn't apply check constraints from SQL schema,
-    // so we focus on EF-specific functionality here.
+    [Fact]
+    public async Task TimeEntry_WithNegativeStandardHours_ThrowsDbUpdateException()
+    {
+        // Arrange
+        using var context = _fixture.CreateNewContext();
+
+        var project = new Project { Code = "PROJ002", Name = "Project 2", IsActive = true };
+        await context.Projects.AddAsync(project);
+        await context.SaveChangesAsync();
+
+        var timeEntry = new TimeEntry
+        {
+            Id = Guid.NewGuid(),
+            ProjectCode = "PROJ002",
+            Task = "Development",
+            StandardHours = -5.0m, // Invalid - violates CHECK constraint
+            OvertimeHours = 0.0m,
+            StartDate = DateOnly.FromDateTime(DateTime.Today),
+            CompletionDate = DateOnly.FromDateTime(DateTime.Today),
+            Status = TimeEntryStatus.NotReported
+        };
+
+        // Act & Assert - Database-agnostic check constraint validation
+        await context.TimeEntries.AddAsync(timeEntry);
+        var act = async () => await context.SaveChangesAsync();
+
+        await act.Should().ThrowAsync<DbUpdateException>(
+            "because negative standard_hours violates CHECK constraint");
+    }
+
+    [Fact]
+    public async Task TimeEntry_WithNegativeOvertimeHours_ThrowsDbUpdateException()
+    {
+        // Arrange
+        using var context = _fixture.CreateNewContext();
+
+        var project = new Project { Code = "PROJ003", Name = "Project 3", IsActive = true };
+        await context.Projects.AddAsync(project);
+        await context.SaveChangesAsync();
+
+        var timeEntry = new TimeEntry
+        {
+            Id = Guid.NewGuid(),
+            ProjectCode = "PROJ003",
+            Task = "Development",
+            StandardHours = 8.0m,
+            OvertimeHours = -2.0m, // Invalid - violates CHECK constraint
+            StartDate = DateOnly.FromDateTime(DateTime.Today),
+            CompletionDate = DateOnly.FromDateTime(DateTime.Today),
+            Status = TimeEntryStatus.NotReported
+        };
+
+        // Act & Assert - Database-agnostic check constraint validation
+        await context.TimeEntries.AddAsync(timeEntry);
+        var act = async () => await context.SaveChangesAsync();
+
+        await act.Should().ThrowAsync<DbUpdateException>(
+            "because negative overtime_hours violates CHECK constraint");
+    }
 
     [Fact]
     public async Task TimeEntry_WithInvalidProjectCode_ThrowsDbUpdateException()
