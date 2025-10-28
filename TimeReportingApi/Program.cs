@@ -1,6 +1,8 @@
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
+using TimeReportingApi.GraphQL.Errors;
 using TimeReportingApi.Middleware;
+using TimeReportingApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,9 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddDbContext<TimeReportingDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TimeReportingDb")));
 
+// Add business services
+builder.Services.AddScoped<ValidationService>();
+
 // Add services to the container
 builder.Services
     .AddGraphQLServer()
@@ -21,7 +26,8 @@ builder.Services
     .AddMutationType<Mutation>()
     .AddProjections()        // Enable field selection optimization
     .AddFiltering()          // Enable filtering
-    .AddSorting();           // Enable sorting
+    .AddSorting()            // Enable sorting
+    .AddErrorFilter<GraphQLErrorFilter>();  // Add custom error handling
 
 // Add health checks
 builder.Services.AddHealthChecks();
