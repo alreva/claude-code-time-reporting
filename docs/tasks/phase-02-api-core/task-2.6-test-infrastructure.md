@@ -116,7 +116,7 @@ public class DatabaseFixture : IDisposable
         // Clean all tables for next test
         DbContext.TimeEntries.RemoveRange(DbContext.TimeEntries);
         DbContext.ProjectTasks.RemoveRange(DbContext.ProjectTasks);
-        DbContext.TagConfigurations.RemoveRange(DbContext.TagConfigurations);
+        DbContext.ProjectTags.RemoveRange(DbContext.ProjectTags);
         DbContext.Projects.RemoveRange(DbContext.Projects);
         DbContext.SaveChanges();
     }

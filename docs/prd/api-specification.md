@@ -95,7 +95,7 @@ type Project {
 
   # Navigation
   availableTasks: [ProjectTask!]!
-  tagConfigurations: [TagConfiguration!]!
+  tags: [ProjectTag!]!
   timeEntries: [TimeEntry!]!
 }
 ```
@@ -114,22 +114,35 @@ type ProjectTask {
 }
 ```
 
-### 2.4 TagConfiguration
+### 2.4 ProjectTag
 
 ```graphql
-type TagConfiguration {
+type ProjectTag {
   id: Int!
   projectCode: String!
   tagName: String!
-  allowedValues: [String!]!
   isActive: Boolean!
 
   # Navigation
   project: Project!
+  allowedValues: [TagValue!]!
 }
 ```
 
-### 2.5 Tag
+### 2.5 TagValue
+
+```graphql
+type TagValue {
+  id: Int!
+  projectTagId: Int!
+  value: String!
+
+  # Navigation
+  projectTag: ProjectTag!
+}
+```
+
+### 2.6 Tag
 
 ```graphql
 type Tag {
@@ -882,7 +895,7 @@ query {
 The API uses DataLoader (via HotChocolate) to prevent N+1 query problems:
 
 - `Project` lookups are batched when loading multiple time entries
-- `ProjectTask` and `TagConfiguration` are eagerly loaded with projects
+- `ProjectTask` and `ProjectTag` are eagerly loaded with projects
 
 ### 10.2 Pagination
 

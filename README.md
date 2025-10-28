@@ -189,7 +189,7 @@ time-reporting-system/
 
 - **ProjectTask** - Allowed tasks per project
 
-- **TagConfiguration** - Metadata tags per project
+- **ProjectTag** - Metadata tags per project (with TagValue for allowed values)
   - Tag name, Allowed values
 
 ---

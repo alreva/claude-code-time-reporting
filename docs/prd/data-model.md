@@ -60,13 +60,23 @@ This document provides detailed specifications for all database entities, relati
                     └──────────────────────────────────────────┘
 
                               ┌────────────────────────────────┐
-                              │       TagConfiguration         │
+                              │         ProjectTag             │
                               ├────────────────────────────────┤
                               │ PK  Id             INT         │
                               │ FK  ProjectCode    VARCHAR(10) │
                               │     TagName        VARCHAR(20) │
-                              │     AllowedValues  JSONB       │
                               │     IsActive       BOOLEAN     │
+                              └────────────────┬───────────────┘
+                                               │
+                                               │ 1:N
+                                               │
+                                               ▼
+                              ┌────────────────────────────────┐
+                              │          TagValue              │
+                              ├────────────────────────────────┤
+                              │ PK  Id             INT         │
+                              │ FK  ProjectTagId   INT         │
+                              │     Value          VARCHAR(100)│
                               └────────────────────────────────┘
 ```
 
@@ -162,8 +172,8 @@ Tags are stored as JSONB array:
 ```
 
 **Validation:**
-- Each tag's `name` must exist in TagConfiguration for the project
-- Each tag's `value` must be in TagConfiguration.AllowedValues for that name
+- Each tag's `name` must exist in ProjectTag for the project
+- Each tag's `value` must be in TagValue.AllowedValues for that name
 
 ### 1.5 C# Entity Model
 
@@ -280,7 +290,7 @@ public class Project
 
     // Navigation properties
     public List<ProjectTask> AvailableTasks { get; set; } = new();
-    public List<TagConfiguration> TagConfigurations { get; set; } = new();
+    public List<ProjectTag> Tags { get; set; } = new();
     public List<TimeEntry> TimeEntries { get; set; } = new();
 }
 ```
@@ -344,9 +354,9 @@ public class ProjectTask
 
 ---
 
-## 4. TagConfiguration
+## 4. ProjectTag
 
-Defines available metadata tags per project.
+Defines available metadata tags per project (renamed from TagConfiguration for naming consistency with ProjectTask).
 
 ### 4.1 Schema
 
@@ -355,39 +365,32 @@ Defines available metadata tags per project.
 | **Id** | INT | NO | SERIAL | Primary key |
 | **ProjectCode** | VARCHAR(10) | NO | - | Foreign key to Project.Code |
 | **TagName** | VARCHAR(20) | NO | - | Tag name (e.g., "Environment") |
-| **AllowedValues** | JSONB | NO | '[]' | Array of allowed string values |
 | **IsActive** | BOOLEAN | NO | TRUE | Whether tag is available |
 
 ### 4.2 Constraints
 
 ```sql
 -- Primary Key
-ALTER TABLE tag_configurations ADD CONSTRAINT pk_tag_configurations PRIMARY KEY (id);
+ALTER TABLE project_tags ADD CONSTRAINT pk_project_tags PRIMARY KEY (id);
 
 -- Foreign Key
-ALTER TABLE tag_configurations
-  ADD CONSTRAINT fk_tag_configurations_project
+ALTER TABLE project_tags
+  ADD CONSTRAINT fk_project_tags_project
   FOREIGN KEY (project_code) REFERENCES projects(code) ON DELETE CASCADE;
 
 -- Unique constraint (one tag name per project)
-ALTER TABLE tag_configurations
-  ADD CONSTRAINT uq_tag_configurations_project_tag
+ALTER TABLE project_tags
+  ADD CONSTRAINT uq_project_tags_project_tag
   UNIQUE (project_code, tag_name);
 
 -- Index
-CREATE INDEX idx_tag_configurations_project ON tag_configurations(project_code);
+CREATE INDEX idx_project_tags_project ON project_tags(project_code);
 ```
 
-### 4.3 AllowedValues Structure
-
-```json
-["Production", "Staging", "Development"]
-```
-
-### 4.4 C# Entity Model
+### 4.3 C# Entity Model
 
 ```csharp
-public class TagConfiguration
+public class ProjectTag
 {
     public int Id { get; set; }
 
@@ -399,24 +402,71 @@ public class TagConfiguration
     [MaxLength(20)]
     public string TagName { get; set; }
 
-    public List<string> AllowedValues { get; set; } = new();
-
     public bool IsActive { get; set; } = true;
 
-    // Navigation property
+    // Navigation properties
     public Project Project { get; set; }
+    public List<TagValue> AllowedValues { get; set; } = new();
 }
 ```
 
 ---
 
-## 5. Database Initialization
+## 5. TagValue
 
-### 5.1 DDL Script
+Represents allowed values for project tags (normalized from JSONB array).
+
+### 5.1 Schema
+
+| Column | Type | Nullable | Default | Description |
+|--------|------|----------|---------|-------------|
+| **Id** | INT | NO | SERIAL | Primary key |
+| **ProjectTagId** | INT | NO | - | Foreign key to ProjectTag.Id |
+| **Value** | VARCHAR(100) | NO | - | Allowed value (e.g., "Production") |
+
+### 5.2 Constraints
+
+```sql
+-- Primary Key
+ALTER TABLE tag_values ADD CONSTRAINT pk_tag_values PRIMARY KEY (id);
+
+-- Foreign Key
+ALTER TABLE tag_values
+  ADD CONSTRAINT fk_tag_values_project_tag
+  FOREIGN KEY (project_tag_id) REFERENCES project_tags(id) ON DELETE CASCADE;
+
+-- Index
+CREATE INDEX idx_tag_values_project_tag ON tag_values(project_tag_id);
+```
+
+### 5.3 C# Entity Model
+
+```csharp
+public class TagValue
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int ProjectTagId { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string Value { get; set; }
+
+    // Navigation property
+    public ProjectTag ProjectTag { get; set; }
+}
+```
+
+---
+
+## 6. Database Initialization
+
+### 6.1 DDL Script
 
 Complete DDL available in: `docs/tasks/phase-01-database/task-1.1-postgresql-schema.md`
 
-### 5.2 Seed Data
+### 6.2 Seed Data
 
 Sample seed data available in: `docs/tasks/phase-01-database/task-1.2-seed-data.md`
 
@@ -431,9 +481,9 @@ Example projects:
 
 ---
 
-## 6. Entity Framework Core Configuration
+## 7. Entity Framework Core Configuration
 
-### 6.1 DbContext
+### 7.1 DbContext
 
 ```csharp
 public class TimeReportingDbContext : DbContext
@@ -441,7 +491,9 @@ public class TimeReportingDbContext : DbContext
     public DbSet<TimeEntry> TimeEntries { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
-    public DbSet<TagConfiguration> TagConfigurations { get; set; }
+    public DbSet<ProjectTag> ProjectTags { get; set; }
+    public DbSet<TagValue> TagValues { get; set; }
+    public DbSet<TimeEntryTag> TimeEntryTags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -485,7 +537,7 @@ public class TimeReportingDbContext : DbContext
                 .HasForeignKey(t => t.ProjectCode)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasMany(e => e.TagConfigurations)
+            entity.HasMany(e => e.Tags)
                 .WithOne(t => t.Project)
                 .HasForeignKey(t => t.ProjectCode)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -503,22 +555,50 @@ public class TimeReportingDbContext : DbContext
             entity.HasIndex(e => new { e.ProjectCode, e.TaskName }).IsUnique();
         });
 
-        // TagConfiguration configuration
-        modelBuilder.Entity<TagConfiguration>(entity =>
+        // ProjectTag configuration
+        modelBuilder.Entity<ProjectTag>(entity =>
         {
-            entity.ToTable("tag_configurations");
+            entity.ToTable("project_tags");
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.ProjectCode).HasMaxLength(10).IsRequired();
             entity.Property(e => e.TagName).HasMaxLength(20).IsRequired();
 
-            entity.Property(e => e.AllowedValues)
-                .HasColumnType("jsonb")
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+            entity.HasMany(e => e.AllowedValues)
+                .WithOne(v => v.ProjectTag)
+                .HasForeignKey(v => v.ProjectTagId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.ProjectCode, e.TagName }).IsUnique();
+        });
+
+        // TagValue configuration
+        modelBuilder.Entity<TagValue>(entity =>
+        {
+            entity.ToTable("tag_values");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.ProjectTagId).IsRequired();
+            entity.Property(e => e.Value).HasMaxLength(100).IsRequired();
+
+            entity.HasIndex(e => e.ProjectTagId);
+        });
+
+        // TimeEntryTag configuration
+        modelBuilder.Entity<TimeEntryTag>(entity =>
+        {
+            entity.ToTable("time_entry_tags");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.TimeEntryId).IsRequired();
+            entity.Property(e => e.TagValueId).IsRequired();
+
+            entity.HasOne(e => e.TagValue)
+                .WithMany()
+                .HasForeignKey(e => e.TagValueId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.TimeEntryId, e.TagValueId }).IsUnique();
         });
     }
 }
@@ -526,16 +606,16 @@ public class TimeReportingDbContext : DbContext
 
 ---
 
-## 7. Migration Strategy
+## 8. Migration Strategy
 
-### 7.1 Initial Migration
+### 8.1 Initial Migration
 
 ```bash
 dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-### 7.2 Future Migrations
+### 8.2 Future Migrations
 
 When schema changes:
 1. Update entity models
@@ -546,7 +626,7 @@ When schema changes:
 
 ---
 
-## 8. Data Validation Service
+## 9. Data Validation Service
 
 Beyond database constraints, the API implements business logic validation:
 
@@ -565,7 +645,8 @@ public class TimeEntryValidator : ITimeEntryValidator
         // Project exists and is active
         var project = await _db.Projects
             .Include(p => p.AvailableTasks)
-            .Include(p => p.TagConfigurations)
+            .Include(p => p.Tags)
+                .ThenInclude(t => t.AllowedValues)
             .FirstOrDefaultAsync(p => p.Code == entry.ProjectCode);
 
         if (project == null || !project.IsActive)
@@ -578,12 +659,12 @@ public class TimeEntryValidator : ITimeEntryValidator
         // Tags are valid
         foreach (var tag in entry.Tags)
         {
-            var tagConfig = project.TagConfigurations
+            var tagConfig = project.Tags
                 .FirstOrDefault(tc => tc.TagName == tag.Name && tc.IsActive);
 
             if (tagConfig == null)
                 errors.Add($"Tag '{tag.Name}' is not configured for project '{entry.ProjectCode}'");
-            else if (!tagConfig.AllowedValues.Contains(tag.Value))
+            else if (!tagConfig.AllowedValues.Any(v => v.Value == tag.Value))
                 errors.Add($"Value '{tag.Value}' is not allowed for tag '{tag.Name}'");
         }
 

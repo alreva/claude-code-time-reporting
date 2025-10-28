@@ -37,7 +37,7 @@ Write Test → Run /test (FAIL ❌) → Write Code → Run /test (PASS ✅) → 
 ```
 Complete Task 2.3: Implement C# Entity Models with TDD
 
-- Created TimeEntry, Project, ProjectTask, TagConfiguration entities
+- Created TimeEntry, Project, ProjectTask, ProjectTag, TagValue entities
 - Configured Entity Framework with snake_case mapping
 - Added comprehensive unit tests for all models
 - All tests passing ✅
@@ -281,11 +281,14 @@ All other operations should use slash commands.
 
 **Project** - Available projects with tasks and tag configurations
 - Code (PK, VARCHAR 10), Name, IsActive
-- One-to-many: ProjectTask, TagConfiguration
+- One-to-many: ProjectTask, ProjectTag
 
 **ProjectTask** - Allowed tasks per project (e.g., "Development", "Bug Fixing")
 
-**TagConfiguration** - Metadata tags per project with allowed values stored as JSONB array
+**ProjectTag** - Metadata tags per project (renamed from TagConfiguration for naming consistency)
+- One-to-many: TagValue
+
+**TagValue** - Allowed values for each tag (normalized from JSONB)
 
 ### GraphQL API Layer (docs/prd/api-specification.md)
 
@@ -420,9 +423,9 @@ Multi-layer validation ensures data integrity:
 ### Entity Framework Configuration
 
 - Use `DateOnly` for dates (not DateTime)
-- JSONB columns for Tags and AllowedValues with JSON serialization
+- Normalized relational tables (no JSONB): ProjectTag, TagValue, TimeEntryTag
 - Snake_case table/column names via mapping
-- Cascade delete for ProjectTask and TagConfiguration when Project deleted
+- Cascade delete for ProjectTask and ProjectTag when Project deleted
 - Precision(10,2) for decimal hours
 
 ### MCP Server Principles
