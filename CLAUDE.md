@@ -568,7 +568,7 @@ This project follows a task-based implementation approach documented in `docs/TA
 
 **Remember:** A task is NOT complete until all tests pass. Never skip the TDD workflow.
 
-**Implementation Note:** The v1 simplified implementation removed auto-tracking complexity. Focus is on core CRUD operations and approval workflow. Auto-tracking moved to v2.
+**Implementation Note:** The v1 implementation includes auto-tracking features (Phase 10) to provide intelligent, proactive time logging suggestions based on user activity patterns.
 
 ## Key Documentation
 

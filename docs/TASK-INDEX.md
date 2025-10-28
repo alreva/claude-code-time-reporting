@@ -197,17 +197,19 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 10.1 | Session Context Manager | Create context manager for last project, task, timing | 1-2 hrs | ☐ Pending | Create |
-| 10.2 | Detection Heuristics | Implement auto-tracking detection logic | 2 hrs | ☐ Pending | Create |
-| 10.3 | Confirmation Prompts | Format suggestion prompts for Claude Code | 1 hr | ☐ Pending | Create |
-| 10.4 | Context Persistence | Add in-memory persistence across sessions | 1 hr | ☐ Pending | Create |
+| 10.1 | Session Context Manager | Create context manager for last project, task, timing | 1-2 hrs | ☐ Pending | [View](./tasks/phase-10-auto-tracking/task-10.1-session-context-manager.md) |
+| 10.2 | Detection Heuristics | Implement auto-tracking detection logic | 2 hrs | ☐ Pending | [View](./tasks/phase-10-auto-tracking/task-10.2-detection-heuristics.md) |
+| 10.3 | Confirmation Prompts | Format suggestion prompts for Claude Code | 1 hr | ☐ Pending | [View](./tasks/phase-10-auto-tracking/task-10.3-confirmation-prompts.md) |
+| 10.4 | Context Persistence | Add persistent storage across sessions | 1 hr | ☐ Pending | [View](./tasks/phase-10-auto-tracking/task-10.4-context-persistence.md) |
 
 **Phase 10 Total:** 5-6 hours
 
 **Key Deliverables:**
-- `mcp-server/src/context/session-manager.ts`
-- `mcp-server/src/auto-tracking/detector.ts`
-- `mcp-server/src/auto-tracking/suggester.ts`
+- `TimeReportingMcp/AutoTracking/SessionContext.cs` - Session state management (10 tests)
+- `TimeReportingMcp/AutoTracking/DetectionHeuristics.cs` - Smart work detection (13 tests)
+- `TimeReportingMcp/AutoTracking/SuggestionFormatter.cs` - User-friendly prompts (10 tests)
+- `TimeReportingMcp/AutoTracking/ContextPersistence.cs` - JSON persistence (10 tests)
+- Complete auto-tracking system with 43 tests
 
 ---
 
