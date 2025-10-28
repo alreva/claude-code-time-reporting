@@ -11,7 +11,7 @@ using TimeReportingApi.Data;
 namespace TimeReportingApi.Migrations
 {
     [DbContext(typeof(TimeReportingDbContext))]
-    [Migration("20251028004502_NormalizedSchema")]
+    [Migration("20251028010336_NormalizedSchema")]
     partial class NormalizedSchema
     {
         /// <inheritdoc />
@@ -61,6 +61,43 @@ namespace TimeReportingApi.Migrations
                     b.ToTable("projects", (string)null);
                 });
 
+            modelBuilder.Entity("TimeReportingApi.Models.ProjectTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("ProjectCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("project_code");
+
+                    b.Property<string>("TagName")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tag_name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectCode")
+                        .HasDatabaseName("idx_project_tags_project");
+
+                    b.HasIndex("ProjectCode", "TagName")
+                        .IsUnique()
+                        .HasDatabaseName("uq_project_tags_project_tag");
+
+                    b.ToTable("project_tags", (string)null);
+                });
+
             modelBuilder.Entity("TimeReportingApi.Models.ProjectTask", b =>
                 {
                     b.Property<int>("Id")
@@ -98,7 +135,7 @@ namespace TimeReportingApi.Migrations
                     b.ToTable("project_tasks", (string)null);
                 });
 
-            modelBuilder.Entity("TimeReportingApi.Models.TagAllowedValue", b =>
+            modelBuilder.Entity("TimeReportingApi.Models.TagValue", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -107,9 +144,9 @@ namespace TimeReportingApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("TagConfigurationId")
+                    b.Property<int>("ProjectTagId")
                         .HasColumnType("integer")
-                        .HasColumnName("tag_configuration_id");
+                        .HasColumnName("project_tag_id");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -119,47 +156,10 @@ namespace TimeReportingApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TagConfigurationId")
-                        .HasDatabaseName("idx_tag_allowed_values_config");
+                    b.HasIndex("ProjectTagId")
+                        .HasDatabaseName("idx_tag_values_project_tag");
 
-                    b.ToTable("tag_allowed_values", (string)null);
-                });
-
-            modelBuilder.Entity("TimeReportingApi.Models.TagConfiguration", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("ProjectCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
-                        .HasColumnName("project_code");
-
-                    b.Property<string>("TagName")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("tag_name");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProjectCode")
-                        .HasDatabaseName("idx_tag_configurations_project");
-
-                    b.HasIndex("ProjectCode", "TagName")
-                        .IsUnique()
-                        .HasDatabaseName("uq_tag_configurations_project_tag");
-
-                    b.ToTable("tag_configurations", (string)null);
+                    b.ToTable("tag_values", (string)null);
                 });
 
             modelBuilder.Entity("TimeReportingApi.Models.TimeEntry", b =>
@@ -262,9 +262,9 @@ namespace TimeReportingApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("TagAllowedValueId")
+                    b.Property<int>("TagValueId")
                         .HasColumnType("integer")
-                        .HasColumnName("tag_allowed_value_id");
+                        .HasColumnName("tag_value_id");
 
                     b.Property<Guid>("TimeEntryId")
                         .HasColumnType("uuid")
@@ -272,16 +272,27 @@ namespace TimeReportingApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TagAllowedValueId");
+                    b.HasIndex("TagValueId");
 
                     b.HasIndex("TimeEntryId")
                         .HasDatabaseName("idx_time_entry_tags_entry");
 
-                    b.HasIndex("TimeEntryId", "TagAllowedValueId")
+                    b.HasIndex("TimeEntryId", "TagValueId")
                         .IsUnique()
                         .HasDatabaseName("uq_time_entry_tags_entry_value");
 
                     b.ToTable("time_entry_tags", (string)null);
+                });
+
+            modelBuilder.Entity("TimeReportingApi.Models.ProjectTag", b =>
+                {
+                    b.HasOne("TimeReportingApi.Models.Project", "Project")
+                        .WithMany("Tags")
+                        .HasForeignKey("ProjectCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("TimeReportingApi.Models.ProjectTask", b =>
@@ -295,26 +306,15 @@ namespace TimeReportingApi.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("TimeReportingApi.Models.TagAllowedValue", b =>
+            modelBuilder.Entity("TimeReportingApi.Models.TagValue", b =>
                 {
-                    b.HasOne("TimeReportingApi.Models.TagConfiguration", "TagConfiguration")
+                    b.HasOne("TimeReportingApi.Models.ProjectTag", "ProjectTag")
                         .WithMany("AllowedValues")
-                        .HasForeignKey("TagConfigurationId")
+                        .HasForeignKey("ProjectTagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("TagConfiguration");
-                });
-
-            modelBuilder.Entity("TimeReportingApi.Models.TagConfiguration", b =>
-                {
-                    b.HasOne("TimeReportingApi.Models.Project", "Project")
-                        .WithMany("TagConfigurations")
-                        .HasForeignKey("ProjectCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Project");
+                    b.Navigation("ProjectTag");
                 });
 
             modelBuilder.Entity("TimeReportingApi.Models.TimeEntry", b =>
@@ -338,9 +338,9 @@ namespace TimeReportingApi.Migrations
 
             modelBuilder.Entity("TimeReportingApi.Models.TimeEntryTag", b =>
                 {
-                    b.HasOne("TimeReportingApi.Models.TagAllowedValue", "TagAllowedValue")
+                    b.HasOne("TimeReportingApi.Models.TagValue", "TagValue")
                         .WithMany()
-                        .HasForeignKey("TagAllowedValueId")
+                        .HasForeignKey("TagValueId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -350,7 +350,7 @@ namespace TimeReportingApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("TagAllowedValue");
+                    b.Navigation("TagValue");
 
                     b.Navigation("TimeEntry");
                 });
@@ -359,12 +359,12 @@ namespace TimeReportingApi.Migrations
                 {
                     b.Navigation("AvailableTasks");
 
-                    b.Navigation("TagConfigurations");
+                    b.Navigation("Tags");
 
                     b.Navigation("TimeEntries");
                 });
 
-            modelBuilder.Entity("TimeReportingApi.Models.TagConfiguration", b =>
+            modelBuilder.Entity("TimeReportingApi.Models.ProjectTag", b =>
                 {
                     b.Navigation("AllowedValues");
                 });

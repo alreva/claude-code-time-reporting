@@ -21,6 +21,6 @@ public class Project
 
     // Navigation properties
     public List<ProjectTask> AvailableTasks { get; set; } = new();
-    public List<TagConfiguration> TagConfigurations { get; set; } = new();
+    public List<ProjectTag> Tags { get; set; } = new();
     public List<TimeEntry> TimeEntries { get; set; } = new();
 }

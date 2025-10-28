@@ -73,8 +73,8 @@ public class EntityModelTests
     {
         // Arrange
         var entry = new TimeEntry { Id = Guid.NewGuid() };
-        var tag1 = new TimeEntryTag { TimeEntryId = entry.Id, TagAllowedValueId = 1 };
-        var tag2 = new TimeEntryTag { TimeEntryId = entry.Id, TagAllowedValueId = 2 };
+        var tag1 = new TimeEntryTag { TimeEntryId = entry.Id, TagValueId = 1 };
+        var tag2 = new TimeEntryTag { TimeEntryId = entry.Id, TagValueId = 2 };
 
         // Act
         entry.Tags.Add(tag1);
@@ -82,8 +82,8 @@ public class EntityModelTests
 
         // Assert
         entry.Tags.Should().HaveCount(2);
-        entry.Tags[0].TagAllowedValueId.Should().Be(1);
-        entry.Tags[1].TagAllowedValueId.Should().Be(2);
+        entry.Tags[0].TagValueId.Should().Be(1);
+        entry.Tags[1].TagValueId.Should().Be(2);
     }
 
     [Fact]
@@ -104,29 +104,29 @@ public class EntityModelTests
         {
             Id = 1,
             TimeEntryId = Guid.NewGuid(),
-            TagAllowedValueId = 5
+            TagValueId = 5
         };
 
         // Assert
         tag.Id.Should().Be(1);
         tag.TimeEntryId.Should().NotBe(Guid.Empty);
-        tag.TagAllowedValueId.Should().Be(5);
+        tag.TagValueId.Should().Be(5);
     }
 
     [Fact]
-    public void TagAllowedValue_ShouldHaveRequiredProperties()
+    public void TagValue_ShouldHaveRequiredProperties()
     {
         // Arrange & Act
-        var allowedValue = new TagAllowedValue
+        var allowedValue = new TagValue
         {
             Id = 1,
-            TagConfigurationId = 1,
+            ProjectTagId = 1,
             Value = "Production"
         };
 
         // Assert
         allowedValue.Id.Should().Be(1);
-        allowedValue.TagConfigurationId.Should().Be(1);
+        allowedValue.ProjectTagId.Should().Be(1);
         allowedValue.Value.Should().Be("Production");
     }
 
@@ -168,8 +168,8 @@ public class EntityModelTests
         // Assert
         project.AvailableTasks.Should().NotBeNull();
         project.AvailableTasks.Should().BeEmpty();
-        project.TagConfigurations.Should().NotBeNull();
-        project.TagConfigurations.Should().BeEmpty();
+        project.Tags.Should().NotBeNull();
+        project.Tags.Should().BeEmpty();
         project.TimeEntries.Should().NotBeNull();
         project.TimeEntries.Should().BeEmpty();
     }
@@ -204,10 +204,10 @@ public class EntityModelTests
     }
 
     [Fact]
-    public void TagConfiguration_ShouldHaveRequiredProperties()
+    public void ProjectTag_ShouldHaveRequiredProperties()
     {
         // Arrange & Act
-        var tagConfig = new TagConfiguration
+        var tagConfig = new ProjectTag
         {
             Id = 1,
             ProjectCode = "INTERNAL",
@@ -223,20 +223,20 @@ public class EntityModelTests
     }
 
     [Fact]
-    public void TagConfiguration_ShouldInitializeIsActiveAsTrue()
+    public void ProjectTag_ShouldInitializeIsActiveAsTrue()
     {
         // Arrange & Act
-        var tagConfig = new TagConfiguration();
+        var tagConfig = new ProjectTag();
 
         // Assert
         tagConfig.IsActive.Should().BeTrue("IsActive should default to true");
     }
 
     [Fact]
-    public void TagConfiguration_ShouldInitializeAllowedValuesAsEmptyList()
+    public void ProjectTag_ShouldInitializeAllowedValuesAsEmptyList()
     {
         // Arrange & Act
-        var tagConfig = new TagConfiguration();
+        var tagConfig = new ProjectTag();
 
         // Assert
         tagConfig.AllowedValues.Should().NotBeNull();
@@ -244,13 +244,13 @@ public class EntityModelTests
     }
 
     [Fact]
-    public void TagConfiguration_ShouldSupportAllowedValuesCollection()
+    public void ProjectTag_ShouldSupportAllowedValuesCollection()
     {
         // Arrange
-        var tagConfig = new TagConfiguration { Id = 1 };
-        tagConfig.AllowedValues.Add(new TagAllowedValue { TagConfigurationId = 1, Value = "Production" });
-        tagConfig.AllowedValues.Add(new TagAllowedValue { TagConfigurationId = 1, Value = "Staging" });
-        tagConfig.AllowedValues.Add(new TagAllowedValue { TagConfigurationId = 1, Value = "Development" });
+        var tagConfig = new ProjectTag { Id = 1 };
+        tagConfig.AllowedValues.Add(new TagValue { ProjectTagId = 1, Value = "Production" });
+        tagConfig.AllowedValues.Add(new TagValue { ProjectTagId = 1, Value = "Staging" });
+        tagConfig.AllowedValues.Add(new TagValue { ProjectTagId = 1, Value = "Development" });
 
         // Act & Assert
         tagConfig.AllowedValues.Should().HaveCount(3);
@@ -290,18 +290,18 @@ public class EntityModelTests
     }
 
     [Fact]
-    public void Project_ShouldHaveNavigationPropertyToTagConfigurations()
+    public void Project_ShouldHaveNavigationPropertyToTags()
     {
         // Arrange
         var project = new Project { Code = "INTERNAL" };
-        var tagConfig = new TagConfiguration { ProjectCode = "INTERNAL", TagName = "Environment" };
+        var tagConfig = new ProjectTag { ProjectCode = "INTERNAL", TagName = "Environment" };
 
         // Act
-        project.TagConfigurations.Add(tagConfig);
+        project.Tags.Add(tagConfig);
 
         // Assert
-        project.TagConfigurations.Should().HaveCount(1);
-        project.TagConfigurations[0].TagName.Should().Be("Environment");
+        project.Tags.Should().HaveCount(1);
+        project.Tags[0].TagName.Should().Be("Environment");
     }
 
     [Fact]
@@ -317,11 +317,11 @@ public class EntityModelTests
     }
 
     [Fact]
-    public void TagConfiguration_ShouldHaveNavigationPropertyToProject()
+    public void ProjectTag_ShouldHaveNavigationPropertyToProject()
     {
         // Arrange & Act
         var project = new Project { Code = "INTERNAL", Name = "Internal" };
-        var tagConfig = new TagConfiguration { ProjectCode = "INTERNAL", TagName = "Environment", Project = project };
+        var tagConfig = new ProjectTag { ProjectCode = "INTERNAL", TagName = "Environment", Project = project };
 
         // Assert
         tagConfig.Project.Should().NotBeNull();

@@ -207,7 +207,7 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
     }
 
     [Fact]
-    public async Task TagConfiguration_CanCreateWithAllowedValues()
+    public async Task ProjectTag_CanCreateWithAllowedValues()
     {
         // Arrange
         using var context = _fixture.CreateNewContext();
@@ -216,21 +216,21 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
-        var tagConfig = new TagConfiguration
+        var tagConfig = new ProjectTag
         {
             ProjectCode = "PROJ005",
             TagName = "Priority"
         };
-        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "High" });
-        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Medium" });
-        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Low" });
+        tagConfig.AllowedValues.Add(new TagValue { Value = "High" });
+        tagConfig.AllowedValues.Add(new TagValue { Value = "Medium" });
+        tagConfig.AllowedValues.Add(new TagValue { Value = "Low" });
 
         // Act
-        await context.TagConfigurations.AddAsync(tagConfig);
+        await context.ProjectTags.AddAsync(tagConfig);
         await context.SaveChangesAsync();
 
         // Assert
-        var retrieved = await context.TagConfigurations
+        var retrieved = await context.ProjectTags
             .Include(tc => tc.AllowedValues)
             .FirstOrDefaultAsync(tc => tc.ProjectCode == "PROJ005" && tc.TagName == "Priority");
 
@@ -254,16 +254,16 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.SaveChangesAsync();
 
         // Create tag configurations with allowed values
-        var priorityTag = new TagConfiguration { ProjectCode = "PROJ006", TagName = "Priority" };
-        priorityTag.AllowedValues.Add(new TagAllowedValue { Value = "High" });
-        priorityTag.AllowedValues.Add(new TagAllowedValue { Value = "Low" });
+        var priorityTag = new ProjectTag { ProjectCode = "PROJ006", TagName = "Priority" };
+        priorityTag.AllowedValues.Add(new TagValue { Value = "High" });
+        priorityTag.AllowedValues.Add(new TagValue { Value = "Low" });
 
-        var componentTag = new TagConfiguration { ProjectCode = "PROJ006", TagName = "Component" };
-        componentTag.AllowedValues.Add(new TagAllowedValue { Value = "Frontend" });
-        componentTag.AllowedValues.Add(new TagAllowedValue { Value = "Backend" });
+        var componentTag = new ProjectTag { ProjectCode = "PROJ006", TagName = "Component" };
+        componentTag.AllowedValues.Add(new TagValue { Value = "Frontend" });
+        componentTag.AllowedValues.Add(new TagValue { Value = "Backend" });
 
-        await context.TagConfigurations.AddAsync(priorityTag);
-        await context.TagConfigurations.AddAsync(componentTag);
+        await context.ProjectTags.AddAsync(priorityTag);
+        await context.ProjectTags.AddAsync(componentTag);
         await context.SaveChangesAsync();
 
         // Get the IDs of specific allowed values
@@ -281,8 +281,8 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
             CompletionDate = DateOnly.FromDateTime(DateTime.Today),
             Status = TimeEntryStatus.NotReported
         };
-        timeEntry.Tags.Add(new TimeEntryTag { TagAllowedValueId = highPriorityValueId });
-        timeEntry.Tags.Add(new TimeEntryTag { TagAllowedValueId = frontendComponentValueId });
+        timeEntry.Tags.Add(new TimeEntryTag { TagValueId = highPriorityValueId });
+        timeEntry.Tags.Add(new TimeEntryTag { TagValueId = frontendComponentValueId });
 
         // Act
         await context.TimeEntries.AddAsync(timeEntry);
@@ -294,35 +294,35 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         // Assert
         var retrieved = await context.TimeEntries
             .Include(te => te.Tags)
-                .ThenInclude(t => t.TagAllowedValue)
-                    .ThenInclude(av => av.TagConfiguration)
+                .ThenInclude(t => t.TagValue)
+                    .ThenInclude(av => av.ProjectTag)
             .FirstOrDefaultAsync(te => te.Id == timeEntry.Id);
 
         retrieved.Should().NotBeNull();
         retrieved!.Tags.Should().HaveCount(2);
         retrieved.Tags.Should().Contain(t =>
-            t.TagAllowedValue.TagConfiguration.TagName == "Priority" &&
-            t.TagAllowedValue.Value == "High");
+            t.TagValue.ProjectTag.TagName == "Priority" &&
+            t.TagValue.Value == "High");
         retrieved.Tags.Should().Contain(t =>
-            t.TagAllowedValue.TagConfiguration.TagName == "Component" &&
-            t.TagAllowedValue.Value == "Frontend");
+            t.TagValue.ProjectTag.TagName == "Component" &&
+            t.TagValue.Value == "Frontend");
     }
 
     [Fact]
-    public async Task Project_Delete_CascadesTo_ProjectTasksAndTagConfigurations()
+    public async Task Project_Delete_CascadesTo_ProjectTasksAndProjectTags()
     {
         // Arrange
         using var context = _fixture.CreateNewContext();
 
         var project = new Project { Code = "PROJ007", Name = "Project 7", IsActive = true };
         var projectTask = new ProjectTask { ProjectCode = "PROJ007", TaskName = "Testing", IsActive = true };
-        var tagConfig = new TagConfiguration { ProjectCode = "PROJ007", TagName = "Type" };
-        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Unit" });
-        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Integration" });
+        var tagConfig = new ProjectTag { ProjectCode = "PROJ007", TagName = "Type" };
+        tagConfig.AllowedValues.Add(new TagValue { Value = "Unit" });
+        tagConfig.AllowedValues.Add(new TagValue { Value = "Integration" });
 
         await context.Projects.AddAsync(project);
         await context.ProjectTasks.AddAsync(projectTask);
-        await context.TagConfigurations.AddAsync(tagConfig);
+        await context.ProjectTags.AddAsync(tagConfig);
         await context.SaveChangesAsync();
 
         // Get the tag config ID for later assertion
@@ -337,17 +337,17 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
             .Where(pt => pt.ProjectCode == "PROJ007")
             .ToListAsync();
 
-        var remainingTagConfigs = await context.TagConfigurations
+        var remainingTagConfigs = await context.ProjectTags
             .Where(tc => tc.ProjectCode == "PROJ007")
             .ToListAsync();
 
-        var remainingAllowedValues = await context.TagAllowedValues
-            .Where(av => av.TagConfigurationId == tagConfigId)
+        var remainingAllowedValues = await context.TagValues
+            .Where(av => av.ProjectTagId == tagConfigId)
             .ToListAsync();
 
         remainingTasks.Should().BeEmpty("ProjectTasks should cascade delete");
-        remainingTagConfigs.Should().BeEmpty("TagConfigurations should cascade delete");
-        remainingAllowedValues.Should().BeEmpty("TagAllowedValues should cascade delete");
+        remainingTagConfigs.Should().BeEmpty("ProjectTags should cascade delete");
+        remainingAllowedValues.Should().BeEmpty("TagValues should cascade delete");
     }
 
     public void Dispose()

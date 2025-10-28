@@ -17,9 +17,9 @@ public class TimeEntryTag
     public Guid TimeEntryId { get; set; }
 
     /// <summary>
-    /// Foreign key to the allowed tag value (includes tag name via TagConfiguration).
+    /// Foreign key to the tag value (includes tag name via ProjectTag).
     /// </summary>
-    public int TagAllowedValueId { get; set; }
+    public int TagValueId { get; set; }
 
     /// <summary>
     /// Navigation property to the time entry.
@@ -27,7 +27,7 @@ public class TimeEntryTag
     public TimeEntry TimeEntry { get; set; } = null!;
 
     /// <summary>
-    /// Navigation property to the tag value (navigate to TagConfiguration for tag name).
+    /// Navigation property to the tag value (navigate to ProjectTag for tag name).
     /// </summary>
-    public TagAllowedValue TagAllowedValue { get; set; } = null!;
+    public TagValue TagValue { get; set; } = null!;
 }

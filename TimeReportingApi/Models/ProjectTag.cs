@@ -1,9 +1,10 @@
 namespace TimeReportingApi.Models;
 
 /// <summary>
-/// Defines available metadata tags per project with allowed values.
+/// Defines available metadata tags per project.
+/// Consistent naming: ProjectTask defines tasks, ProjectTag defines tags.
 /// </summary>
-public class TagConfiguration
+public class ProjectTag
 {
     public int Id { get; set; }
 
@@ -19,5 +20,5 @@ public class TagConfiguration
 
     // Navigation properties
     public Project Project { get; set; } = null!;
-    public List<TagAllowedValue> AllowedValues { get; set; } = new();
+    public List<TagValue> AllowedValues { get; set; } = new();
 }

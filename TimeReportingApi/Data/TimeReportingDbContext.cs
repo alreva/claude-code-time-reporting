@@ -16,9 +16,9 @@ public class TimeReportingDbContext : DbContext
     public DbSet<TimeEntry> TimeEntries { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
-    public DbSet<TagConfiguration> TagConfigurations { get; set; }
+    public DbSet<ProjectTag> ProjectTags { get; set; }
     public DbSet<TimeEntryTag> TimeEntryTags { get; set; }
-    public DbSet<TagAllowedValue> TagAllowedValues { get; set; }
+    public DbSet<TagValue> TagValues { get; set; }
 
     public override int SaveChanges()
     {
@@ -65,9 +65,9 @@ public class TimeReportingDbContext : DbContext
         ConfigureTimeEntry(modelBuilder);
         ConfigureProject(modelBuilder);
         ConfigureProjectTask(modelBuilder);
-        ConfigureTagConfiguration(modelBuilder);
+        ConfigureProjectTag(modelBuilder);
         ConfigureTimeEntryTag(modelBuilder);
-        ConfigureTagAllowedValue(modelBuilder);
+        ConfigureTagValue(modelBuilder);
     }
 
     private static void ConfigureTimeEntry(ModelBuilder modelBuilder)
@@ -194,7 +194,7 @@ public class TimeReportingDbContext : DbContext
                 .HasForeignKey(t => t.ProjectCode)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasMany(e => e.TagConfigurations)
+            entity.HasMany(e => e.Tags)
                 .WithOne(t => t.Project)
                 .HasForeignKey(t => t.ProjectCode)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -240,11 +240,11 @@ public class TimeReportingDbContext : DbContext
         });
     }
 
-    private static void ConfigureTagConfiguration(ModelBuilder modelBuilder)
+    private static void ConfigureProjectTag(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TagConfiguration>(entity =>
+        modelBuilder.Entity<ProjectTag>(entity =>
         {
-            entity.ToTable("tag_configurations");
+            entity.ToTable("project_tags");
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Id)
@@ -264,16 +264,16 @@ public class TimeReportingDbContext : DbContext
                 .HasColumnName("is_active");
 
             entity.HasMany(e => e.AllowedValues)
-                .WithOne(v => v.TagConfiguration)
-                .HasForeignKey(v => v.TagConfigurationId)
+                .WithOne(v => v.ProjectTag)
+                .HasForeignKey(v => v.ProjectTagId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.ProjectCode, e.TagName })
                 .IsUnique()
-                .HasDatabaseName("uq_tag_configurations_project_tag");
+                .HasDatabaseName("uq_project_tags_project_tag");
 
             entity.HasIndex(e => e.ProjectCode)
-                .HasDatabaseName("idx_tag_configurations_project");
+                .HasDatabaseName("idx_project_tags_project");
         });
     }
 
@@ -291,36 +291,36 @@ public class TimeReportingDbContext : DbContext
                 .HasColumnName("time_entry_id")
                 .IsRequired();
 
-            entity.Property(e => e.TagAllowedValueId)
-                .HasColumnName("tag_allowed_value_id")
+            entity.Property(e => e.TagValueId)
+                .HasColumnName("tag_value_id")
                 .IsRequired();
 
-            entity.HasOne(e => e.TagAllowedValue)
+            entity.HasOne(e => e.TagValue)
                 .WithMany()
-                .HasForeignKey(e => e.TagAllowedValueId)
+                .HasForeignKey(e => e.TagValueId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.TimeEntryId)
                 .HasDatabaseName("idx_time_entry_tags_entry");
 
-            entity.HasIndex(e => new { e.TimeEntryId, e.TagAllowedValueId })
+            entity.HasIndex(e => new { e.TimeEntryId, e.TagValueId })
                 .IsUnique()
                 .HasDatabaseName("uq_time_entry_tags_entry_value");
         });
     }
 
-    private static void ConfigureTagAllowedValue(ModelBuilder modelBuilder)
+    private static void ConfigureTagValue(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TagAllowedValue>(entity =>
+        modelBuilder.Entity<TagValue>(entity =>
         {
-            entity.ToTable("tag_allowed_values");
+            entity.ToTable("tag_values");
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Id)
                 .HasColumnName("id");
 
-            entity.Property(e => e.TagConfigurationId)
-                .HasColumnName("tag_configuration_id")
+            entity.Property(e => e.ProjectTagId)
+                .HasColumnName("project_tag_id")
                 .IsRequired();
 
             entity.Property(e => e.Value)
@@ -328,8 +328,8 @@ public class TimeReportingDbContext : DbContext
                 .HasMaxLength(100)
                 .IsRequired();
 
-            entity.HasIndex(e => e.TagConfigurationId)
-                .HasDatabaseName("idx_tag_allowed_values_config");
+            entity.HasIndex(e => e.ProjectTagId)
+                .HasDatabaseName("idx_tag_values_project_tag");
         });
     }
 }

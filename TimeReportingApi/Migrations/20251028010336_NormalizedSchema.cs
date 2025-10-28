@@ -27,6 +27,27 @@ namespace TimeReportingApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "project_tags",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    tag_name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_project_tags", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_project_tags_projects_project_code",
+                        column: x => x.project_code,
+                        principalTable: "projects",
+                        principalColumn: "code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "project_tasks",
                 columns: table => new
                 {
@@ -48,23 +69,22 @@ namespace TimeReportingApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "tag_configurations",
+                name: "tag_values",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    tag_name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    is_active = table.Column<bool>(type: "boolean", nullable: false)
+                    project_tag_id = table.Column<int>(type: "integer", nullable: false),
+                    value = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tag_configurations", x => x.id);
+                    table.PrimaryKey("PK_tag_values", x => x.id);
                     table.ForeignKey(
-                        name: "FK_tag_configurations_projects_project_code",
-                        column: x => x.project_code,
-                        principalTable: "projects",
-                        principalColumn: "code",
+                        name: "FK_tag_values_project_tags_project_tag_id",
+                        column: x => x.project_tag_id,
+                        principalTable: "project_tags",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -109,41 +129,21 @@ namespace TimeReportingApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "tag_allowed_values",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    tag_configuration_id = table.Column<int>(type: "integer", nullable: false),
-                    value = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_tag_allowed_values", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_tag_allowed_values_tag_configurations_tag_configuration_id",
-                        column: x => x.tag_configuration_id,
-                        principalTable: "tag_configurations",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "time_entry_tags",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     time_entry_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    tag_allowed_value_id = table.Column<int>(type: "integer", nullable: false)
+                    tag_value_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_time_entry_tags", x => x.id);
                     table.ForeignKey(
-                        name: "FK_time_entry_tags_tag_allowed_values_tag_allowed_value_id",
-                        column: x => x.tag_allowed_value_id,
-                        principalTable: "tag_allowed_values",
+                        name: "FK_time_entry_tags_tag_values_tag_value_id",
+                        column: x => x.tag_value_id,
+                        principalTable: "tag_values",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -153,6 +153,17 @@ namespace TimeReportingApi.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "idx_project_tags_project",
+                table: "project_tags",
+                column: "project_code");
+
+            migrationBuilder.CreateIndex(
+                name: "uq_project_tags_project_tag",
+                table: "project_tags",
+                columns: new[] { "project_code", "tag_name" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "idx_project_tasks_project",
@@ -177,20 +188,9 @@ namespace TimeReportingApi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "idx_tag_allowed_values_config",
-                table: "tag_allowed_values",
-                column: "tag_configuration_id");
-
-            migrationBuilder.CreateIndex(
-                name: "idx_tag_configurations_project",
-                table: "tag_configurations",
-                column: "project_code");
-
-            migrationBuilder.CreateIndex(
-                name: "uq_tag_configurations_project_tag",
-                table: "tag_configurations",
-                columns: new[] { "project_code", "tag_name" },
-                unique: true);
+                name: "idx_tag_values_project_tag",
+                table: "tag_values",
+                column: "project_tag_id");
 
             migrationBuilder.CreateIndex(
                 name: "idx_time_entries_project_date",
@@ -218,14 +218,14 @@ namespace TimeReportingApi.Migrations
                 column: "time_entry_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_time_entry_tags_tag_allowed_value_id",
+                name: "IX_time_entry_tags_tag_value_id",
                 table: "time_entry_tags",
-                column: "tag_allowed_value_id");
+                column: "tag_value_id");
 
             migrationBuilder.CreateIndex(
                 name: "uq_time_entry_tags_entry_value",
                 table: "time_entry_tags",
-                columns: new[] { "time_entry_id", "tag_allowed_value_id" },
+                columns: new[] { "time_entry_id", "tag_value_id" },
                 unique: true);
         }
 
@@ -236,13 +236,13 @@ namespace TimeReportingApi.Migrations
                 name: "time_entry_tags");
 
             migrationBuilder.DropTable(
-                name: "tag_allowed_values");
+                name: "tag_values");
 
             migrationBuilder.DropTable(
                 name: "time_entries");
 
             migrationBuilder.DropTable(
-                name: "tag_configurations");
+                name: "project_tags");
 
             migrationBuilder.DropTable(
                 name: "project_tasks");

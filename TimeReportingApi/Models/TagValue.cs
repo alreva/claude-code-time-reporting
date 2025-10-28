@@ -1,10 +1,10 @@
 namespace TimeReportingApi.Models;
 
 /// <summary>
-/// Represents an allowed value for a tag in a project's tag configuration.
-/// Fully relational design for database-agnostic flexibility.
+/// Represents an allowed value for a project tag.
+/// Consistent naming: ProjectTask → TaskName, ProjectTag → TagValue.
 /// </summary>
-public class TagAllowedValue
+public class TagValue
 {
     /// <summary>
     /// Primary key.
@@ -12,9 +12,9 @@ public class TagAllowedValue
     public int Id { get; set; }
 
     /// <summary>
-    /// Foreign key to the tag configuration.
+    /// Foreign key to the project tag.
     /// </summary>
-    public int TagConfigurationId { get; set; }
+    public int ProjectTagId { get; set; }
 
     /// <summary>
     /// The allowed value (e.g., "High", "Medium", "Low" for Priority tag).
@@ -22,7 +22,7 @@ public class TagAllowedValue
     public string Value { get; set; } = string.Empty;
 
     /// <summary>
-    /// Navigation property to the tag configuration.
+    /// Navigation property to the project tag.
     /// </summary>
-    public TagConfiguration TagConfiguration { get; set; } = null!;
+    public ProjectTag ProjectTag { get; set; } = null!;
 }
