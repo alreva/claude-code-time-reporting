@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 14
+**Completed:** 19
 **In Progress:** 0
-**Pending:** 47
+**Pending:** 42
 
 ---
 
@@ -77,11 +77,11 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 4.1 | LogTime Mutation | Implement `logTime(input)` mutation with validation | 2 hrs | ☐ Pending | Create |
-| 4.2 | UpdateTimeEntry Mutation | Implement `updateTimeEntry(id, input)` mutation | 1-2 hrs | ☐ Pending | Create |
-| 4.3 | DeleteTimeEntry Mutation | Implement `deleteTimeEntry(id)` mutation with status check | 1 hr | ☐ Pending | Create |
-| 4.4 | Validation Service | Create service to validate project codes, tasks, and tags | 2 hrs | ☐ Pending | Create |
-| 4.5 | Mutation Tests | Write unit tests for create, update, delete mutations | 1-2 hrs | ☐ Pending | Create |
+| 4.1 | LogTime Mutation | Implement `logTime(input)` mutation with validation | 2 hrs | ☑ Completed | Create |
+| 4.2 | UpdateTimeEntry Mutation | Implement `updateTimeEntry(id, input)` mutation | 1-2 hrs | ☑ Completed | Create |
+| 4.3 | DeleteTimeEntry Mutation | Implement `deleteTimeEntry(id)` mutation with status check | 1 hr | ☑ Completed | Create |
+| 4.4 | Validation Service | Create service to validate project codes, tasks, and tags | 2 hrs | ☑ Completed | Create |
+| 4.5 | Mutation Tests | Write unit tests for create, update, delete mutations | 1-2 hrs | ☑ Completed | Create |
 
 **Phase 4 Total:** 7-9 hours
 
@@ -279,6 +279,7 @@
 
 - [x] **Milestone 1:** Database Ready (Phase 1 complete)
 - [x] **Milestone 2:** API Core Ready (Phases 2-3 complete) ✅
+- [x] **Milestone 2.5:** API Mutations Part 1 (Phase 4 complete) ✅
 - [ ] **Milestone 3:** API Full Feature (Phases 4-6 complete)
 - [ ] **Milestone 4:** MCP Server Ready (Phases 7-9 complete)
 - [ ] **Milestone 5:** Auto-tracking Ready (Phase 10 complete)
@@ -286,9 +287,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 4, Task 4.1 (LogTime Mutation)
+**Currently On:** Phase 5, Task 5.1 (MoveTaskToProject Mutation)
 **Last Updated:** 2025-10-28
-**Overall Progress:** 23.0% (14/61 tasks)
+**Overall Progress:** 31.1% (19/61 tasks)
 
 ---
 
