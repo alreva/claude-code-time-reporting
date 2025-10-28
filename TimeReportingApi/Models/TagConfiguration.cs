@@ -15,10 +15,9 @@ public class TagConfiguration
     [MaxLength(20)]
     public string TagName { get; set; } = string.Empty;
 
-    public List<string> AllowedValues { get; set; } = new();
-
     public bool IsActive { get; set; } = true;
 
-    // Navigation property
+    // Navigation properties
     public Project Project { get; set; } = null!;
+    public List<TagAllowedValue> AllowedValues { get; set; } = new();
 }

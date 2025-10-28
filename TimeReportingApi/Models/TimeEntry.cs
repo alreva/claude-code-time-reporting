@@ -35,8 +35,6 @@ public class TimeEntry
 
     public string? DeclineComment { get; set; }
 
-    public List<Tag> Tags { get; set; } = new();
-
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
@@ -44,6 +42,7 @@ public class TimeEntry
     [MaxLength(100)]
     public string? UserId { get; set; }
 
-    // Navigation property
+    // Navigation properties
     public Project Project { get; set; } = null!;
+    public List<TimeEntryTag> Tags { get; set; } = new();
 }

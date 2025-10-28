@@ -1,5 +1,3 @@
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TimeReportingApi.Models;
 
 namespace TimeReportingApi.Data;
@@ -19,6 +17,8 @@ public class TimeReportingDbContext : DbContext
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<TagConfiguration> TagConfigurations { get; set; }
+    public DbSet<TimeEntryTag> TimeEntryTags { get; set; }
+    public DbSet<TagAllowedValue> TagAllowedValues { get; set; }
 
     public override int SaveChanges()
     {
@@ -66,6 +66,8 @@ public class TimeReportingDbContext : DbContext
         ConfigureProject(modelBuilder);
         ConfigureProjectTask(modelBuilder);
         ConfigureTagConfiguration(modelBuilder);
+        ConfigureTimeEntryTag(modelBuilder);
+        ConfigureTagAllowedValue(modelBuilder);
     }
 
     private static void ConfigureTimeEntry(ModelBuilder modelBuilder)
@@ -121,18 +123,6 @@ public class TimeReportingDbContext : DbContext
             entity.Property(e => e.DeclineComment)
                 .HasColumnName("decline_comment");
 
-            entity.Property(e => e.Tags)
-                .HasColumnName("tags")
-                .HasColumnType("jsonb")
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<List<Models.Tag>>(v, (JsonSerializerOptions?)null) ?? new List<Models.Tag>())
-                .Metadata.SetValueComparer(
-                    new ValueComparer<List<Models.Tag>>(
-                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions?)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions?)null),
-                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                        c => c.ToList()));
-
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at");
 
@@ -146,6 +136,11 @@ public class TimeReportingDbContext : DbContext
             entity.HasOne(e => e.Project)
                 .WithMany(p => p.TimeEntries)
                 .HasForeignKey(e => e.ProjectCode);
+
+            entity.HasMany(e => e.Tags)
+                .WithOne(t => t.TimeEntry)
+                .HasForeignKey(t => t.TimeEntryId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.ProjectCode, e.StartDate })
                 .HasDatabaseName("idx_time_entries_project_date");
@@ -261,20 +256,13 @@ public class TimeReportingDbContext : DbContext
                 .HasMaxLength(20)
                 .IsRequired();
 
-            entity.Property(e => e.AllowedValues)
-                .HasColumnName("allowed_values")
-                .HasColumnType("jsonb")
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
-                .Metadata.SetValueComparer(
-                    new ValueComparer<List<string>>(
-                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions?)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions?)null),
-                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                        c => c.ToList()));
-
             entity.Property(e => e.IsActive)
                 .HasColumnName("is_active");
+
+            entity.HasMany(e => e.AllowedValues)
+                .WithOne(v => v.TagConfiguration)
+                .HasForeignKey(v => v.TagConfigurationId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.ProjectCode, e.TagName })
                 .IsUnique()
@@ -282,6 +270,62 @@ public class TimeReportingDbContext : DbContext
 
             entity.HasIndex(e => e.ProjectCode)
                 .HasDatabaseName("idx_tag_configurations_project");
+        });
+    }
+
+    private static void ConfigureTimeEntryTag(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TimeEntryTag>(entity =>
+        {
+            entity.ToTable("time_entry_tags");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id");
+
+            entity.Property(e => e.TimeEntryId)
+                .HasColumnName("time_entry_id")
+                .IsRequired();
+
+            entity.Property(e => e.Name)
+                .HasColumnName("name")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.Value)
+                .HasColumnName("value")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.HasIndex(e => e.TimeEntryId)
+                .HasDatabaseName("idx_time_entry_tags_entry");
+
+            entity.HasIndex(e => new { e.TimeEntryId, e.Name })
+                .HasDatabaseName("idx_time_entry_tags_entry_name");
+        });
+    }
+
+    private static void ConfigureTagAllowedValue(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TagAllowedValue>(entity =>
+        {
+            entity.ToTable("tag_allowed_values");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id");
+
+            entity.Property(e => e.TagConfigurationId)
+                .HasColumnName("tag_configuration_id")
+                .IsRequired();
+
+            entity.Property(e => e.Value)
+                .HasColumnName("value")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.HasIndex(e => e.TagConfigurationId)
+                .HasDatabaseName("idx_tag_allowed_values_config");
         });
     }
 }

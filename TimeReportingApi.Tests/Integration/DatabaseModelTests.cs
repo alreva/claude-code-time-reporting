@@ -192,7 +192,7 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
     }
 
     [Fact]
-    public async Task TagConfiguration_CanCreateWithJsonbAllowedValues()
+    public async Task TagConfiguration_CanCreateWithAllowedValues()
     {
         // Arrange
         using var context = _fixture.CreateNewContext();
@@ -204,9 +204,11 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         var tagConfig = new TagConfiguration
         {
             ProjectCode = "PROJ005",
-            TagName = "Priority",
-            AllowedValues = new List<string> { "High", "Medium", "Low" }
+            TagName = "Priority"
         };
+        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "High" });
+        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Medium" });
+        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Low" });
 
         // Act
         await context.TagConfigurations.AddAsync(tagConfig);
@@ -214,14 +216,16 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
 
         // Assert
         var retrieved = await context.TagConfigurations
+            .Include(tc => tc.AllowedValues)
             .FirstOrDefaultAsync(tc => tc.ProjectCode == "PROJ005" && tc.TagName == "Priority");
 
         retrieved.Should().NotBeNull();
-        retrieved!.AllowedValues.Should().BeEquivalentTo(new[] { "High", "Medium", "Low" });
+        retrieved!.AllowedValues.Should().HaveCount(3);
+        retrieved.AllowedValues.Select(v => v.Value).Should().BeEquivalentTo(new[] { "High", "Medium", "Low" });
     }
 
     [Fact]
-    public async Task TimeEntry_WithTags_CanStoreJsonbData()
+    public async Task TimeEntry_WithTags_CanStoreRelationalData()
     {
         // Arrange
         using var context = _fixture.CreateNewContext();
@@ -229,12 +233,6 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         var project = new Project { Code = "PROJ006", Name = "Project 6", IsActive = true };
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
-
-        var tags = new List<Tag>
-        {
-            new Tag { Name = "Priority", Value = "High" },
-            new Tag { Name = "Component", Value = "Frontend" }
-        };
 
         var timeEntry = new TimeEntry
         {
@@ -245,9 +243,10 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
             CompletionDate = DateOnly.FromDateTime(DateTime.Today),
-            Status = TimeEntryStatus.NotReported,
-            Tags = tags
+            Status = TimeEntryStatus.NotReported
         };
+        timeEntry.Tags.Add(new TimeEntryTag { Name = "Priority", Value = "High" });
+        timeEntry.Tags.Add(new TimeEntryTag { Name = "Component", Value = "Frontend" });
 
         // Act
         await context.TimeEntries.AddAsync(timeEntry);
@@ -257,11 +256,14 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         context.ChangeTracker.Clear();
 
         // Assert
-        var retrieved = await context.TimeEntries.FindAsync(timeEntry.Id);
+        var retrieved = await context.TimeEntries
+            .Include(te => te.Tags)
+            .FirstOrDefaultAsync(te => te.Id == timeEntry.Id);
+
         retrieved.Should().NotBeNull();
         retrieved!.Tags.Should().HaveCount(2);
-        retrieved.Tags.Should().ContainEquivalentOf(new Tag { Name = "Priority", Value = "High" });
-        retrieved.Tags.Should().ContainEquivalentOf(new Tag { Name = "Component", Value = "Frontend" });
+        retrieved.Tags.Should().Contain(t => t.Name == "Priority" && t.Value == "High");
+        retrieved.Tags.Should().Contain(t => t.Name == "Component" && t.Value == "Frontend");
     }
 
     [Fact]
@@ -272,12 +274,17 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
 
         var project = new Project { Code = "PROJ007", Name = "Project 7", IsActive = true };
         var projectTask = new ProjectTask { ProjectCode = "PROJ007", TaskName = "Testing", IsActive = true };
-        var tagConfig = new TagConfiguration { ProjectCode = "PROJ007", TagName = "Type", AllowedValues = new List<string> { "Unit", "Integration" } };
+        var tagConfig = new TagConfiguration { ProjectCode = "PROJ007", TagName = "Type" };
+        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Unit" });
+        tagConfig.AllowedValues.Add(new TagAllowedValue { Value = "Integration" });
 
         await context.Projects.AddAsync(project);
         await context.ProjectTasks.AddAsync(projectTask);
         await context.TagConfigurations.AddAsync(tagConfig);
         await context.SaveChangesAsync();
+
+        // Get the tag config ID for later assertion
+        var tagConfigId = tagConfig.Id;
 
         // Act - Delete project
         context.Projects.Remove(project);
@@ -292,8 +299,13 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
             .Where(tc => tc.ProjectCode == "PROJ007")
             .ToListAsync();
 
+        var remainingAllowedValues = await context.TagAllowedValues
+            .Where(av => av.TagConfigurationId == tagConfigId)
+            .ToListAsync();
+
         remainingTasks.Should().BeEmpty("ProjectTasks should cascade delete");
         remainingTagConfigs.Should().BeEmpty("TagConfigurations should cascade delete");
+        remainingAllowedValues.Should().BeEmpty("TagAllowedValues should cascade delete");
     }
 
     public void Dispose()

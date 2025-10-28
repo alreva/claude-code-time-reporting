@@ -3,10 +3,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace TimeReportingApi.Data.Migrations
+namespace TimeReportingApi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class RelationalTagSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,7 +55,6 @@ namespace TimeReportingApi.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     tag_name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    allowed_values = table.Column<string>(type: "jsonb", nullable: false),
                     is_active = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -84,7 +83,6 @@ namespace TimeReportingApi.Data.Migrations
                     completion_date = table.Column<DateOnly>(type: "date", nullable: false),
                     status = table.Column<string>(type: "text", nullable: false),
                     decline_comment = table.Column<string>(type: "text", nullable: true),
-                    tags = table.Column<string>(type: "jsonb", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     user_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
@@ -101,6 +99,47 @@ namespace TimeReportingApi.Data.Migrations
                         column: x => x.project_code,
                         principalTable: "projects",
                         principalColumn: "code",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tag_allowed_values",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    tag_configuration_id = table.Column<int>(type: "integer", nullable: false),
+                    value = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tag_allowed_values", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tag_allowed_values_tag_configurations_tag_configuration_id",
+                        column: x => x.tag_configuration_id,
+                        principalTable: "tag_configurations",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "time_entry_tags",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    time_entry_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    value = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_time_entry_tags", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_time_entry_tags_time_entries_time_entry_id",
+                        column: x => x.time_entry_id,
+                        principalTable: "time_entries",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -127,6 +166,11 @@ namespace TimeReportingApi.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "idx_tag_allowed_values_config",
+                table: "tag_allowed_values",
+                column: "tag_configuration_id");
+
+            migrationBuilder.CreateIndex(
                 name: "idx_tag_configurations_project",
                 table: "tag_configurations",
                 column: "project_code");
@@ -151,6 +195,16 @@ namespace TimeReportingApi.Data.Migrations
                 name: "idx_time_entries_user",
                 table: "time_entries",
                 columns: new[] { "user_id", "start_date" });
+
+            migrationBuilder.CreateIndex(
+                name: "idx_time_entry_tags_entry",
+                table: "time_entry_tags",
+                column: "time_entry_id");
+
+            migrationBuilder.CreateIndex(
+                name: "idx_time_entry_tags_entry_name",
+                table: "time_entry_tags",
+                columns: new[] { "time_entry_id", "name" });
         }
 
         /// <inheritdoc />
@@ -158,6 +212,12 @@ namespace TimeReportingApi.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "project_tasks");
+
+            migrationBuilder.DropTable(
+                name: "tag_allowed_values");
+
+            migrationBuilder.DropTable(
+                name: "time_entry_tags");
 
             migrationBuilder.DropTable(
                 name: "tag_configurations");

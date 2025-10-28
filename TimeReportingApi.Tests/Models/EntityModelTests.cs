@@ -72,9 +72,9 @@ public class EntityModelTests
     public void TimeEntry_ShouldSupportTagsCollection()
     {
         // Arrange
-        var entry = new TimeEntry();
-        var tag1 = new Tag { Name = "Environment", Value = "Production" };
-        var tag2 = new Tag { Name = "Billable", Value = "Yes" };
+        var entry = new TimeEntry { Id = Guid.NewGuid() };
+        var tag1 = new TimeEntryTag { TimeEntryId = entry.Id, Name = "Environment", Value = "Production" };
+        var tag2 = new TimeEntryTag { TimeEntryId = entry.Id, Name = "Billable", Value = "Yes" };
 
         // Act
         entry.Tags.Add(tag1);
@@ -99,18 +99,39 @@ public class EntityModelTests
     }
 
     [Fact]
-    public void Tag_ShouldHaveNameAndValue()
+    public void TimeEntryTag_ShouldHaveRequiredProperties()
     {
         // Arrange & Act
-        var tag = new Tag
+        var tag = new TimeEntryTag
         {
+            Id = 1,
+            TimeEntryId = Guid.NewGuid(),
             Name = "Environment",
             Value = "Production"
         };
 
         // Assert
+        tag.Id.Should().Be(1);
+        tag.TimeEntryId.Should().NotBe(Guid.Empty);
         tag.Name.Should().Be("Environment");
         tag.Value.Should().Be("Production");
+    }
+
+    [Fact]
+    public void TagAllowedValue_ShouldHaveRequiredProperties()
+    {
+        // Arrange & Act
+        var allowedValue = new TagAllowedValue
+        {
+            Id = 1,
+            TagConfigurationId = 1,
+            Value = "Production"
+        };
+
+        // Assert
+        allowedValue.Id.Should().Be(1);
+        allowedValue.TagConfigurationId.Should().Be(1);
+        allowedValue.Value.Should().Be("Production");
     }
 
     [Fact]
@@ -230,16 +251,16 @@ public class EntityModelTests
     public void TagConfiguration_ShouldSupportAllowedValuesCollection()
     {
         // Arrange
-        var tagConfig = new TagConfiguration
-        {
-            AllowedValues = new List<string> { "Production", "Staging", "Development" }
-        };
+        var tagConfig = new TagConfiguration { Id = 1 };
+        tagConfig.AllowedValues.Add(new TagAllowedValue { TagConfigurationId = 1, Value = "Production" });
+        tagConfig.AllowedValues.Add(new TagAllowedValue { TagConfigurationId = 1, Value = "Staging" });
+        tagConfig.AllowedValues.Add(new TagAllowedValue { TagConfigurationId = 1, Value = "Development" });
 
         // Act & Assert
         tagConfig.AllowedValues.Should().HaveCount(3);
-        tagConfig.AllowedValues.Should().Contain("Production");
-        tagConfig.AllowedValues.Should().Contain("Staging");
-        tagConfig.AllowedValues.Should().Contain("Development");
+        tagConfig.AllowedValues.Should().Contain(v => v.Value == "Production");
+        tagConfig.AllowedValues.Should().Contain(v => v.Value == "Staging");
+        tagConfig.AllowedValues.Should().Contain(v => v.Value == "Development");
     }
 
     [Fact]
