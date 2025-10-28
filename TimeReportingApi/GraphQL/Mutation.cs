@@ -250,4 +250,83 @@ public class Mutation
 
         return true;
     }
+
+    /// <summary>
+    /// Move a time entry to a different project and/or task.
+    /// This requires revalidation of the project and task, and clears any existing tags
+    /// since tag configurations are project-specific.
+    /// Only allowed for entries in NOT_REPORTED or DECLINED status.
+    /// ADR 0001: Uses navigation properties only for Project and ProjectTask updates.
+    /// </summary>
+    public async Task<TimeEntry> MoveTaskToProject(
+        Guid entryId,
+        string newProjectCode,
+        string newTask,
+        [Service] ValidationService validator,
+        [Service] TimeReportingDbContext context)
+    {
+        // Load the existing entry with all navigation properties
+        var entry = await context.TimeEntries
+            .Include(e => e.Project)
+            .Include(e => e.ProjectTask)
+            .Include(e => e.Tags)
+                .ThenInclude(t => t.TagValue)
+                    .ThenInclude(tv => tv.ProjectTag)
+            .FirstOrDefaultAsync(e => e.Id == entryId);
+
+        if (entry == null)
+        {
+            throw new Exceptions.ValidationException($"Time entry with ID '{entryId}' not found", "id");
+        }
+
+        // Check status - only NOT_REPORTED and DECLINED can be moved
+        if (entry.Status == TimeEntryStatus.Submitted)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Cannot move time entry in SUBMITTED status. Entry must be APPROVED or DECLINED first.");
+        }
+
+        if (entry.Status == TimeEntryStatus.Approved)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Cannot move time entry in APPROVED status. Approved entries are immutable.");
+        }
+
+        // Validate the new project and task
+        await validator.ValidateProjectAsync(newProjectCode);
+        await validator.ValidateTaskAsync(newProjectCode, newTask);
+
+        // Load the new project entity - ADR 0001: Load entity first
+        var newProject = await context.Projects.FindAsync(newProjectCode);
+        if (newProject == null)
+        {
+            throw new Exceptions.ValidationException($"Project '{newProjectCode}' not found", "projectCode");
+        }
+
+        // Load the new task entity - ADR 0001: Load entity first
+        var newProjectTask = await context.ProjectTasks
+            .FirstAsync(t => EF.Property<string>(t, "ProjectCode") == newProjectCode
+                          && t.TaskName == newTask);
+
+        // Get the current project code to check if project is changing
+        var currentProjectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue;
+
+        // If moving to a different project, clear all tags
+        // Tags are project-specific and won't be valid in the new project
+        if (currentProjectCode != newProjectCode)
+        {
+            entry.Tags.Clear();
+        }
+
+        // Update the project and task - ADR 0001: Set navigation properties, EF fills shadow FKs
+        entry.Project = newProject;
+        entry.ProjectTask = newProjectTask;
+
+        // Update timestamp
+        entry.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+
+        return entry;
+    }
 }
