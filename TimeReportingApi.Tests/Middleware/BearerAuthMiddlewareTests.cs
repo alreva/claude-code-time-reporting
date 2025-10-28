@@ -16,7 +16,7 @@ public class BearerAuthMiddlewareTests : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public async Task GraphQL_WithValidToken_ShouldAllowRequest()
+    public async Task GraphQL_GET_WithValidToken_ShouldAllowRequest()
     {
         // Arrange
         var client = _factory.CreateDefaultClient(new AuthenticationHandler(_validToken));
@@ -29,59 +29,17 @@ public class BearerAuthMiddlewareTests : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public async Task GraphQL_WithoutAuthorizationHeader_ShouldReturn401()
+    public async Task GraphQL_GET_WithoutToken_ShouldAllowRequest_ForPlayground()
     {
         // Arrange
         var client = _factory.CreateClient();
-        // No Authorization header set
+        // No Authorization header - GET requests allowed for GraphQL Playground UI
 
         // Act
         var response = await client.GetAsync("/graphql");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task GraphQL_WithInvalidToken_ShouldReturn401()
-    {
-        // Arrange
-        var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "invalid-token");
-
-        // Act
-        var response = await client.GetAsync("/graphql");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task GraphQL_WithMalformedAuthorizationHeader_ShouldReturn401()
-    {
-        // Arrange
-        var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", "NotBearer invalid-format");
-
-        // Act
-        var response = await client.GetAsync("/graphql");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task GraphQL_WithEmptyToken_ShouldReturn401()
-    {
-        // Arrange
-        var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "");
-
-        // Act
-        var response = await client.GetAsync("/graphql");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
