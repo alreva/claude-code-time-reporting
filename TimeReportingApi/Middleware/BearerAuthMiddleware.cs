@@ -23,6 +23,15 @@ public class BearerAuthMiddleware
             return;
         }
 
+        // Allow GET requests to /graphql for Nitro IDE interface
+        // Only POST requests (GraphQL operations) require authentication
+        if (context.Request.Path.StartsWithSegments("/graphql") &&
+            context.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
+        {
+            await _next(context);
+            return;
+        }
+
         // Get expected token from configuration
         var expectedToken = _configuration["Authentication:BearerToken"];
         if (string.IsNullOrEmpty(expectedToken))

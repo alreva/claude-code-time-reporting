@@ -59,6 +59,12 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.2" />
   </ItemGroup>
 
+  <ItemGroup Label="Configuration Dependencies">
+    <!-- Configuration for CLI tools -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.1" />
+  </ItemGroup>
+
   <ItemGroup Label="Future Dependencies - Commented Out">
     <!-- These will be needed in Phase 4-5 when implementing business logic -->
     <!--

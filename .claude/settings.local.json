@@ -19,6 +19,7 @@
       "SlashCommand(/db-psql)",
       "SlashCommand(/status)",
       "SlashCommand(/deploy)",
+      "SlashCommand(/seed-db)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git status:*)",

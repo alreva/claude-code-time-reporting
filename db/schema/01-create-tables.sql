@@ -28,25 +28,39 @@ CREATE TABLE IF NOT EXISTS project_tasks (
         UNIQUE (project_code, task_name)
 );
 
--- Table: tag_configurations
-CREATE TABLE IF NOT EXISTS tag_configurations (
+-- Table: project_tags (renamed from tag_configurations for naming consistency)
+CREATE TABLE IF NOT EXISTS project_tags (
     id SERIAL PRIMARY KEY,
     project_code VARCHAR(10) NOT NULL,
     tag_name VARCHAR(20) NOT NULL,
-    allowed_values JSONB NOT NULL DEFAULT '[]',
+    is_required BOOLEAN NOT NULL DEFAULT false,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    CONSTRAINT fk_tag_configurations_project
+    CONSTRAINT fk_project_tags_project
         FOREIGN KEY (project_code)
         REFERENCES projects(code)
         ON DELETE CASCADE,
-    CONSTRAINT uq_tag_configurations_project_tag
+    CONSTRAINT uq_project_tags_project_tag
         UNIQUE (project_code, tag_name)
+);
+
+-- Table: tag_values (allowed values for each tag)
+CREATE TABLE IF NOT EXISTS tag_values (
+    id SERIAL PRIMARY KEY,
+    project_tag_id INTEGER NOT NULL,
+    value VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_tag_values_project_tag
+        FOREIGN KEY (project_tag_id)
+        REFERENCES project_tags(id)
+        ON DELETE CASCADE,
+    CONSTRAINT uq_tag_values_tag_value
+        UNIQUE (project_tag_id, value)
 );
 
 -- Table: time_entries
 CREATE TABLE IF NOT EXISTS time_entries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_code VARCHAR(10) NOT NULL,
+    project_task_id INTEGER NOT NULL,
     task VARCHAR(100) NOT NULL,
     issue_id VARCHAR(30),
     standard_hours DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -63,6 +77,10 @@ CREATE TABLE IF NOT EXISTS time_entries (
     CONSTRAINT fk_time_entries_project
         FOREIGN KEY (project_code)
         REFERENCES projects(code),
+    CONSTRAINT fk_time_entries_project_task
+        FOREIGN KEY (project_task_id)
+        REFERENCES project_tasks(id)
+        ON DELETE RESTRICT,
     CONSTRAINT chk_standard_hours_positive
         CHECK (standard_hours >= 0),
     CONSTRAINT chk_overtime_hours_positive
@@ -89,8 +107,11 @@ CREATE INDEX IF NOT EXISTS idx_projects_active
 CREATE INDEX IF NOT EXISTS idx_project_tasks_project
     ON project_tasks(project_code);
 
-CREATE INDEX IF NOT EXISTS idx_tag_configurations_project
-    ON tag_configurations(project_code);
+CREATE INDEX IF NOT EXISTS idx_project_tags_project
+    ON project_tags(project_code);
+
+CREATE INDEX IF NOT EXISTS idx_tag_values_project_tag
+    ON tag_values(project_tag_id);
 
 -- Trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -114,9 +135,9 @@ CREATE TRIGGER update_time_entries_updated_at
 -- Comments for documentation
 COMMENT ON TABLE projects IS 'Available projects for time tracking';
 COMMENT ON TABLE project_tasks IS 'Allowed tasks per project';
-COMMENT ON TABLE tag_configurations IS 'Metadata tag configurations per project';
+COMMENT ON TABLE project_tags IS 'Metadata tag configurations per project';
+COMMENT ON TABLE tag_values IS 'Allowed values for project tags';
 COMMENT ON TABLE time_entries IS 'Individual time log entries';
 
 COMMENT ON COLUMN time_entries.status IS 'Workflow status: NOT_REPORTED, SUBMITTED, APPROVED, DECLINED';
 COMMENT ON COLUMN time_entries.tags IS 'JSONB array of {name, value} objects';
-COMMENT ON COLUMN tag_configurations.allowed_values IS 'JSONB array of allowed string values';

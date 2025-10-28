@@ -173,6 +173,21 @@ public class ProjectTag
     public string TagName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Indicates whether this tag is required when creating or updating time entries.
+    /// </summary>
+    /// <remarks>
+    /// <para><strong>Business Rules:</strong></para>
+    /// <list type="bullet">
+    /// <item><description>Required tags must be provided when logging time</description></item>
+    /// <item><description>Optional tags can be omitted</description></item>
+    /// <item><description>Used for enforcing project-specific metadata requirements</description></item>
+    /// </list>
+    /// <para><strong>Example:</strong> "Priority" tag marked as required for client projects</para>
+    /// <para><strong>Database Column:</strong> is_required (boolean, NOT NULL, DEFAULT false)</para>
+    /// </remarks>
+    public bool IsRequired { get; set; } = false;
+
+    /// <summary>
     /// Indicates whether the tag is currently active and can be used for new time entries.
     /// </summary>
     /// <remarks>

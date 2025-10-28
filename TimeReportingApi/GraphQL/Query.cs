@@ -47,15 +47,17 @@ public class Query
     }
 
     /// <summary>
-    /// Get a single project by code.
+    /// Get a single project by code with all navigation properties.
     /// Returns null if project not found.
     /// </summary>
-    [UseProjection]
-    [UseSingleOrDefault]
-    public IQueryable<Project> GetProject(
+    public async Task<Project?> GetProject(
         string code,
         [Service] TimeReportingDbContext context)
     {
-        return context.Projects.Where(p => p.Code == code);
+        return await context.Projects
+            .Include(p => p.AvailableTasks)
+            .Include(p => p.Tags)
+                .ThenInclude(t => t.AllowedValues)
+            .FirstOrDefaultAsync(p => p.Code == code);
     }
 }

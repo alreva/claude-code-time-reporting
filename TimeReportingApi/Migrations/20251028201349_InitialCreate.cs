@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TimeReportingApi.Migrations
 {
     /// <inheritdoc />
-    public partial class ShadowForeignKeys : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,6 +33,7 @@ namespace TimeReportingApi.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     tag_name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    is_required = table.Column<bool>(type: "boolean", nullable: false),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
                     project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
                 },

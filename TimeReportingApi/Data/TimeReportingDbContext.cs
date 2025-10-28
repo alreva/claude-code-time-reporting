@@ -256,6 +256,9 @@ public class TimeReportingDbContext : DbContext
                 .HasMaxLength(20)
                 .IsRequired();
 
+            entity.Property(e => e.IsRequired)
+                .HasColumnName("is_required");
+
             entity.Property(e => e.IsActive)
                 .HasColumnName("is_active");
 
