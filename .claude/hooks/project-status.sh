@@ -60,15 +60,21 @@ show_git_status() {
 show_build_status() {
     print_section "Build Status"
 
+    # Detect target framework from Directory.Build.props
+    local target_framework="net10.0"
+    if [ -f "Directory.Build.props" ]; then
+        target_framework=$(grep -oE "net[0-9]+\.[0-9]+" Directory.Build.props | head -1 || echo "net10.0")
+    fi
+
     # Check if build artifacts exist
-    if [ -f "TimeReportingApi/bin/Debug/net8.0/TimeReportingApi.dll" ]; then
-        local build_date=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "TimeReportingApi/bin/Debug/net8.0/TimeReportingApi.dll" 2>/dev/null || echo "unknown")
+    if [ -f "TimeReportingApi/bin/Debug/${target_framework}/TimeReportingApi.dll" ]; then
+        local build_date=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "TimeReportingApi/bin/Debug/${target_framework}/TimeReportingApi.dll" 2>/dev/null || echo "unknown")
         echo -e "  API Build:   ${GREEN}✓ Success${NC} (${build_date})"
     else
         echo -e "  API Build:   ${RED}✗ Not built${NC}"
     fi
 
-    if [ -f "TimeReportingApi.Tests/bin/Debug/net8.0/TimeReportingApi.Tests.dll" ]; then
+    if [ -f "TimeReportingApi.Tests/bin/Debug/${target_framework}/TimeReportingApi.Tests.dll" ]; then
         echo -e "  Tests Build: ${GREEN}✓ Success${NC}"
     else
         echo -e "  Tests Build: ${RED}✗ Not built${NC}"
@@ -205,7 +211,12 @@ show_package_management() {
         echo -e "  Packages:    ${pkg_count} centrally managed"
     fi
 
-    echo -e "  Framework:   net8.0"
+    # Detect target framework from Directory.Build.props
+    local target_framework="net10.0"
+    if [ -f "Directory.Build.props" ]; then
+        target_framework=$(grep -oE "net[0-9]+\.[0-9]+" Directory.Build.props | head -1 || echo "net10.0")
+    fi
+    echo -e "  Framework:   ${target_framework}"
     echo -e "  Warnings:    ${GREEN}Treated as errors${NC} (zero-warning policy)"
     echo
 }
