@@ -176,7 +176,7 @@ public class McpServer
         return toolParams.Name switch
         {
             "log_time" => await new LogTimeTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "query_time_entries" => PlaceholderToolResult("query_time_entries"),
+            "query_time_entries" => await new QueryEntriesTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "update_time_entry" => PlaceholderToolResult("update_time_entry"),
             "move_task_to_project" => PlaceholderToolResult("move_task_to_project"),
             "delete_time_entry" => PlaceholderToolResult("delete_time_entry"),
