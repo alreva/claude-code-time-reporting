@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeReportingAnalyzers", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeReportingAnalyzers.Tests", "TimeReportingAnalyzers.Tests\TimeReportingAnalyzers.Tests.csproj", "{60F550CA-FB37-4145-8248-87A90C039C9D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeReportingMcp", "TimeReportingMcp\TimeReportingMcp.csproj", "{EBD41CF1-834D-45E1-90D1-F98C351C2760}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{60F550CA-FB37-4145-8248-87A90C039C9D}.Release|x64.Build.0 = Release|Any CPU
 		{60F550CA-FB37-4145-8248-87A90C039C9D}.Release|x86.ActiveCfg = Release|Any CPU
 		{60F550CA-FB37-4145-8248-87A90C039C9D}.Release|x86.Build.0 = Release|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Debug|x64.Build.0 = Debug|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Debug|x86.Build.0 = Debug|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|x64.ActiveCfg = Release|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|x64.Build.0 = Release|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|x86.ActiveCfg = Release|Any CPU
+		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
