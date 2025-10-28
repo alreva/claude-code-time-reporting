@@ -213,4 +213,41 @@ public class Mutation
 
         return entry;
     }
+
+    /// <summary>
+    /// Delete a time entry.
+    /// Only allowed for entries in NOT_REPORTED or DECLINED status.
+    /// </summary>
+    public async Task<bool> DeleteTimeEntry(
+        Guid id,
+        [Service] TimeReportingDbContext context)
+    {
+        // Load the existing entry
+        var entry = await context.TimeEntries
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (entry == null)
+        {
+            throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
+        }
+
+        // Check status - only NOT_REPORTED and DECLINED can be deleted
+        if (entry.Status == TimeEntryStatus.Submitted)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Cannot delete time entry in SUBMITTED status. Entry must be APPROVED or DECLINED first.");
+        }
+
+        if (entry.Status == TimeEntryStatus.Approved)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Cannot delete time entry in APPROVED status. Approved entries are immutable.");
+        }
+
+        // Delete the entry
+        context.TimeEntries.Remove(entry);
+        await context.SaveChangesAsync();
+
+        return true;
+    }
 }
