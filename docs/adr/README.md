@@ -92,6 +92,7 @@ What other options did we evaluate and why did we reject them?
 | [0003](0003-naming-consistency.md) | Consistent Entity Naming Pattern | Accepted | 2025-10-28 |
 | [0004](0004-normalized-schema.md) | Fully Normalized Schema | Accepted | 2025-10-28 |
 | [0005](0005-relational-over-jsonb.md) | Relational Schema Over JSONB | Accepted | 2025-10-28 |
+| [0006](0006-hotchocolate-conventions-over-resolvers.md) | HotChocolate Conventions Over Custom Resolvers | Accepted | 2025-10-28 |
 
 ## Process for Claude Code
 
