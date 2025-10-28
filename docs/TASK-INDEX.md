@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 24
+**Completed:** 28
 **In Progress:** 0
-**Pending:** 37
+**Pending:** 33
 
 ---
 
@@ -118,10 +118,10 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 6.1 | API Dockerfile | Create Dockerfile for ASP.NET Core API | 1 hr | ☐ Pending | Create |
-| 6.2 | Update Docker Compose | Add GraphQL API service to docker-compose.yml | 30 min | ☐ Pending | Create |
-| 6.3 | Environment Configuration | Set up environment variables for connection strings and secrets | 30 min | ☐ Pending | Create |
-| 6.4 | Integration Test | Test full stack (PostgreSQL + API) in Docker | 1 hr | ☐ Pending | Create |
+| 6.1 | API Dockerfile | Create Dockerfile for ASP.NET Core API | 1 hr | ☑ Completed | [View](./tasks/phase-06-api-docker/task-6.1-api-dockerfile.md) |
+| 6.2 | Update Docker Compose | Add GraphQL API service to docker-compose.yml | 30 min | ☑ Completed | [View](./tasks/phase-06-api-docker/task-6.2-update-docker-compose.md) |
+| 6.3 | Environment Configuration | Set up environment variables for connection strings and secrets | 30 min | ☑ Completed | [View](./tasks/phase-06-api-docker/task-6.3-environment-configuration.md) |
+| 6.4 | Integration Test | Test full stack (PostgreSQL + API) in Docker | 1 hr | ☑ Completed | [View](./tasks/phase-06-api-docker/task-6.4-integration-test.md) |
 
 **Phase 6 Total:** 3 hours
 
@@ -283,16 +283,16 @@
 - [x] **Milestone 2:** API Core Ready (Phases 2-3 complete) ✅
 - [x] **Milestone 2.5:** API Mutations Part 1 (Phase 4 complete) ✅
 - [x] **Milestone 3:** API Mutations Part 2 (Phase 5 complete) ✅
-- [ ] **Milestone 4:** API Full Feature (Phase 6 complete)
+- [x] **Milestone 4:** API Full Feature (Phase 6 complete) ✅
 - [ ] **Milestone 5:** MCP Server Ready (Phases 7-9 complete)
 - [ ] **Milestone 6:** Auto-tracking Ready (Phase 10 complete)
 - [ ] **Milestone 7:** Production Ready (Phases 11-12 complete)
 
 ### Current Status
 
-**Currently On:** Phase 6, Task 6.1 (API Dockerfile)
+**Currently On:** Phase 7, Task 7.1 (MCP Project Init)
 **Last Updated:** 2025-10-28
-**Overall Progress:** 39.3% (24/61 tasks)
+**Overall Progress:** 45.9% (28/61 tasks)
 
 ---
 
