@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 32
+**Completed:** 36
 **In Progress:** 0
-**Pending:** 29
+**Pending:** 25
 
 ---
 
@@ -157,18 +157,19 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 8.1 | Log Time Tool | Implement `log_time` tool with GraphQL mutation | 1-2 hrs | ☐ Pending | Create |
-| 8.2 | Query Entries Tool | Implement `query_time_entries` tool with filters | 1-2 hrs | ☐ Pending | Create |
-| 8.3 | Update Entry Tool | Implement `update_time_entry` tool | 1 hr | ☐ Pending | Create |
-| 8.4 | Error Handling | Add comprehensive error handling and validation | 1 hr | ☐ Pending | Create |
+| 8.1 | Log Time Tool | Implement `log_time` tool with GraphQL mutation | 1-2 hrs | ☑ Completed | [View](./tasks/phase-08-mcp-tools-part1/task-8.1-log-time-tool.md) |
+| 8.2 | Query Entries Tool | Implement `query_time_entries` tool with filters | 1-2 hrs | ☑ Completed | [View](./tasks/phase-08-mcp-tools-part1/task-8.2-query-entries-tool.md) |
+| 8.3 | Update Entry Tool | Implement `update_time_entry` tool | 1 hr | ☑ Completed | [View](./tasks/phase-08-mcp-tools-part1/task-8.3-update-entry-tool.md) |
+| 8.4 | Error Handling | Add comprehensive error handling and validation | 1 hr | ☑ Completed | [View](./tasks/phase-08-mcp-tools-part1/task-8.4-error-handling.md) |
 
 **Phase 8 Total:** 4-6 hours
 
 **Key Deliverables:**
-- `mcp-server/src/tools/log-time.ts`
-- `mcp-server/src/tools/query-entries.ts`
-- `mcp-server/src/tools/update-entry.ts`
-- `mcp-server/src/utils/error-handler.ts`
+- `TimeReportingMcp/Tools/LogTimeTool.cs` - 8 tests passing
+- `TimeReportingMcp/Tools/QueryEntriesTool.cs` - 7 tests passing
+- `TimeReportingMcp/Tools/UpdateEntryTool.cs` - 7 tests passing
+- `TimeReportingMcp/Utils/ErrorHandler.cs` - 10 tests passing
+- `TimeReportingMcp.Tests/` - Complete test coverage (33 tests total)
 
 ---
 
@@ -291,9 +292,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 8, Task 8.1 (MCP Tools Part 1)
-**Last Updated:** 2025-10-28
-**Overall Progress:** 52.5% (32/61 tasks)
+**Currently On:** Phase 9, Task 9.1 (MCP Tools Part 2)
+**Last Updated:** 2025-10-29
+**Overall Progress:** 59.0% (36/61 tasks)
 
 ---
 
