@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeReportingAnalyzers.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeReportingMcp", "TimeReportingMcp\TimeReportingMcp.csproj", "{EBD41CF1-834D-45E1-90D1-F98C351C2760}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeReportingMcp.Tests", "TimeReportingMcp.Tests\TimeReportingMcp.Tests.csproj", "{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|x64.Build.0 = Release|Any CPU
 		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|x86.ActiveCfg = Release|Any CPU
 		{EBD41CF1-834D-45E1-90D1-F98C351C2760}.Release|x86.Build.0 = Release|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Debug|x64.Build.0 = Debug|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Debug|x86.Build.0 = Debug|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Release|x64.ActiveCfg = Release|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Release|x64.Build.0 = Release|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Release|x86.ActiveCfg = Release|Any CPU
+		{5675FA1E-F3EA-4F21-88A9-574F8B14ADEA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using TimeReportingMcp.Models;
+using TimeReportingMcp.Tools;
 using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp;
@@ -166,13 +167,15 @@ public class McpServer
     /// <summary>
     /// Execute a specific tool by name
     /// </summary>
-    private Task<ToolResult> ExecuteToolAsync(ToolCallParams toolParams)
+    private async Task<ToolResult> ExecuteToolAsync(ToolCallParams toolParams)
     {
-        // Tool handlers will be implemented in Phase 8
-        // For now, return placeholder responses
-        var result = toolParams.Name switch
+        // Convert arguments dictionary to JsonElement for tool handlers
+        var argumentsJson = JsonSerializer.Serialize(toolParams.Arguments ?? new Dictionary<string, object?>());
+        var argumentsElement = JsonSerializer.Deserialize<JsonElement>(argumentsJson);
+
+        return toolParams.Name switch
         {
-            "log_time" => PlaceholderToolResult("log_time"),
+            "log_time" => await new LogTimeTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "query_time_entries" => PlaceholderToolResult("query_time_entries"),
             "update_time_entry" => PlaceholderToolResult("update_time_entry"),
             "move_task_to_project" => PlaceholderToolResult("move_task_to_project"),
@@ -181,8 +184,6 @@ public class McpServer
             "submit_time_entry" => PlaceholderToolResult("submit_time_entry"),
             _ => throw new InvalidOperationException($"Unknown tool: {toolParams.Name}")
         };
-
-        return Task.FromResult(result);
     }
 
     /// <summary>
