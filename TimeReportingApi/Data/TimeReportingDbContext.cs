@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TimeReportingApi.Models;
 
 namespace TimeReportingApi.Data;
@@ -125,7 +126,12 @@ public class TimeReportingDbContext : DbContext
                 .HasColumnType("jsonb")
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<List<Models.Tag>>(v, (JsonSerializerOptions?)null) ?? new List<Models.Tag>());
+                    v => JsonSerializer.Deserialize<List<Models.Tag>>(v, (JsonSerializerOptions?)null) ?? new List<Models.Tag>())
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<Models.Tag>>(
+                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions?)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions?)null),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
 
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at");
@@ -260,7 +266,12 @@ public class TimeReportingDbContext : DbContext
                 .HasColumnType("jsonb")
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+                .Metadata.SetValueComparer(
+                    new ValueComparer<List<string>>(
+                        (c1, c2) => JsonSerializer.Serialize(c1, (JsonSerializerOptions?)null) == JsonSerializer.Serialize(c2, (JsonSerializerOptions?)null),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
 
             entity.Property(e => e.IsActive)
                 .HasColumnName("is_active");
