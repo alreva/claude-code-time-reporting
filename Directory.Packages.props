@@ -29,6 +29,9 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
+
+    <!-- Direct PostgreSQL connections for testing -->
+    <PackageVersion Include="Npgsql" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup Label="Analyzer Dependencies">

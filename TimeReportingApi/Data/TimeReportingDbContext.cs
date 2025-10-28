@@ -19,6 +19,44 @@ public class TimeReportingDbContext : DbContext
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<TagConfiguration> TagConfigurations { get; set; }
 
+    public override int SaveChanges()
+    {
+        UpdateTimestamps();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateTimestamps();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void UpdateTimestamps()
+    {
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+        foreach (var entry in entries)
+        {
+            if (entry.Entity is Project project)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    project.CreatedAt = DateTime.UtcNow;
+                }
+                project.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is TimeEntry timeEntry)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    timeEntry.CreatedAt = DateTime.UtcNow;
+                }
+                timeEntry.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
