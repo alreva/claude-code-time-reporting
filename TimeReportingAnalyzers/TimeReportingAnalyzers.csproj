@@ -15,6 +15,7 @@
     <Description>Custom Roslyn analyzers for Time Reporting System</Description>
     <Authors>Time Reporting Team</Authors>
     <Copyright>Copyright © 2025</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,11 @@
     <!-- Analyzer release tracking files -->
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
     <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Include README in NuGet package -->
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
