@@ -156,6 +156,31 @@ An Architecture Decision Record (ADR) captures an important architectural decisi
 
 **During conversations, you MUST recognize "ADR moments" and immediately announce them:**
 
+#### 🚨 ADR TRIGGER PHRASES - STOP AND ANNOUNCE
+
+**When the user says ANY of these phrases, IMMEDIATELY stop and announce an ADR moment:**
+
+| User Says | ADR Trigger | What to Announce |
+|-----------|-------------|------------------|
+| "isn't this overkill?" | ✅ YES | Questioning documented approach = alternative being proposed |
+| "can't we just use [X]?" | ✅ YES | Simpler alternative = architectural choice |
+| "wouldn't it be better to [X]?" | ✅ YES | Design alternative = trade-off discussion |
+| "I think we should use [X] instead" | ✅ YES | Alternative proposal = architectural decision |
+| "there's a possibility to [X]" | ✅ YES | Different approach = design choice |
+| "what about [alternative]?" | ✅ YES | Exploring alternatives = ADR needed |
+| "why not [different approach]?" | ✅ YES | Questioning decision = trade-offs |
+
+**CRITICAL: When you see these phrases, your FIRST response must be:**
+```
+"This feels like an ADR - we're making an architectural decision about [topic].
+Let me explore this before updating any implementation files."
+```
+
+**Then:**
+1. Discuss the alternatives and trade-offs
+2. Document the decision as an ADR FIRST
+3. ONLY THEN update task files or implementation
+
 #### Pattern Recognition
 
 When the conversation involves:
@@ -164,15 +189,17 @@ When the conversation involves:
 - **Pattern/principle establishment** for the project
 - **Refactoring decisions** that change architectural approach
 - **Technology choices** between competing options
+- **User questioning documented approach** (e.g., "isn't this overkill?")
+- **User suggesting simpler/alternative approach** (e.g., "can't we just use X?")
 
 **YOU MUST:**
 1. ✅ **Immediately announce**: "This feels like an ADR - we're making an architectural decision about [X]"
 2. ✅ **Continue the discussion** to reach a decision
-3. ✅ **Document the decision** as an ADR in `docs/adr/`
+3. ✅ **Document the decision** as an ADR in `docs/adr/` BEFORE changing implementation
 4. ✅ **Update the index** in `docs/adr/README.md`
 5. ✅ **Commit the ADR** separately from implementation code
 
-#### Example Dialogue Flow
+#### Example Dialogue Flow - CORRECT ✅
 
 ```
 User: "I think we should use shadow properties for FKs to prevent conflicts"
@@ -186,6 +213,42 @@ Claude: "I'm going to document this as ADR 0001: Shadow Foreign Keys"
         [Updates docs/adr/README.md index]
         [Commits ADR]
 ```
+
+#### Real Example - What NOT to Do ❌
+
+**What happened (WRONG):**
+```
+User: "isn't this overkill: there is a possibility to expose DbContext via
+       HotChocolate register context feature"
+
+Claude: [WRONG - Immediately updated task files without announcing ADR]
+        "You're right! Let me update the task files to use HotChocolate conventions..."
+        [Updates all 5 task files]
+        [User has to point out: "isn't this an ADR?"]
+```
+
+**What SHOULD have happened (CORRECT):**
+```
+User: "isn't this overkill: there is a possibility to expose DbContext via
+       HotChocolate register context feature"
+
+Claude: "This feels like an ADR - we're making an architectural decision about
+         GraphQL query implementation: custom resolvers vs HotChocolate conventions.
+         Let me explore this before updating task files."
+
+[Discussion about trade-offs: code volume, flexibility, control]
+
+Claude: "I'm going to document this as ADR 0006: HotChocolate Conventions Over Custom Resolvers"
+        [Creates docs/adr/0006-hotchocolate-conventions-over-resolvers.md]
+        [Updates docs/adr/README.md index]
+        [Commits ADR separately]
+
+        "Now let me update the task files to reflect this decision..."
+        [Updates task files]
+        [Commits implementation changes separately]
+```
+
+**Key lesson:** The phrase "isn't this overkill?" is a TRIGGER. Stop immediately and announce the ADR moment.
 
 #### What NOT to Document as ADRs
 
