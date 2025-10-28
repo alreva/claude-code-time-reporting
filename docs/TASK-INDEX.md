@@ -1,8 +1,8 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 8
-**In Progress:** 1
+**Completed:** 9
+**In Progress:** 0
 **Pending:** 52
 
 ---
@@ -37,7 +37,7 @@
 | 2.3 | Data Models | Implement C# entity models (TimeEntry, Project, ProjectTask, TagConfiguration) | 1-2 hrs | ☑ Completed | Create |
 | 2.4 | Bearer Auth Middleware | Add Bearer token authentication middleware | 1 hr | ☑ Completed | Create |
 | 2.5 | Health Check Endpoint | Create `/health` endpoint for Docker health checks | 30 min | ☑ Completed | Create |
-| 2.6 | Test Project & Database Test Infrastructure | Create xUnit test project with DatabaseFixture and integrate SQL schema tests | 1.5-2 hrs | ⚙ In Progress | [View](./tasks/phase-02-api-core/task-2.6-test-infrastructure.md) |
+| 2.6 | Test Project & Database Test Infrastructure | Create xUnit test project with DatabaseFixture and integrate SQL schema tests | 1.5-2 hrs | ☑ Completed | [View](./tasks/phase-02-api-core/task-2.6-test-infrastructure.md) |
 
 **Phase 2 Total:** 6-7.5 hours
 
@@ -278,7 +278,7 @@
 ### Milestones
 
 - [x] **Milestone 1:** Database Ready (Phase 1 complete)
-- [ ] **Milestone 2:** API Core Ready (Phases 2-3 complete)
+- [ ] **Milestone 2:** API Core Ready (Phases 2-3 complete) - Phase 2 ✅ Complete!
 - [ ] **Milestone 3:** API Full Feature (Phases 4-6 complete)
 - [ ] **Milestone 4:** MCP Server Ready (Phases 7-9 complete)
 - [ ] **Milestone 5:** Auto-tracking Ready (Phase 10 complete)
@@ -286,9 +286,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 2, Task 2.6 (Test Infrastructure)
+**Currently On:** Phase 3, Task 3.1 (TimeEntries Query)
 **Last Updated:** 2025-10-28
-**Overall Progress:** 13.1% (8/61 tasks)
+**Overall Progress:** 14.8% (9/61 tasks)
 
 ---
 
