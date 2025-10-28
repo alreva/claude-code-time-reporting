@@ -408,4 +408,139 @@ public class Mutation
 
         return entry;
     }
+
+    /// <summary>
+    /// Submit a time entry for approval.
+    /// Transitions from NOT_REPORTED or DECLINED to SUBMITTED status.
+    /// </summary>
+    public async Task<TimeEntry> SubmitTimeEntry(
+        Guid id,
+        [Service] TimeReportingDbContext context)
+    {
+        // Load the existing entry
+        var entry = await context.TimeEntries
+            .Include(e => e.Project)
+            .Include(e => e.ProjectTask)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (entry == null)
+        {
+            throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
+        }
+
+        // Check current status - only NOT_REPORTED and DECLINED can be submitted
+        if (entry.Status == TimeEntryStatus.Submitted)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Time entry is already SUBMITTED. Cannot submit again.");
+        }
+
+        if (entry.Status == TimeEntryStatus.Approved)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Time entry is already APPROVED. Approved entries cannot be resubmitted.");
+        }
+
+        // Transition to SUBMITTED status
+        entry.Status = TimeEntryStatus.Submitted;
+        entry.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+
+        return entry;
+    }
+
+    /// <summary>
+    /// Approve a submitted time entry.
+    /// Transitions from SUBMITTED to APPROVED status.
+    /// Once approved, entries become immutable.
+    /// </summary>
+    public async Task<TimeEntry> ApproveTimeEntry(
+        Guid id,
+        [Service] TimeReportingDbContext context)
+    {
+        // Load the existing entry
+        var entry = await context.TimeEntries
+            .Include(e => e.Project)
+            .Include(e => e.ProjectTask)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (entry == null)
+        {
+            throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
+        }
+
+        // Special check for already approved
+        if (entry.Status == TimeEntryStatus.Approved)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Time entry is already APPROVED.");
+        }
+
+        // Check current status - only SUBMITTED can be approved
+        if (entry.Status != TimeEntryStatus.Submitted)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Time entry must be in SUBMITTED status to be approved. Current status: {entry.Status}");
+        }
+
+        // Transition to APPROVED status
+        entry.Status = TimeEntryStatus.Approved;
+        entry.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+
+        return entry;
+    }
+
+    /// <summary>
+    /// Decline a submitted time entry with a comment.
+    /// Transitions from SUBMITTED to DECLINED status.
+    /// Declined entries can be edited and resubmitted.
+    /// </summary>
+    public async Task<TimeEntry> DeclineTimeEntry(
+        Guid id,
+        string comment,
+        [Service] TimeReportingDbContext context)
+    {
+        // Validate comment is provided
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            throw new Exceptions.ValidationException("Decline comment is required", "comment");
+        }
+
+        // Load the existing entry
+        var entry = await context.TimeEntries
+            .Include(e => e.Project)
+            .Include(e => e.ProjectTask)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (entry == null)
+        {
+            throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
+        }
+
+        // Special check for already approved
+        if (entry.Status == TimeEntryStatus.Approved)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Time entry is already APPROVED. Approved entries cannot be declined.");
+        }
+
+        // Check current status - only SUBMITTED can be declined
+        if (entry.Status != TimeEntryStatus.Submitted)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Time entry must be in SUBMITTED status to be declined. Current status: {entry.Status}");
+        }
+
+        // Transition to DECLINED status with comment
+        entry.Status = TimeEntryStatus.Declined;
+        entry.DeclineComment = comment;
+        entry.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+
+        return entry;
+    }
 }
