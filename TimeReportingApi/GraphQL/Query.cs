@@ -20,4 +20,17 @@ public class Query
     {
         return context.TimeEntries;
     }
+
+    /// <summary>
+    /// Get a single time entry by ID.
+    /// Returns null if entry not found.
+    /// </summary>
+    [UseProjection]
+    public async Task<TimeEntry?> GetTimeEntry(
+        Guid id,
+        [Service] TimeReportingDbContext context)
+    {
+        return await context.TimeEntries
+            .FirstOrDefaultAsync(e => e.Id == id);
+    }
 }

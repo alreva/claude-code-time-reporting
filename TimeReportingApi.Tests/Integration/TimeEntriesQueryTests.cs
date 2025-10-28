@@ -264,4 +264,56 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var hasNextPage = data.GetProperty("pageInfo").GetProperty("hasNextPage").GetBoolean();
         hasNextPage.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task TimeEntry_WithValidId_ReturnsEntry()
+    {
+        // Arrange
+        var existingEntry = await _context.TimeEntries.FirstAsync();
+        var query = $@"
+            query {{
+                timeEntry(id: ""{existingEntry.Id}"") {{
+                    id
+                    standardHours
+                }}
+            }}";
+
+        // Act
+        var result = await ExecuteGraphQL(query);
+
+        // Assert
+        var json = result.RootElement.GetRawText();
+        var data = result.RootElement.GetProperty("data");
+
+        // Check for GraphQL errors
+        if (result.RootElement.TryGetProperty("errors", out var errors))
+        {
+            var errorMessage = errors.EnumerateArray().First().GetProperty("message").GetString();
+            throw new Exception($"GraphQL error: {errorMessage}");
+        }
+
+        var timeEntry = data.GetProperty("timeEntry");
+        timeEntry.ValueKind.Should().NotBe(JsonValueKind.Null, $"timeEntry should not be null. Query returned: {json}");
+        timeEntry.GetProperty("id").GetString().Should().Be(existingEntry.Id.ToString());
+        timeEntry.GetProperty("standardHours").GetDecimal().Should().Be(existingEntry.StandardHours);
+    }
+
+    [Fact]
+    public async Task TimeEntry_WithInvalidId_ReturnsNull()
+    {
+        // Arrange
+        var query = $@"
+            query {{
+                timeEntry(id: ""{Guid.NewGuid()}"") {{
+                    id
+                }}
+            }}";
+
+        // Act
+        var result = await ExecuteGraphQL(query);
+
+        // Assert
+        var data = result.RootElement.GetProperty("data").GetProperty("timeEntry");
+        data.ValueKind.Should().Be(JsonValueKind.Null);
+    }
 }
