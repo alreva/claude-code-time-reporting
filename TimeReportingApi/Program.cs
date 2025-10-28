@@ -18,7 +18,10 @@ builder.Services.AddDbContext<TimeReportingDbContext>(options =>
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<Query>()
-    .AddMutationType<Mutation>();
+    .AddMutationType<Mutation>()
+    .AddProjections()        // Enable field selection optimization
+    .AddFiltering()          // Enable filtering
+    .AddSorting();           // Enable sorting
 
 // Add health checks
 builder.Services.AddHealthChecks();
