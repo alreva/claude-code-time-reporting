@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 9
+**Completed:** 14
 **In Progress:** 0
-**Pending:** 52
+**Pending:** 47
 
 ---
 
@@ -57,11 +57,11 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 3.1 | TimeEntries Query | Implement `timeEntries(filters)` query with filtering and pagination | 1-2 hrs | ☐ Pending | Create |
-| 3.2 | TimeEntry Query | Implement `timeEntry(id)` query to get single entry | 30 min | ☐ Pending | Create |
-| 3.3 | Projects Query | Implement `projects(activeOnly)` query | 30 min | ☐ Pending | Create |
-| 3.4 | Project Query | Implement `project(code)` query with tasks and tag configurations | 1 hr | ☐ Pending | Create |
-| 3.5 | Query Tests | Write unit tests for all query resolvers | 1-2 hrs | ☐ Pending | Create |
+| 3.1 | TimeEntries Query | Implement `timeEntries(filters)` query with filtering and pagination | 1-2 hrs | ☑ Completed | [View](./tasks/phase-03-queries/task-3.1-time-entries-query.md) |
+| 3.2 | TimeEntry Query | Implement `timeEntry(id)` query to get single entry | 30 min | ☑ Completed | [View](./tasks/phase-03-queries/task-3.2-time-entry-query.md) |
+| 3.3 | Projects Query | Implement `projects(activeOnly)` query | 30 min | ☑ Completed | [View](./tasks/phase-03-queries/task-3.3-projects-query.md) |
+| 3.4 | Project Query | Implement `project(code)` query with tasks and tag configurations | 1 hr | ☑ Completed | [View](./tasks/phase-03-queries/task-3.4-project-query.md) |
+| 3.5 | Query Tests | Write unit tests for all query resolvers | 1-2 hrs | ☑ Completed | [View](./tasks/phase-03-queries/task-3.5-query-tests.md) |
 
 **Phase 3 Total:** 4-6 hours
 
@@ -278,7 +278,7 @@
 ### Milestones
 
 - [x] **Milestone 1:** Database Ready (Phase 1 complete)
-- [ ] **Milestone 2:** API Core Ready (Phases 2-3 complete) - Phase 2 ✅ Complete!
+- [x] **Milestone 2:** API Core Ready (Phases 2-3 complete) ✅
 - [ ] **Milestone 3:** API Full Feature (Phases 4-6 complete)
 - [ ] **Milestone 4:** MCP Server Ready (Phases 7-9 complete)
 - [ ] **Milestone 5:** Auto-tracking Ready (Phase 10 complete)
@@ -286,9 +286,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 3, Task 3.1 (TimeEntries Query)
+**Currently On:** Phase 4, Task 4.1 (LogTime Mutation)
 **Last Updated:** 2025-10-28
-**Overall Progress:** 14.8% (9/61 tasks)
+**Overall Progress:** 23.0% (14/61 tasks)
 
 ---
 
