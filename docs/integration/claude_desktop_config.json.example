@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "time-reporting": {
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "/absolute/path/to/TimeReportingMcp/TimeReportingMcp.csproj"
+      ],
+      "env": {
+        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "BEARER_TOKEN": "your-bearer-token-here"
+      }
+    }
+  }
+}
