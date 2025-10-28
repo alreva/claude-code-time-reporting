@@ -33,4 +33,16 @@ public class Query
         return await context.TimeEntries
             .FirstOrDefaultAsync(e => e.Id == id);
     }
+
+    /// <summary>
+    /// Get all projects with filtering, sorting, and projection capabilities.
+    /// Supports filtering by any field (e.g., isActive) and sorting.
+    /// </summary>
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
+    public IQueryable<Project> GetProjects([Service] TimeReportingDbContext context)
+    {
+        return context.Projects;
+    }
 }
