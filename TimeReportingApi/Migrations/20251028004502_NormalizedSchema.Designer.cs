@@ -11,8 +11,8 @@ using TimeReportingApi.Data;
 namespace TimeReportingApi.Migrations
 {
     [DbContext(typeof(TimeReportingDbContext))]
-    [Migration("20251028003722_RelationalTagSchema")]
-    partial class RelationalTagSchema
+    [Migration("20251028004502_NormalizedSchema")]
+    partial class NormalizedSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -201,6 +201,10 @@ namespace TimeReportingApi.Migrations
                         .HasColumnType("character varying(10)")
                         .HasColumnName("project_code");
 
+                    b.Property<int>("ProjectTaskId")
+                        .HasColumnType("integer")
+                        .HasColumnName("project_task_id");
+
                     b.Property<decimal>("StandardHours")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
@@ -215,12 +219,6 @@ namespace TimeReportingApi.Migrations
                         .HasColumnType("text")
                         .HasColumnName("status");
 
-                    b.Property<string>("Task")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("task");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -231,6 +229,8 @@ namespace TimeReportingApi.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProjectTaskId");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("idx_time_entries_status");
@@ -262,29 +262,24 @@ namespace TimeReportingApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("name");
+                    b.Property<int>("TagAllowedValueId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tag_allowed_value_id");
 
                     b.Property<Guid>("TimeEntryId")
                         .HasColumnType("uuid")
                         .HasColumnName("time_entry_id");
 
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("value");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("TagAllowedValueId");
 
                     b.HasIndex("TimeEntryId")
                         .HasDatabaseName("idx_time_entry_tags_entry");
 
-                    b.HasIndex("TimeEntryId", "Name")
-                        .HasDatabaseName("idx_time_entry_tags_entry_name");
+                    b.HasIndex("TimeEntryId", "TagAllowedValueId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_time_entry_tags_entry_value");
 
                     b.ToTable("time_entry_tags", (string)null);
                 });
@@ -330,16 +325,32 @@ namespace TimeReportingApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TimeReportingApi.Models.ProjectTask", "ProjectTask")
+                        .WithMany()
+                        .HasForeignKey("ProjectTaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Project");
+
+                    b.Navigation("ProjectTask");
                 });
 
             modelBuilder.Entity("TimeReportingApi.Models.TimeEntryTag", b =>
                 {
+                    b.HasOne("TimeReportingApi.Models.TagAllowedValue", "TagAllowedValue")
+                        .WithMany()
+                        .HasForeignKey("TagAllowedValueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("TimeReportingApi.Models.TimeEntry", "TimeEntry")
                         .WithMany("Tags")
                         .HasForeignKey("TimeEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("TagAllowedValue");
 
                     b.Navigation("TimeEntry");
                 });

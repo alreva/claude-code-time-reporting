@@ -85,9 +85,8 @@ public class TimeReportingDbContext : DbContext
                 .HasMaxLength(10)
                 .IsRequired();
 
-            entity.Property(e => e.Task)
-                .HasColumnName("task")
-                .HasMaxLength(100)
+            entity.Property(e => e.ProjectTaskId)
+                .HasColumnName("project_task_id")
                 .IsRequired();
 
             entity.Property(e => e.IssueId)
@@ -136,6 +135,11 @@ public class TimeReportingDbContext : DbContext
             entity.HasOne(e => e.Project)
                 .WithMany(p => p.TimeEntries)
                 .HasForeignKey(e => e.ProjectCode);
+
+            entity.HasOne(e => e.ProjectTask)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectTaskId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasMany(e => e.Tags)
                 .WithOne(t => t.TimeEntry)
@@ -287,21 +291,21 @@ public class TimeReportingDbContext : DbContext
                 .HasColumnName("time_entry_id")
                 .IsRequired();
 
-            entity.Property(e => e.Name)
-                .HasColumnName("name")
-                .HasMaxLength(50)
+            entity.Property(e => e.TagAllowedValueId)
+                .HasColumnName("tag_allowed_value_id")
                 .IsRequired();
 
-            entity.Property(e => e.Value)
-                .HasColumnName("value")
-                .HasMaxLength(100)
-                .IsRequired();
+            entity.HasOne(e => e.TagAllowedValue)
+                .WithMany()
+                .HasForeignKey(e => e.TagAllowedValueId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.TimeEntryId)
                 .HasDatabaseName("idx_time_entry_tags_entry");
 
-            entity.HasIndex(e => new { e.TimeEntryId, e.Name })
-                .HasDatabaseName("idx_time_entry_tags_entry_name");
+            entity.HasIndex(e => new { e.TimeEntryId, e.TagAllowedValueId })
+                .IsUnique()
+                .HasDatabaseName("uq_time_entry_tags_entry_value");
         });
     }
 

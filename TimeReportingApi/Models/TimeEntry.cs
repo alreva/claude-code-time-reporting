@@ -12,8 +12,7 @@ public class TimeEntry
     public string ProjectCode { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(100)]
-    public string Task { get; set; } = string.Empty;
+    public int ProjectTaskId { get; set; }
 
     [MaxLength(30)]
     public string? IssueId { get; set; }
@@ -44,5 +43,6 @@ public class TimeEntry
 
     // Navigation properties
     public Project Project { get; set; } = null!;
+    public ProjectTask ProjectTask { get; set; } = null!;
     public List<TimeEntryTag> Tags { get; set; } = new();
 }

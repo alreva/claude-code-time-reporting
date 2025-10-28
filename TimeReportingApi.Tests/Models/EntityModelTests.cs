@@ -17,7 +17,7 @@ public class EntityModelTests
         {
             Id = Guid.NewGuid(),
             ProjectCode = "INTERNAL",
-            Task = "Development",
+            ProjectTaskId = 1,
             StandardHours = 8.0m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -30,7 +30,7 @@ public class EntityModelTests
         // Assert
         entry.Id.Should().NotBe(Guid.Empty);
         entry.ProjectCode.Should().Be("INTERNAL");
-        entry.Task.Should().Be("Development");
+        entry.ProjectTaskId.Should().Be(1);
         entry.StandardHours.Should().Be(8.0m);
         entry.OvertimeHours.Should().Be(0.0m);
         entry.StartDate.Should().Be(DateOnly.FromDateTime(DateTime.Today));
@@ -73,8 +73,8 @@ public class EntityModelTests
     {
         // Arrange
         var entry = new TimeEntry { Id = Guid.NewGuid() };
-        var tag1 = new TimeEntryTag { TimeEntryId = entry.Id, Name = "Environment", Value = "Production" };
-        var tag2 = new TimeEntryTag { TimeEntryId = entry.Id, Name = "Billable", Value = "Yes" };
+        var tag1 = new TimeEntryTag { TimeEntryId = entry.Id, TagAllowedValueId = 1 };
+        var tag2 = new TimeEntryTag { TimeEntryId = entry.Id, TagAllowedValueId = 2 };
 
         // Act
         entry.Tags.Add(tag1);
@@ -82,10 +82,8 @@ public class EntityModelTests
 
         // Assert
         entry.Tags.Should().HaveCount(2);
-        entry.Tags[0].Name.Should().Be("Environment");
-        entry.Tags[0].Value.Should().Be("Production");
-        entry.Tags[1].Name.Should().Be("Billable");
-        entry.Tags[1].Value.Should().Be("Yes");
+        entry.Tags[0].TagAllowedValueId.Should().Be(1);
+        entry.Tags[1].TagAllowedValueId.Should().Be(2);
     }
 
     [Fact]
@@ -106,15 +104,13 @@ public class EntityModelTests
         {
             Id = 1,
             TimeEntryId = Guid.NewGuid(),
-            Name = "Environment",
-            Value = "Production"
+            TagAllowedValueId = 5
         };
 
         // Assert
         tag.Id.Should().Be(1);
         tag.TimeEntryId.Should().NotBe(Guid.Empty);
-        tag.Name.Should().Be("Environment");
-        tag.Value.Should().Be("Production");
+        tag.TagAllowedValueId.Should().Be(5);
     }
 
     [Fact]

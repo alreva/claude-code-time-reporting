@@ -67,9 +67,17 @@ public class DatabaseFixture : IDisposable
     public void Cleanup()
     {
         // Delete in order respecting foreign key constraints
+        // 1. TimeEntryTags (has FK to TimeEntry and TagAllowedValue)
+        DbContext.TimeEntryTags.RemoveRange(DbContext.TimeEntryTags);
+        // 2. TimeEntries (has FK to Project and ProjectTask)
         DbContext.TimeEntries.RemoveRange(DbContext.TimeEntries);
+        // 3. TagAllowedValues (has FK to TagConfiguration)
+        DbContext.TagAllowedValues.RemoveRange(DbContext.TagAllowedValues);
+        // 4. ProjectTasks (has FK to Project)
         DbContext.ProjectTasks.RemoveRange(DbContext.ProjectTasks);
+        // 5. TagConfigurations (has FK to Project)
         DbContext.TagConfigurations.RemoveRange(DbContext.TagConfigurations);
+        // 6. Projects (no FK dependencies)
         DbContext.Projects.RemoveRange(DbContext.Projects);
         DbContext.SaveChanges();
     }

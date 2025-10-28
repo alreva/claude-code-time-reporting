@@ -51,11 +51,15 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
+        var projectTask = new ProjectTask { ProjectCode = "PROJ001", TaskName = "Development", IsActive = true };
+        await context.ProjectTasks.AddAsync(projectTask);
+        await context.SaveChangesAsync();
+
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
             ProjectCode = "PROJ001",
-            Task = "Development",
+            ProjectTaskId = projectTask.Id,
             StandardHours = 8.0m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -68,10 +72,13 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.SaveChangesAsync();
 
         // Assert
-        var retrieved = await context.TimeEntries.FindAsync(timeEntry.Id);
+        var retrieved = await context.TimeEntries
+            .Include(te => te.ProjectTask)
+            .FirstOrDefaultAsync(te => te.Id == timeEntry.Id);
         retrieved.Should().NotBeNull();
         retrieved!.ProjectCode.Should().Be("PROJ001");
-        retrieved.Task.Should().Be("Development");
+        retrieved.ProjectTaskId.Should().Be(projectTask.Id);
+        retrieved.ProjectTask.TaskName.Should().Be("Development");
         retrieved.StandardHours.Should().Be(8.0m);
         retrieved.Status.Should().Be(TimeEntryStatus.NotReported);
     }
@@ -86,11 +93,15 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
+        var projectTask = new ProjectTask { ProjectCode = "PROJ002", TaskName = "Development", IsActive = true };
+        await context.ProjectTasks.AddAsync(projectTask);
+        await context.SaveChangesAsync();
+
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
             ProjectCode = "PROJ002",
-            Task = "Development",
+            ProjectTaskId = projectTask.Id,
             StandardHours = -5.0m, // Invalid - violates CHECK constraint
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -116,11 +127,15 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
+        var projectTask = new ProjectTask { ProjectCode = "PROJ003", TaskName = "Development", IsActive = true };
+        await context.ProjectTasks.AddAsync(projectTask);
+        await context.SaveChangesAsync();
+
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
             ProjectCode = "PROJ003",
-            Task = "Development",
+            ProjectTaskId = projectTask.Id,
             StandardHours = 8.0m,
             OvertimeHours = -2.0m, // Invalid - violates CHECK constraint
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -146,7 +161,7 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         {
             Id = Guid.NewGuid(),
             ProjectCode = "INVALID", // Project doesn't exist
-            Task = "Development",
+            ProjectTaskId = 999, // Non-existent ProjectTask
             StandardHours = 8.0m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -234,19 +249,40 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
+        var projectTask = new ProjectTask { ProjectCode = "PROJ006", TaskName = "Development", IsActive = true };
+        await context.ProjectTasks.AddAsync(projectTask);
+        await context.SaveChangesAsync();
+
+        // Create tag configurations with allowed values
+        var priorityTag = new TagConfiguration { ProjectCode = "PROJ006", TagName = "Priority" };
+        priorityTag.AllowedValues.Add(new TagAllowedValue { Value = "High" });
+        priorityTag.AllowedValues.Add(new TagAllowedValue { Value = "Low" });
+
+        var componentTag = new TagConfiguration { ProjectCode = "PROJ006", TagName = "Component" };
+        componentTag.AllowedValues.Add(new TagAllowedValue { Value = "Frontend" });
+        componentTag.AllowedValues.Add(new TagAllowedValue { Value = "Backend" });
+
+        await context.TagConfigurations.AddAsync(priorityTag);
+        await context.TagConfigurations.AddAsync(componentTag);
+        await context.SaveChangesAsync();
+
+        // Get the IDs of specific allowed values
+        var highPriorityValueId = priorityTag.AllowedValues.First(v => v.Value == "High").Id;
+        var frontendComponentValueId = componentTag.AllowedValues.First(v => v.Value == "Frontend").Id;
+
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
             ProjectCode = "PROJ006",
-            Task = "Development",
+            ProjectTaskId = projectTask.Id,
             StandardHours = 6.5m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
             CompletionDate = DateOnly.FromDateTime(DateTime.Today),
             Status = TimeEntryStatus.NotReported
         };
-        timeEntry.Tags.Add(new TimeEntryTag { Name = "Priority", Value = "High" });
-        timeEntry.Tags.Add(new TimeEntryTag { Name = "Component", Value = "Frontend" });
+        timeEntry.Tags.Add(new TimeEntryTag { TagAllowedValueId = highPriorityValueId });
+        timeEntry.Tags.Add(new TimeEntryTag { TagAllowedValueId = frontendComponentValueId });
 
         // Act
         await context.TimeEntries.AddAsync(timeEntry);
@@ -258,12 +294,18 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         // Assert
         var retrieved = await context.TimeEntries
             .Include(te => te.Tags)
+                .ThenInclude(t => t.TagAllowedValue)
+                    .ThenInclude(av => av.TagConfiguration)
             .FirstOrDefaultAsync(te => te.Id == timeEntry.Id);
 
         retrieved.Should().NotBeNull();
         retrieved!.Tags.Should().HaveCount(2);
-        retrieved.Tags.Should().Contain(t => t.Name == "Priority" && t.Value == "High");
-        retrieved.Tags.Should().Contain(t => t.Name == "Component" && t.Value == "Frontend");
+        retrieved.Tags.Should().Contain(t =>
+            t.TagAllowedValue.TagConfiguration.TagName == "Priority" &&
+            t.TagAllowedValue.Value == "High");
+        retrieved.Tags.Should().Contain(t =>
+            t.TagAllowedValue.TagConfiguration.TagName == "Component" &&
+            t.TagAllowedValue.Value == "Frontend");
     }
 
     [Fact]
