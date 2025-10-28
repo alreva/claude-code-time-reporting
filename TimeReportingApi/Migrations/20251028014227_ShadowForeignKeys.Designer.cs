@@ -11,8 +11,8 @@ using TimeReportingApi.Data;
 namespace TimeReportingApi.Migrations
 {
     [DbContext(typeof(TimeReportingDbContext))]
-    [Migration("20251028010336_NormalizedSchema")]
-    partial class NormalizedSchema
+    [Migration("20251028014227_ShadowForeignKeys")]
+    partial class ShadowForeignKeys
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

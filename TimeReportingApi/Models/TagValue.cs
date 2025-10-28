@@ -12,11 +12,6 @@ public class TagValue
     public int Id { get; set; }
 
     /// <summary>
-    /// Foreign key to the project tag.
-    /// </summary>
-    public int ProjectTagId { get; set; }
-
-    /// <summary>
     /// The allowed value (e.g., "High", "Medium", "Low" for Priority tag).
     /// </summary>
     public string Value { get; set; } = string.Empty;

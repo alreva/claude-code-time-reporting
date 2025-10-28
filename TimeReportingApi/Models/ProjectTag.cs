@@ -9,10 +9,6 @@ public class ProjectTag
     public int Id { get; set; }
 
     [Required]
-    [MaxLength(10)]
-    public string ProjectCode { get; set; } = string.Empty;
-
-    [Required]
     [MaxLength(20)]
     public string TagName { get; set; } = string.Empty;
 

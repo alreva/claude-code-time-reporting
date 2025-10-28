@@ -12,16 +12,6 @@ public class TimeEntryTag
     public int Id { get; set; }
 
     /// <summary>
-    /// Foreign key to the time entry.
-    /// </summary>
-    public Guid TimeEntryId { get; set; }
-
-    /// <summary>
-    /// Foreign key to the tag value (includes tag name via ProjectTag).
-    /// </summary>
-    public int TagValueId { get; set; }
-
-    /// <summary>
     /// Navigation property to the time entry.
     /// </summary>
     public TimeEntry TimeEntry { get; set; } = null!;

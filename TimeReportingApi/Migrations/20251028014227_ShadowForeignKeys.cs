@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TimeReportingApi.Migrations
 {
     /// <inheritdoc />
-    public partial class NormalizedSchema : Migration
+    public partial class ShadowForeignKeys : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,9 +32,9 @@ namespace TimeReportingApi.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     tag_name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    is_active = table.Column<bool>(type: "boolean", nullable: false)
+                    is_active = table.Column<bool>(type: "boolean", nullable: false),
+                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -53,9 +53,9 @@ namespace TimeReportingApi.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     task_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    is_active = table.Column<bool>(type: "boolean", nullable: false)
+                    is_active = table.Column<bool>(type: "boolean", nullable: false),
+                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,8 +74,8 @@ namespace TimeReportingApi.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    project_tag_id = table.Column<int>(type: "integer", nullable: false),
-                    value = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                    value = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    project_tag_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -93,8 +93,6 @@ namespace TimeReportingApi.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    project_task_id = table.Column<int>(type: "integer", nullable: false),
                     issue_id = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
                     standard_hours = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
                     overtime_hours = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
@@ -105,7 +103,9 @@ namespace TimeReportingApi.Migrations
                     decline_comment = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    user_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
+                    user_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    project_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    project_task_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {

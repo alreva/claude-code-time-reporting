@@ -7,13 +7,6 @@ public class TimeEntry
 {
     public Guid Id { get; set; }
 
-    [Required]
-    [MaxLength(10)]
-    public string ProjectCode { get; set; } = string.Empty;
-
-    [Required]
-    public int ProjectTaskId { get; set; }
-
     [MaxLength(30)]
     public string? IssueId { get; set; }
 

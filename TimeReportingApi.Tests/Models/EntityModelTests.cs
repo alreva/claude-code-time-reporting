@@ -16,8 +16,6 @@ public class EntityModelTests
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
-            ProjectCode = "INTERNAL",
-            ProjectTaskId = 1,
             StandardHours = 8.0m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -29,8 +27,6 @@ public class EntityModelTests
 
         // Assert
         entry.Id.Should().NotBe(Guid.Empty);
-        entry.ProjectCode.Should().Be("INTERNAL");
-        entry.ProjectTaskId.Should().Be(1);
         entry.StandardHours.Should().Be(8.0m);
         entry.OvertimeHours.Should().Be(0.0m);
         entry.StartDate.Should().Be(DateOnly.FromDateTime(DateTime.Today));
@@ -73,8 +69,8 @@ public class EntityModelTests
     {
         // Arrange
         var entry = new TimeEntry { Id = Guid.NewGuid() };
-        var tag1 = new TimeEntryTag { TimeEntryId = entry.Id, TagValueId = 1 };
-        var tag2 = new TimeEntryTag { TimeEntryId = entry.Id, TagValueId = 2 };
+        var tag1 = new TimeEntryTag { Id = 1 };
+        var tag2 = new TimeEntryTag { Id = 2 };
 
         // Act
         entry.Tags.Add(tag1);
@@ -82,8 +78,8 @@ public class EntityModelTests
 
         // Assert
         entry.Tags.Should().HaveCount(2);
-        entry.Tags[0].TagValueId.Should().Be(1);
-        entry.Tags[1].TagValueId.Should().Be(2);
+        entry.Tags[0].Id.Should().Be(1);
+        entry.Tags[1].Id.Should().Be(2);
     }
 
     [Fact]
@@ -102,15 +98,11 @@ public class EntityModelTests
         // Arrange & Act
         var tag = new TimeEntryTag
         {
-            Id = 1,
-            TimeEntryId = Guid.NewGuid(),
-            TagValueId = 5
+            Id = 1
         };
 
         // Assert
         tag.Id.Should().Be(1);
-        tag.TimeEntryId.Should().NotBe(Guid.Empty);
-        tag.TagValueId.Should().Be(5);
     }
 
     [Fact]
@@ -120,13 +112,11 @@ public class EntityModelTests
         var allowedValue = new TagValue
         {
             Id = 1,
-            ProjectTagId = 1,
             Value = "Production"
         };
 
         // Assert
         allowedValue.Id.Should().Be(1);
-        allowedValue.ProjectTagId.Should().Be(1);
         allowedValue.Value.Should().Be("Production");
     }
 
@@ -181,14 +171,12 @@ public class EntityModelTests
         var task = new ProjectTask
         {
             Id = 1,
-            ProjectCode = "INTERNAL",
             TaskName = "Development",
             IsActive = true
         };
 
         // Assert
         task.Id.Should().Be(1);
-        task.ProjectCode.Should().Be("INTERNAL");
         task.TaskName.Should().Be("Development");
         task.IsActive.Should().BeTrue();
     }
@@ -210,14 +198,12 @@ public class EntityModelTests
         var tagConfig = new ProjectTag
         {
             Id = 1,
-            ProjectCode = "INTERNAL",
             TagName = "Environment",
             IsActive = true
         };
 
         // Assert
         tagConfig.Id.Should().Be(1);
-        tagConfig.ProjectCode.Should().Be("INTERNAL");
         tagConfig.TagName.Should().Be("Environment");
         tagConfig.IsActive.Should().BeTrue();
     }
@@ -248,9 +234,9 @@ public class EntityModelTests
     {
         // Arrange
         var tagConfig = new ProjectTag { Id = 1 };
-        tagConfig.AllowedValues.Add(new TagValue { ProjectTagId = 1, Value = "Production" });
-        tagConfig.AllowedValues.Add(new TagValue { ProjectTagId = 1, Value = "Staging" });
-        tagConfig.AllowedValues.Add(new TagValue { ProjectTagId = 1, Value = "Development" });
+        tagConfig.AllowedValues.Add(new TagValue { Value = "Production" });
+        tagConfig.AllowedValues.Add(new TagValue { Value = "Staging" });
+        tagConfig.AllowedValues.Add(new TagValue { Value = "Development" });
 
         // Act & Assert
         tagConfig.AllowedValues.Should().HaveCount(3);
@@ -264,7 +250,7 @@ public class EntityModelTests
     {
         // Arrange & Act
         var project = new Project { Code = "INTERNAL", Name = "Internal" };
-        var entry = new TimeEntry { ProjectCode = "INTERNAL", Project = project };
+        var entry = new TimeEntry { Project = project };
 
         // Assert
         entry.Project.Should().NotBeNull();
@@ -276,8 +262,8 @@ public class EntityModelTests
     {
         // Arrange
         var project = new Project { Code = "INTERNAL" };
-        var task1 = new ProjectTask { ProjectCode = "INTERNAL", TaskName = "Development" };
-        var task2 = new ProjectTask { ProjectCode = "INTERNAL", TaskName = "Testing" };
+        var task1 = new ProjectTask { TaskName = "Development" };
+        var task2 = new ProjectTask { TaskName = "Testing" };
 
         // Act
         project.AvailableTasks.Add(task1);
@@ -294,7 +280,7 @@ public class EntityModelTests
     {
         // Arrange
         var project = new Project { Code = "INTERNAL" };
-        var tagConfig = new ProjectTag { ProjectCode = "INTERNAL", TagName = "Environment" };
+        var tagConfig = new ProjectTag { TagName = "Environment" };
 
         // Act
         project.Tags.Add(tagConfig);
@@ -309,7 +295,7 @@ public class EntityModelTests
     {
         // Arrange & Act
         var project = new Project { Code = "INTERNAL", Name = "Internal" };
-        var task = new ProjectTask { ProjectCode = "INTERNAL", TaskName = "Development", Project = project };
+        var task = new ProjectTask { TaskName = "Development", Project = project };
 
         // Assert
         task.Project.Should().NotBeNull();
@@ -321,7 +307,7 @@ public class EntityModelTests
     {
         // Arrange & Act
         var project = new Project { Code = "INTERNAL", Name = "Internal" };
-        var tagConfig = new ProjectTag { ProjectCode = "INTERNAL", TagName = "Environment", Project = project };
+        var tagConfig = new ProjectTag { TagName = "Environment", Project = project };
 
         // Assert
         tagConfig.Project.Should().NotBeNull();

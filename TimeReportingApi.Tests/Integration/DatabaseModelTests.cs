@@ -51,15 +51,15 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
-        var projectTask = new ProjectTask { ProjectCode = "PROJ001", TaskName = "Development", IsActive = true };
+        var projectTask = new ProjectTask { Project = project, TaskName = "Development", IsActive = true };
         await context.ProjectTasks.AddAsync(projectTask);
         await context.SaveChangesAsync();
 
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
-            ProjectCode = "PROJ001",
-            ProjectTaskId = projectTask.Id,
+            Project = project,
+            ProjectTask = projectTask,
             StandardHours = 8.0m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -74,10 +74,11 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         // Assert
         var retrieved = await context.TimeEntries
             .Include(te => te.ProjectTask)
+            .Include(te => te.Project)
             .FirstOrDefaultAsync(te => te.Id == timeEntry.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.ProjectCode.Should().Be("PROJ001");
-        retrieved.ProjectTaskId.Should().Be(projectTask.Id);
+        retrieved!.Project.Code.Should().Be("PROJ001");
+        retrieved.ProjectTask.Id.Should().Be(projectTask.Id);
         retrieved.ProjectTask.TaskName.Should().Be("Development");
         retrieved.StandardHours.Should().Be(8.0m);
         retrieved.Status.Should().Be(TimeEntryStatus.NotReported);
@@ -93,15 +94,15 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
-        var projectTask = new ProjectTask { ProjectCode = "PROJ002", TaskName = "Development", IsActive = true };
+        var projectTask = new ProjectTask { Project = project, TaskName = "Development", IsActive = true };
         await context.ProjectTasks.AddAsync(projectTask);
         await context.SaveChangesAsync();
 
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
-            ProjectCode = "PROJ002",
-            ProjectTaskId = projectTask.Id,
+            Project = project,
+            ProjectTask = projectTask,
             StandardHours = -5.0m, // Invalid - violates CHECK constraint
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -127,15 +128,15 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
-        var projectTask = new ProjectTask { ProjectCode = "PROJ003", TaskName = "Development", IsActive = true };
+        var projectTask = new ProjectTask { Project = project, TaskName = "Development", IsActive = true };
         await context.ProjectTasks.AddAsync(projectTask);
         await context.SaveChangesAsync();
 
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
-            ProjectCode = "PROJ003",
-            ProjectTaskId = projectTask.Id,
+            Project = project,
+            ProjectTask = projectTask,
             StandardHours = 8.0m,
             OvertimeHours = -2.0m, // Invalid - violates CHECK constraint
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -152,16 +153,20 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
     }
 
     [Fact]
-    public async Task TimeEntry_WithInvalidProjectCode_ThrowsDbUpdateException()
+    public async Task TimeEntry_WithInvalidProject_ThrowsDbUpdateException()
     {
         // Arrange
         using var context = _fixture.CreateNewContext();
 
+        // Create detached entities that don't exist in database
+        var invalidProject = new Project { Code = "INVALID", Name = "Invalid Project" };
+        var invalidTask = new ProjectTask { Id = 999, TaskName = "Invalid Task" };
+
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
-            ProjectCode = "INVALID", // Project doesn't exist
-            ProjectTaskId = 999, // Non-existent ProjectTask
+            Project = invalidProject,  // Detached entity, not in DB
+            ProjectTask = invalidTask, // Detached entity, not in DB
             StandardHours = 8.0m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
@@ -188,7 +193,7 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
 
         var projectTask = new ProjectTask
         {
-            ProjectCode = "PROJ004",
+            Project = project,
             TaskName = "Bug Fixing",
             IsActive = true
         };
@@ -199,7 +204,8 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
 
         // Assert
         var retrieved = await context.ProjectTasks
-            .FirstOrDefaultAsync(pt => pt.ProjectCode == "PROJ004" && pt.TaskName == "Bug Fixing");
+            .Where(pt => EF.Property<string>(pt, "ProjectCode") == "PROJ004" && pt.TaskName == "Bug Fixing")
+            .FirstOrDefaultAsync();
 
         retrieved.Should().NotBeNull();
         retrieved!.TaskName.Should().Be("Bug Fixing");
@@ -218,7 +224,7 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
 
         var tagConfig = new ProjectTag
         {
-            ProjectCode = "PROJ005",
+            Project = project,
             TagName = "Priority"
         };
         tagConfig.AllowedValues.Add(new TagValue { Value = "High" });
@@ -232,7 +238,8 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         // Assert
         var retrieved = await context.ProjectTags
             .Include(tc => tc.AllowedValues)
-            .FirstOrDefaultAsync(tc => tc.ProjectCode == "PROJ005" && tc.TagName == "Priority");
+            .Where(tc => EF.Property<string>(tc, "ProjectCode") == "PROJ005" && tc.TagName == "Priority")
+            .FirstOrDefaultAsync();
 
         retrieved.Should().NotBeNull();
         retrieved!.AllowedValues.Should().HaveCount(3);
@@ -249,16 +256,16 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.Projects.AddAsync(project);
         await context.SaveChangesAsync();
 
-        var projectTask = new ProjectTask { ProjectCode = "PROJ006", TaskName = "Development", IsActive = true };
+        var projectTask = new ProjectTask { Project = project, TaskName = "Development", IsActive = true };
         await context.ProjectTasks.AddAsync(projectTask);
         await context.SaveChangesAsync();
 
         // Create tag configurations with allowed values
-        var priorityTag = new ProjectTag { ProjectCode = "PROJ006", TagName = "Priority" };
+        var priorityTag = new ProjectTag { Project = project, TagName = "Priority" };
         priorityTag.AllowedValues.Add(new TagValue { Value = "High" });
         priorityTag.AllowedValues.Add(new TagValue { Value = "Low" });
 
-        var componentTag = new ProjectTag { ProjectCode = "PROJ006", TagName = "Component" };
+        var componentTag = new ProjectTag { Project = project, TagName = "Component" };
         componentTag.AllowedValues.Add(new TagValue { Value = "Frontend" });
         componentTag.AllowedValues.Add(new TagValue { Value = "Backend" });
 
@@ -266,23 +273,23 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         await context.ProjectTags.AddAsync(componentTag);
         await context.SaveChangesAsync();
 
-        // Get the IDs of specific allowed values
-        var highPriorityValueId = priorityTag.AllowedValues.First(v => v.Value == "High").Id;
-        var frontendComponentValueId = componentTag.AllowedValues.First(v => v.Value == "Frontend").Id;
+        // Get the tag values
+        var highPriorityValue = priorityTag.AllowedValues.First(v => v.Value == "High");
+        var frontendComponentValue = componentTag.AllowedValues.First(v => v.Value == "Frontend");
 
         var timeEntry = new TimeEntry
         {
             Id = Guid.NewGuid(),
-            ProjectCode = "PROJ006",
-            ProjectTaskId = projectTask.Id,
+            Project = project,
+            ProjectTask = projectTask,
             StandardHours = 6.5m,
             OvertimeHours = 0.0m,
             StartDate = DateOnly.FromDateTime(DateTime.Today),
             CompletionDate = DateOnly.FromDateTime(DateTime.Today),
             Status = TimeEntryStatus.NotReported
         };
-        timeEntry.Tags.Add(new TimeEntryTag { TagValueId = highPriorityValueId });
-        timeEntry.Tags.Add(new TimeEntryTag { TagValueId = frontendComponentValueId });
+        timeEntry.Tags.Add(new TimeEntryTag { TagValue = highPriorityValue });
+        timeEntry.Tags.Add(new TimeEntryTag { TagValue = frontendComponentValue });
 
         // Act
         await context.TimeEntries.AddAsync(timeEntry);
@@ -315,8 +322,8 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
         using var context = _fixture.CreateNewContext();
 
         var project = new Project { Code = "PROJ007", Name = "Project 7", IsActive = true };
-        var projectTask = new ProjectTask { ProjectCode = "PROJ007", TaskName = "Testing", IsActive = true };
-        var tagConfig = new ProjectTag { ProjectCode = "PROJ007", TagName = "Type" };
+        var projectTask = new ProjectTask { Project = project, TaskName = "Testing", IsActive = true };
+        var tagConfig = new ProjectTag { Project = project, TagName = "Type" };
         tagConfig.AllowedValues.Add(new TagValue { Value = "Unit" });
         tagConfig.AllowedValues.Add(new TagValue { Value = "Integration" });
 
@@ -334,15 +341,15 @@ public class DatabaseModelTests : IClassFixture<DatabaseFixture>, IDisposable
 
         // Assert - Related entities should be deleted (cascade)
         var remainingTasks = await context.ProjectTasks
-            .Where(pt => pt.ProjectCode == "PROJ007")
+            .Where(pt => EF.Property<string>(pt, "ProjectCode") == "PROJ007")
             .ToListAsync();
 
         var remainingTagConfigs = await context.ProjectTags
-            .Where(tc => tc.ProjectCode == "PROJ007")
+            .Where(tc => EF.Property<string>(tc, "ProjectCode") == "PROJ007")
             .ToListAsync();
 
         var remainingAllowedValues = await context.TagValues
-            .Where(av => av.ProjectTagId == tagConfigId)
+            .Where(av => EF.Property<int>(av, "ProjectTagId") == tagConfigId)
             .ToListAsync();
 
         remainingTasks.Should().BeEmpty("ProjectTasks should cascade delete");
