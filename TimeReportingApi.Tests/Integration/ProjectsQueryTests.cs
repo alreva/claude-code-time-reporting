@@ -88,9 +88,13 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
         var inactiveProject = new Project { Code = "INACTIVE", Name = "Inactive Project", IsActive = false };
         _context.Projects.Add(inactiveProject);
 
-        // Add tasks to active project
-        var task1 = new ProjectTask { TaskName = "Development", IsActive = true, Project = activeProject };
-        var task2 = new ProjectTask { TaskName = "Testing", IsActive = true, Project = activeProject };
+        // Save projects first to ensure they exist in database
+        await _context.SaveChangesAsync();
+
+        // Add tasks to active project using the navigation property
+        // EF Core will automatically set the shadow property "ProjectCode"
+        var task1 = new ProjectTask { Project = activeProject, TaskName = "Development", IsActive = true };
+        var task2 = new ProjectTask { Project = activeProject, TaskName = "Testing", IsActive = true };
         _context.ProjectTasks.AddRange(task1, task2);
 
         await _context.SaveChangesAsync();
@@ -202,4 +206,50 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
         var tasks = project.GetProperty("availableTasks");
         tasks.GetArrayLength().Should().Be(2);
     }
+
+    #region Single Project Lookup (Task 3.4)
+
+    [Fact]
+    public async Task Project_WithValidCode_ReturnsProjectWithDetails()
+    {
+        // Arrange
+        var query = @"
+            query {
+                project(code: ""ACTIVE"") {
+                    code
+                    name
+                    isActive
+                }
+            }";
+
+        // Act
+        var result = await ExecuteGraphQL(query);
+
+        // Assert
+        var project = result.RootElement.GetProperty("data").GetProperty("project");
+        project.GetProperty("code").GetString().Should().Be("ACTIVE");
+        project.GetProperty("name").GetString().Should().Be("Active Project");
+        project.GetProperty("isActive").GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Project_WithInvalidCode_ReturnsNull()
+    {
+        // Arrange
+        var query = @"
+            query {
+                project(code: ""NONEXISTENT"") {
+                    code
+                }
+            }";
+
+        // Act
+        var result = await ExecuteGraphQL(query);
+
+        // Assert
+        var project = result.RootElement.GetProperty("data").GetProperty("project");
+        project.ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    #endregion
 }

@@ -45,4 +45,17 @@ public class Query
     {
         return context.Projects;
     }
+
+    /// <summary>
+    /// Get a single project by code.
+    /// Returns null if project not found.
+    /// </summary>
+    [UseProjection]
+    [UseSingleOrDefault]
+    public IQueryable<Project> GetProject(
+        string code,
+        [Service] TimeReportingDbContext context)
+    {
+        return context.Projects.Where(p => p.Code == code);
+    }
 }
