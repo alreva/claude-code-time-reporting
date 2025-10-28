@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 6
-**In Progress:** 0
-**Pending:** 55
+**Completed:** 8
+**In Progress:** 1
+**Pending:** 52
 
 ---
 
@@ -35,9 +35,9 @@
 | 2.1 | ASP.NET + HotChocolate Setup | Create ASP.NET Core project with HotChocolate GraphQL | 1 hr | ☑ Completed | [View](./tasks/phase-02-api-core/task-2.1-aspnet-hotchocolate-setup.md) |
 | 2.2 | Entity Framework Core Config | Configure EF Core with PostgreSQL provider and connection | 1 hr | ☑ Completed | [View](./tasks/phase-02-api-core/task-2.2-ef-core-config.md) |
 | 2.3 | Data Models | Implement C# entity models (TimeEntry, Project, ProjectTask, TagConfiguration) | 1-2 hrs | ☑ Completed | Create |
-| 2.4 | Bearer Auth Middleware | Add Bearer token authentication middleware | 1 hr | ☐ Pending | Create |
-| 2.5 | Health Check Endpoint | Create `/health` endpoint for Docker health checks | 30 min | ☐ Pending | Create |
-| 2.6 | Test Project & Database Test Infrastructure | Create xUnit test project with DatabaseFixture and integrate SQL schema tests | 1.5-2 hrs | ☐ Pending | [View](./tasks/phase-02-api-core/task-2.6-test-infrastructure.md) |
+| 2.4 | Bearer Auth Middleware | Add Bearer token authentication middleware | 1 hr | ☑ Completed | Create |
+| 2.5 | Health Check Endpoint | Create `/health` endpoint for Docker health checks | 30 min | ☑ Completed | Create |
+| 2.6 | Test Project & Database Test Infrastructure | Create xUnit test project with DatabaseFixture and integrate SQL schema tests | 1.5-2 hrs | ⚙ In Progress | [View](./tasks/phase-02-api-core/task-2.6-test-infrastructure.md) |
 
 **Phase 2 Total:** 6-7.5 hours
 
@@ -286,9 +286,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 2, Task 2.4 (Bearer Auth Middleware)
-**Last Updated:** 2025-10-27
-**Overall Progress:** 9.8% (6/61 tasks)
+**Currently On:** Phase 2, Task 2.6 (Test Infrastructure)
+**Last Updated:** 2025-10-28
+**Overall Progress:** 13.1% (8/61 tasks)
 
 ---
 
