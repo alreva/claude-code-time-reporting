@@ -177,7 +177,7 @@ public class McpServer
         {
             "log_time" => await new LogTimeTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "query_time_entries" => await new QueryEntriesTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "update_time_entry" => PlaceholderToolResult("update_time_entry"),
+            "update_time_entry" => await new UpdateEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "move_task_to_project" => PlaceholderToolResult("move_task_to_project"),
             "delete_time_entry" => PlaceholderToolResult("delete_time_entry"),
             "get_available_projects" => PlaceholderToolResult("get_available_projects"),
