@@ -136,19 +136,20 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 7.1 | MCP Project Init | Initialize TypeScript Node.js project with MCP SDK | 1 hr | ☐ Pending | Create |
-| 7.2 | Dependencies | Install MCP SDK, GraphQL client, and other dependencies | 30 min | ☐ Pending | Create |
-| 7.3 | Config Structure | Create configuration file structure for API URL and token | 30 min | ☐ Pending | Create |
-| 7.4 | GraphQL Client | Set up GraphQL client with authentication | 1 hr | ☐ Pending | Create |
+| 7.1 | MCP Project Init | Initialize C# .NET Console Application project with structure | 1 hr | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.1-mcp-project-init.md) |
+| 7.2 | Dependencies | Install GraphQL.Client NuGet packages and configure GraphQL client | 30 min | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.2-dependencies.md) |
+| 7.3 | JSON-RPC Models | Create JSON-RPC request/response models for MCP protocol | 30 min | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.3-json-rpc-models.md) |
+| 7.4 | MCP Server Core | Implement stdio handler with tools/list and tools/call routing | 1 hr | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.4-mcp-server.md) |
 
 **Phase 7 Total:** 3 hours
 
 **Key Deliverables:**
-- `mcp-server/package.json`
-- `mcp-server/tsconfig.json`
-- `mcp-server/src/index.ts`
-- `mcp-server/src/config.ts`
-- `mcp-server/src/graphql-client.ts`
+- `TimeReportingMcp/TimeReportingMcp.csproj`
+- `TimeReportingMcp/Program.cs` - Entry point
+- `TimeReportingMcp/McpServer.cs` - Core server with stdio handling
+- `TimeReportingMcp/Models/` - JSON-RPC models
+- `TimeReportingMcp/Utils/` - Configuration and GraphQL client wrapper
+- `TimeReportingMcp/Tools/` - Tool handlers (empty, filled in Phase 8)
 
 ---
 
