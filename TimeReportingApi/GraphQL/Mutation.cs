@@ -329,4 +329,83 @@ public class Mutation
 
         return entry;
     }
+
+    /// <summary>
+    /// Update tags on a time entry.
+    /// This is a convenience mutation that only updates tags without requiring other fields.
+    /// Tags are validated against the entry's project tag configurations.
+    /// Only allowed for entries in NOT_REPORTED or DECLINED status.
+    /// ADR 0001: Uses navigation properties for TagValue relationships.
+    /// </summary>
+    public async Task<TimeEntry> UpdateTags(
+        Guid entryId,
+        List<TagInput> tags,
+        [Service] ValidationService validator,
+        [Service] TimeReportingDbContext context)
+    {
+        // Load the existing entry with all navigation properties
+        var entry = await context.TimeEntries
+            .Include(e => e.Project)
+            .Include(e => e.ProjectTask)
+            .Include(e => e.Tags)
+                .ThenInclude(t => t.TagValue)
+                    .ThenInclude(tv => tv.ProjectTag)
+            .FirstOrDefaultAsync(e => e.Id == entryId);
+
+        if (entry == null)
+        {
+            throw new Exceptions.ValidationException($"Time entry with ID '{entryId}' not found", "id");
+        }
+
+        // Check status - only NOT_REPORTED and DECLINED can be updated
+        if (entry.Status == TimeEntryStatus.Submitted)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Cannot update tags for time entry in SUBMITTED status. Entry must be APPROVED or DECLINED first.");
+        }
+
+        if (entry.Status == TimeEntryStatus.Approved)
+        {
+            throw new Exceptions.BusinessRuleException(
+                $"Cannot update tags for time entry in APPROVED status. Approved entries are immutable.");
+        }
+
+        // Get the project code from the existing entry (via shadow property)
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
+
+        // Validate tags if provided
+        if (tags != null && tags.Count > 0)
+        {
+            await validator.ValidateTagsAsync(projectCode, tags);
+        }
+
+        // Clear existing tags
+        entry.Tags.Clear();
+
+        // Add new tags if provided
+        if (tags != null && tags.Count > 0)
+        {
+            foreach (var tagInput in tags)
+            {
+                var tagValue = await context.TagValues
+                    .Include(tv => tv.ProjectTag)
+                    .FirstAsync(tv => EF.Property<string>(tv.ProjectTag, "ProjectCode") == projectCode
+                                   && tv.ProjectTag.TagName == tagInput.Name
+                                   && tv.Value == tagInput.Value);
+
+                entry.Tags.Add(new TimeEntryTag
+                {
+                    TimeEntry = entry,
+                    TagValue = tagValue  // ADR 0001: Navigation property
+                });
+            }
+        }
+
+        // Update timestamp
+        entry.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+
+        return entry;
+    }
 }
