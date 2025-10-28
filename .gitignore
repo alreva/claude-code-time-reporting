@@ -1,0 +1,37 @@
+# Environment variables with secrets
+.env
+
+# Build outputs
+bin/
+obj/
+out/
+publish/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+.DS_Store
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# NuGet packages
+*.nupkg
+*.snupkg
+
+# Entity Framework migrations (if auto-generated)
+**/Migrations/*.Designer.cs
+
+# Logs
+*.log
+logs/
+
+# OS files
+Thumbs.db
+.DS_Store

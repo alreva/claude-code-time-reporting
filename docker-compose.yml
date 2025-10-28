@@ -1,4 +1,5 @@
 services:
+  # PostgreSQL Database Service
   postgres:
     image: postgres:16-alpine
     container_name: time-reporting-db
@@ -16,7 +17,47 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - time-reporting-network
+
+  # GraphQL API Service
+  api:
+    build:
+      context: .
+      dockerfile: TimeReportingApi/Dockerfile
+    container_name: time-reporting-api
+    environment:
+      # ASP.NET Core Configuration
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:5001
+
+      # Database Connection
+      # IMPORTANT: Use 'postgres' service name, not 'localhost'
+      ConnectionStrings__TimeReportingDb: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-time_reporting};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+
+      # Authentication
+      Authentication__BearerToken: ${BEARER_TOKEN}
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy  # Wait for database to be healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:5001/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s  # Give API more time to start up
+    restart: unless-stopped
+    networks:
+      - time-reporting-network
 
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  time-reporting-network:
+    driver: bridge

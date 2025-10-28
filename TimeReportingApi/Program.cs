@@ -7,9 +7,18 @@ using TimeReportingApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Kestrel to listen on port 5001 (5000 is used by macOS AirPlay)
+// In production/Docker, listen on all interfaces (0.0.0.0)
+// In development, listen on localhost only for security
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenLocalhost(5001);
+    if (builder.Environment.IsProduction())
+    {
+        options.ListenAnyIP(5001);  // Listen on 0.0.0.0:5001 (all interfaces)
+    }
+    else
+    {
+        options.ListenLocalhost(5001);  // Listen on 127.0.0.1:5001 (localhost only)
+    }
 });
 
 // Add Entity Framework Core with PostgreSQL

@@ -18,6 +18,7 @@
       "SlashCommand(/db-logs)",
       "SlashCommand(/db-psql)",
       "SlashCommand(/status)",
+      "SlashCommand(/deploy)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git status:*)",

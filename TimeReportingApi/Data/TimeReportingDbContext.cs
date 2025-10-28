@@ -107,7 +107,7 @@ public class TimeReportingDbContext : DbContext
                     v => System.Text.RegularExpressions.Regex.Replace(
                         v.ToString(), "([a-z])([A-Z])", "$1_$2").ToUpperInvariant(),
                     v => (TimeEntryStatus)Enum.Parse(typeof(TimeEntryStatus),
-                        v.Replace("_", ""), ignoreCase: true))
+                        v.Replace("_", ""), true))
                 .IsRequired();
 
             entity.Property(e => e.DeclineComment)

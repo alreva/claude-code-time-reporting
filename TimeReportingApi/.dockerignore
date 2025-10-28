@@ -1,0 +1,34 @@
+# Exclude build outputs
+bin/
+obj/
+publish/
+out/
+
+# Exclude IDE files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Exclude test results
+TestResults/
+*.trx
+
+# Exclude local config
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+# Exclude documentation
+*.md
+!README.md
+
+# Exclude git
+.git/
+.gitignore
+.gitattributes
+
+# Exclude Docker files
+Dockerfile
+.dockerignore
