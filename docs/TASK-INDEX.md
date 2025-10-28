@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
 **Total Tasks:** 61
-**Completed:** 28
+**Completed:** 32
 **In Progress:** 0
-**Pending:** 33
+**Pending:** 29
 
 ---
 
@@ -136,10 +136,10 @@
 
 | # | Task | Description | Est. Time | Status | Details |
 |---|------|-------------|-----------|--------|---------|
-| 7.1 | MCP Project Init | Initialize C# .NET Console Application project with structure | 1 hr | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.1-mcp-project-init.md) |
-| 7.2 | Dependencies | Install GraphQL.Client NuGet packages and configure GraphQL client | 30 min | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.2-dependencies.md) |
-| 7.3 | JSON-RPC Models | Create JSON-RPC request/response models for MCP protocol | 30 min | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.3-json-rpc-models.md) |
-| 7.4 | MCP Server Core | Implement stdio handler with tools/list and tools/call routing | 1 hr | ☐ Pending | [View](./tasks/phase-07-mcp-setup/task-7.4-mcp-server.md) |
+| 7.1 | MCP Project Init | Initialize C# .NET Console Application project with structure | 1 hr | ☑ Completed | [View](./tasks/phase-07-mcp-setup/task-7.1-mcp-project-init.md) |
+| 7.2 | Dependencies | Install GraphQL.Client NuGet packages and configure GraphQL client | 30 min | ☑ Completed | [View](./tasks/phase-07-mcp-setup/task-7.2-dependencies.md) |
+| 7.3 | JSON-RPC Models | Create JSON-RPC request/response models for MCP protocol | 30 min | ☑ Completed | [View](./tasks/phase-07-mcp-setup/task-7.3-json-rpc-models.md) |
+| 7.4 | MCP Server Core | Implement stdio handler with tools/list and tools/call routing | 1 hr | ☑ Completed | [View](./tasks/phase-07-mcp-setup/task-7.4-mcp-server.md) |
 
 **Phase 7 Total:** 3 hours
 
@@ -291,9 +291,9 @@
 
 ### Current Status
 
-**Currently On:** Phase 7, Task 7.1 (MCP Project Init)
+**Currently On:** Phase 8, Task 8.1 (MCP Tools Part 1)
 **Last Updated:** 2025-10-28
-**Overall Progress:** 45.9% (28/61 tasks)
+**Overall Progress:** 52.5% (32/61 tasks)
 
 ---
 
