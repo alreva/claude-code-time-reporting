@@ -180,8 +180,8 @@ public class McpServer
             "update_time_entry" => await new UpdateEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "move_task_to_project" => await new MoveTaskTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "delete_time_entry" => await new DeleteEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "get_available_projects" => PlaceholderToolResult("get_available_projects"),
-            "submit_time_entry" => PlaceholderToolResult("submit_time_entry"),
+            "get_available_projects" => await new GetProjectsTool(_graphqlClient).ExecuteAsync(argumentsElement),
+            "submit_time_entry" => await new SubmitEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
             _ => throw new InvalidOperationException($"Unknown tool: {toolParams.Name}")
         };
     }
