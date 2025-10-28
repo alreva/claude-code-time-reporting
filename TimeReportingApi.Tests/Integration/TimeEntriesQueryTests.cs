@@ -2,56 +2,85 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using TimeReportingApi.Data;
 using TimeReportingApi.Models;
+using TimeReportingApi.Tests.Fixtures;
+using TimeReportingApi.Tests.Handlers;
 
 namespace TimeReportingApi.Tests.Integration;
 
-public class TimeEntriesQueryTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
+/// <summary>
+/// Integration tests for TimeEntries GraphQL query using real PostgreSQL database.
+/// Each test class gets its own isolated PostgreSQL container via Testcontainers.
+/// </summary>
+public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IAsyncLifetime
 {
+    private readonly PostgresContainerFixture _fixture;
     private readonly WebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
-    private readonly IServiceScope _scope;
-    private readonly TimeReportingDbContext _context;
+    private TimeReportingDbContext _context = null!;
 
-    public TimeEntriesQueryTests(WebApplicationFactory<Program> factory)
+    public TimeEntriesQueryTests(PostgresContainerFixture fixture)
     {
-        _factory = factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
+        _fixture = fixture;
+
+        _factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
             {
-                // Remove the existing DbContext configuration
-                var dbContextDescriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<TimeReportingDbContext>));
-
-                if (dbContextDescriptor != null)
+                builder.ConfigureServices(services =>
                 {
-                    services.Remove(dbContextDescriptor);
-                }
+                    // Remove the existing DbContext configuration
+                    var dbContextDescriptor = services.SingleOrDefault(
+                        d => d.ServiceType == typeof(DbContextOptions<TimeReportingDbContext>));
 
-                // Also remove the DbContext registration itself
-                var dbContextServiceDescriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(TimeReportingDbContext));
+                    if (dbContextDescriptor != null)
+                    {
+                        services.Remove(dbContextDescriptor);
+                    }
 
-                if (dbContextServiceDescriptor != null)
-                {
-                    services.Remove(dbContextServiceDescriptor);
-                }
+                    var dbContextServiceDescriptor = services.SingleOrDefault(
+                        d => d.ServiceType == typeof(TimeReportingDbContext));
 
-                // Add InMemory database for testing
-                services.AddDbContext<TimeReportingDbContext>(options =>
-                {
-                    options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid());
+                    if (dbContextServiceDescriptor != null)
+                    {
+                        services.Remove(dbContextServiceDescriptor);
+                    }
+
+                    // Add PostgreSQL DbContext pointing to the test container
+                    services.AddDbContext<TimeReportingDbContext>(options =>
+                    {
+                        options.UseNpgsql(_fixture.ConnectionString);
+                    });
                 });
+
+                // Use test bearer token
+                builder.UseSetting("Authentication:BearerToken", "test-bearer-token-12345");
             });
-        });
 
-        _client = _factory.CreateClient();
-        _scope = _factory.Services.CreateScope();
-        _context = _scope.ServiceProvider.GetRequiredService<TimeReportingDbContext>();
-
-        SeedTestData();
+        _client = _factory.CreateDefaultClient(new AuthenticationHandler("test-bearer-token-12345"));
     }
 
-    private void SeedTestData()
+    public async Task InitializeAsync()
+    {
+        // Create a new DbContext for seeding
+        var optionsBuilder = new DbContextOptionsBuilder<TimeReportingDbContext>();
+        optionsBuilder.UseNpgsql(_fixture.ConnectionString);
+        _context = new TimeReportingDbContext(optionsBuilder.Options);
+
+        await SeedTestDataAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        // Clean up test data
+        _context.TimeEntries.RemoveRange(_context.TimeEntries);
+        _context.Projects.RemoveRange(_context.Projects);
+        await _context.SaveChangesAsync();
+
+        await _context.DisposeAsync();
+        _client.Dispose();
+        await _factory.DisposeAsync();
+    }
+
+    private async Task SeedTestDataAsync()
     {
         // Create project first
         var project = new Project { Code = "TEST", Name = "Test Project", IsActive = true };
@@ -62,9 +91,9 @@ public class TimeEntriesQueryTests : IClassFixture<WebApplicationFactory<Program
         var task2 = new ProjectTask { TaskName = "Testing", IsActive = true, Project = project };
         _context.ProjectTasks.AddRange(task1, task2);
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
-        // Create time entries - using Add then setting shadow properties
+        // Create time entries
         var entry1 = new TimeEntry
         {
             Id = Guid.NewGuid(),
@@ -94,7 +123,7 @@ public class TimeEntriesQueryTests : IClassFixture<WebApplicationFactory<Program
         };
 
         _context.TimeEntries.AddRange(entry1, entry2);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     private async Task<JsonDocument> ExecuteGraphQL(string query)
@@ -234,12 +263,5 @@ public class TimeEntriesQueryTests : IClassFixture<WebApplicationFactory<Program
 
         var hasNextPage = data.GetProperty("pageInfo").GetProperty("hasNextPage").GetBoolean();
         hasNextPage.Should().BeTrue();
-    }
-
-    public void Dispose()
-    {
-        _context.Database.EnsureDeleted();
-        _scope.Dispose();
-        _client.Dispose();
     }
 }

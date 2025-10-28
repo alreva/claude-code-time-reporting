@@ -93,7 +93,23 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
         timeEntriesField.ValueKind.Should().NotBe(JsonValueKind.Undefined);
 
         // Verify it returns a connection type (has pageInfo and nodes)
-        var typeName = timeEntriesField.GetProperty("type").GetProperty("ofType").GetProperty("name").GetString();
+        var type = timeEntriesField.GetProperty("type");
+
+        // Handle both direct types and wrapped types (NON_NULL, LIST)
+        string? typeName = null;
+        if (type.TryGetProperty("name", out var nameElement) && nameElement.ValueKind != JsonValueKind.Null)
+        {
+            typeName = nameElement.GetString();
+        }
+        else if (type.TryGetProperty("ofType", out var ofType) && ofType.ValueKind != JsonValueKind.Null)
+        {
+            if (ofType.TryGetProperty("name", out var ofTypeName))
+            {
+                typeName = ofTypeName.GetString();
+            }
+        }
+
+        typeName.Should().NotBeNullOrEmpty();
         typeName.Should().Contain("Connection");
     }
 
