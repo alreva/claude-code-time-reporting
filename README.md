@@ -6,28 +6,30 @@ A time reporting system that integrates Claude Code with a custom GraphQL-based 
 
 ## 🚀 Quick Start
 
-**Get up and running in under 1 minute:**
+**Get up and running in 3 commands:**
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/YOUR_USERNAME/time-reporting-system.git
 cd time-reporting-system
 
-# Generate bearer token and create .env file
+# 2. Generate bearer token and load environment variables
 ./setup.sh
+source env.sh
 
-# Deploy the full stack (database + API)
+# 3. Deploy the full stack (database + API)
 /deploy
 ```
 
-**That's it!** All tracked files remain unchanged - your environment-specific token lives only in `.env`:
+**That's it!** All tracked files remain unchanged - your token lives in environment variables:
 
-- ✅ `./setup.sh` generates a secure bearer token → `.env` file
-- ✅ `.env` is automatically used by MCP server (via `run-mcp.sh` wrapper)
-- ✅ `.env` is automatically used by `/deploy` (docker-compose reads it)
-- ✅ No files are modified after clone - token comes from environment only
+- ✅ `./setup.sh` generates a secure bearer token → creates `env.sh` and `.env`
+- ✅ `source env.sh` loads environment variables into your shell
+- ✅ MCP server reads `$BEARER_TOKEN` from shell environment
+- ✅ Docker Compose automatically reads `.env` file for containers
+- ✅ No tracked files are ever modified - token comes from environment only
 
-**Clone, run two commands, done!**
+**Pure environment variable approach - no hardcoded secrets!**
 
 ---
 
