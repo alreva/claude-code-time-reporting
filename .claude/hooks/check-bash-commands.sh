@@ -1,6 +1,6 @@
 #!/bin/bash
-# check-dotnet-commands.sh - PreToolUse hook for detailed enforcement
-# Warns about direct dotnet commands and suggests slash commands instead
+# check-bash-commands.sh - PreToolUse hook for Bash command enforcement
+# Blocks discouraged commands: dotnet, docker-compose, cd
 
 tool_use=$(cat)
 
@@ -30,6 +30,20 @@ EOF
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
     "permissionDecisionReason": "❌ Direct docker-compose/podman-compose commands are not allowed. Please use slash commands instead:\n\n- /db-start (start PostgreSQL)\n- /db-stop (stop PostgreSQL)\n- /db-restart (restart PostgreSQL)\n- /db-logs (view logs)\n- /db-psql (connect to database)"
+  }
+}
+EOF
+    exit 0
+  fi
+
+  # Check if it's a cd command
+  if echo "$command" | grep -qE '^cd[[:space:]]'; then
+    cat <<'EOF'
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "❌ The 'cd' command is discouraged. Please use absolute paths instead of changing directories.\n\nExample:\n❌ Bad:  cd /foo/bar && ls\n✅ Good: ls /foo/bar\n\n❌ Bad:  cd TimeReportingApi && dotnet build\n✅ Good: Use /build (which handles paths automatically)\n\nBenefits:\n- Maintains consistent working directory\n- Prevents accidental operations in wrong directory\n- Makes commands more explicit and safer"
   }
 }
 EOF

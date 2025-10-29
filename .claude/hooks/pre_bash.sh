@@ -22,4 +22,11 @@ if [[ "$cmd" =~ ^podman-compose[[:space:]]+(up|down|restart)[[:space:]] ]]; then
   exit 1
 fi
 
+# Block cd command - encourage using absolute paths instead
+if [[ "$cmd" =~ ^cd[[:space:]] ]]; then
+  echo "❌ The 'cd' command is discouraged. Use absolute paths instead of changing directories."
+  echo "Example: Instead of 'cd /foo/bar && ls', use 'ls /foo/bar'"
+  exit 1
+fi
+
 exit 0
