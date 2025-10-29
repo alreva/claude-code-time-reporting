@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
-**Total Tasks:** 61
+**Total Tasks:** 65
 **Completed:** 61 ✅
 **In Progress:** 0
-**Pending:** 0
+**Pending:** 4
 
 ---
 
@@ -255,6 +255,37 @@
 
 ---
 
+## Phase 13: StrawberryShake Migration (4 tasks)
+
+| # | Task | Description | Est. Time | Status | Details |
+|---|------|-------------|-----------|--------|---------|
+| 13.1 | Create GraphQL Operations | Create `.graphql` operation files for all 7 MCP tools | 1 hr | ☐ Pending | [View](./tasks/phase-13-strawberryshake-migration/task-13.1-create-graphql-operations.md) |
+| 13.2 | Refactor Tool Handlers | Refactor all 7 tool handlers to use `ITimeReportingClient` | 2-3 hrs | ☐ Pending | [View](./tasks/phase-13-strawberryshake-migration/task-13.2-refactor-tool-handlers.md) |
+| 13.3 | Remove Old Client Code | Delete `GraphQLClientWrapper` and manual type definitions | 30 min | ☐ Pending | [View](./tasks/phase-13-strawberryshake-migration/task-13.3-remove-old-client-code.md) |
+| 13.4 | Update Documentation | Update all docs to reflect StrawberryShake architecture | 1 hr | ☐ Pending | [View](./tasks/phase-13-strawberryshake-migration/task-13.4-update-documentation.md) |
+
+**Phase 13 Total:** 4.5-5.5 hours
+
+**Key Deliverables:**
+- `TimeReportingMcp/GraphQL/*.graphql` - All 7 operation definitions
+- `TimeReportingMcp/Tools/*.cs` - Refactored to use `ITimeReportingClient`
+- `TimeReportingMcp/Program.cs` - StrawberryShake DI setup
+- Deleted: `GraphQLClientWrapper.cs`, `GraphQLModels.cs` (~250 lines removed)
+- Updated: All architecture and setup documentation
+
+**Benefits:**
+- ✅ Compile-time type safety for all GraphQL operations
+- ✅ Full IntelliSense support for queries and mutations
+- ✅ 33% code reduction in MCP tools (~400 lines)
+- ✅ Types always synchronized with API schema
+- ✅ Better developer experience and maintainability
+
+**Related:**
+- [ADR 0009 - StrawberryShake Typed GraphQL Client](./adr/0009-strawberryshake-typed-graphql-client.md)
+- Proof-of-concept completed: `LogTime.graphql`, `GetProjects.graphql`
+
+---
+
 ## Summary
 
 ### Total Time Estimate
@@ -273,12 +304,13 @@
 | Phase 10 | 4 | 5-6 |
 | Phase 11 | 5 | 5.5 |
 | Phase 12 | 5 | 5-6 |
-| **TOTAL** | **61** | **53.5-67 hours** |
+| Phase 13 | 4 | 4.5-5.5 |
+| **TOTAL** | **65** | **58-72.5 hours** |
 
 **Estimated Project Duration:**
-- **Full-time (8 hrs/day):** 6.5-8.5 working days
-- **Part-time (4 hrs/day):** 13.5-17 working days
-- **Side project (2 hrs/day):** 27-34 days
+- **Full-time (8 hrs/day):** 7-9 working days
+- **Part-time (4 hrs/day):** 14.5-18 working days
+- **Side project (2 hrs/day):** 29-36 days
 
 ---
 
