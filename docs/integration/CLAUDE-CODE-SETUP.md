@@ -47,34 +47,32 @@ curl http://localhost:5001/health
 # Expected: {"status":"healthy"}
 ```
 
-### 2. Generate Bearer Token
+### 2. Generate Environment Configuration
 
-Generate a secure random token for authentication:
-
-```bash
-openssl rand -base64 32
-```
-
-**Example output:**
-```
-Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4=
-```
-
-**Save this token** - you'll need it for both the API and Claude Code configuration.
-
-### 3. Update API Configuration
-
-Edit `.env` file in the project root:
-
-```env
-Authentication__BearerToken=Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4=
-```
-
-Restart the API to apply changes:
+Run the setup script to generate secure token and environment configuration:
 
 ```bash
-/deploy  # Or: podman compose restart graphql-api
+./setup.sh
 ```
+
+This creates `env.sh` with a secure bearer token and all required environment variables.
+
+**Load environment variables:**
+```bash
+source env.sh
+```
+
+**Note:** The `env.sh` file is in `.gitignore` and contains your secure token. Never commit it to version control.
+
+### 3. Deploy the API
+
+Deploy the full stack (database + API):
+
+```bash
+/deploy
+```
+
+The API will automatically read `Authentication__BearerToken` from your shell environment (loaded from `env.sh`).
 
 ### 4. Configure Claude Code
 
@@ -100,16 +98,7 @@ nano ~/.config/claude-code/config.json
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "/Users/yourusername/path/to/TimeReportingMcp/TimeReportingMcp.csproj"
-      ],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
-      }
+      "command": "/absolute/path/to/time-reporting-system/run-mcp.sh"
     }
   }
 }
@@ -121,20 +110,13 @@ nano ~/.config/claude-code/config.json
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "/Users/john/projects/time-reporting-system/TimeReportingMcp/TimeReportingMcp.csproj"
-      ],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
-      }
+      "command": "/Users/john/projects/time-reporting-system/run-mcp.sh"
     }
   }
 }
 ```
+
+**Note:** The `run-mcp.sh` wrapper automatically reads environment variables from your shell. Make sure you've run `source env.sh` before starting Claude Code.
 
 #### Windows
 
@@ -156,16 +138,7 @@ notepad %APPDATA%\claude-code\config.json
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "C:\\Users\\YourUsername\\Projects\\time-reporting-system\\TimeReportingMcp\\TimeReportingMcp.csproj"
-      ],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
-      }
+      "command": "C:\\Users\\YourUsername\\Projects\\time-reporting-system\\run-mcp.sh"
     }
   }
 }
