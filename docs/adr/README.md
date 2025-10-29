@@ -95,6 +95,7 @@ What other options did we evaluate and why did we reject them?
 | [0006](0006-hotchocolate-conventions-over-resolvers.md) | HotChocolate Conventions Over Custom Resolvers | Accepted | 2025-10-28 |
 | [0007](0007-testcontainers-for-integration-tests.md) | Testcontainers for Integration Tests | Accepted | 2025-10-28 |
 | [0008](0008-direct-mutation-implementation.md) | Direct Mutation Implementation Pattern | Accepted | 2025-10-28 |
+| [0009](0009-strawberryshake-typed-graphql-client.md) | StrawberryShake Typed GraphQL Client | Accepted | 2025-10-29 |
 
 ## Process for Claude Code
 
