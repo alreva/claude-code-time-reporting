@@ -24,8 +24,9 @@ source env.sh
 **That's it!** All tracked files remain unchanged - your token lives ONLY in shell environment:
 
 - ✅ `./setup.sh` generates a secure bearer token → creates `env.sh`
-- ✅ `source env.sh` exports environment variables to your shell
-- ✅ MCP server reads `$BEARER_TOKEN` from shell environment
+- ✅ `source env.sh` exports `Authentication__BearerToken` to your shell
+- ✅ MCP server reads via .NET Configuration (`Authentication:BearerToken`)
+- ✅ GraphQL API reads via .NET Configuration (`Authentication:BearerToken`)
 - ✅ Docker Compose reads `$Authentication__BearerToken` from shell environment
 - ✅ NO files contain actual tokens - pure environment variable approach
 - ✅ No tracked files are ever modified
