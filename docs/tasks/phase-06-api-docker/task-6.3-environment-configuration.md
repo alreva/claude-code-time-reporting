@@ -359,7 +359,7 @@ mkdir -p scripts
 #### 1. .env.example is Safe to Commit
 ```bash
 # Check for real secrets in .env.example
-grep -i "C5ZoARiAp\|postgres" .env.example
+grep -i "YOUR_BEARER_TOKEN_HERE\|postgres" .env.example
 ```
 **Expected:** Only placeholder values, no real secrets
 
