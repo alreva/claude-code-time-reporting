@@ -263,8 +263,16 @@ The Time Reporting System is a modern, cloud-native application that enables dev
 
 ```
 TimeReportingMcp/
-├── Program.cs                      # Entry point, stdio setup
+├── Program.cs                      # Entry point, stdio setup, DI
 ├── McpServer.cs                    # Core server, tool routing
+├── GraphQL/                        # GraphQL operations (StrawberryShake)
+│   ├── LogTime.graphql            # Create time entry mutation
+│   ├── QueryTimeEntries.graphql   # Query entries
+│   ├── UpdateTimeEntry.graphql    # Update entry mutation
+│   ├── DeleteTimeEntry.graphql    # Delete entry mutation
+│   ├── MoveTaskToProject.graphql  # Move entry mutation
+│   ├── GetProjects.graphql        # Get projects query
+│   └── SubmitTimeEntry.graphql    # Submit entry mutation
 ├── Tools/
 │   ├── LogTimeTool.cs             # Create time entries
 │   ├── QueryEntriesTool.cs        # Search/filter entries
@@ -282,22 +290,24 @@ TimeReportingMcp/
 │   ├── JsonRpcRequest.cs          # MCP protocol models
 │   ├── JsonRpcResponse.cs
 │   └── ToolDefinition.cs
-└── Utils/
-    ├── GraphQLClientWrapper.cs    # GraphQL client abstraction
-    ├── ErrorHandler.cs            # Error handling
-    └── Configuration.cs           # Environment variables
+├── .graphqlrc.json                # StrawberryShake config
+├── schema.graphql                 # Downloaded GraphQL schema
+└── obj/Debug/net10.0/berry/       # Generated typed client (gitignored)
+    └── TimeReportingClient.cs     # ITimeReportingClient + types
 ```
 
 **Key Features:**
 - Stateless tool execution
-- Automatic GraphQL client retry logic
+- Strongly-typed GraphQL client (StrawberryShake)
+- Compile-time type safety for all GraphQL operations
 - Comprehensive error handling
 - Auto-tracking suggestions (Phase 10)
 
 **Technology:**
-- .NET 8 Console Application
-- GraphQL.Client library
+- .NET 10 Console Application
+- StrawberryShake 15 - Typed GraphQL client with code generation
 - System.Text.Json for JSON-RPC
+- Microsoft.Extensions.DependencyInjection for DI
 
 ---
 

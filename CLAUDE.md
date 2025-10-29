@@ -395,6 +395,32 @@ PostgreSQL Database
 3. **MCP Server** - Lightweight C# console app that bridges Claude Code to the GraphQL API (just reads JSON from stdin, calls GraphQL, writes JSON to stdout)
 4. **Claude Code Integration** - MCP server provides 7 tools for time tracking operations
 
+### StrawberryShake Typed GraphQL Client
+
+The MCP server uses **StrawberryShake 15** for strongly-typed GraphQL client code generation:
+
+**How it works:**
+1. `.graphql` operation files define all queries and mutations
+2. StrawberryShake generates C# typed client code at build time
+3. Tools use `ITimeReportingClient` with full IntelliSense
+
+**Benefits:**
+- ✅ Compile-time type safety
+- ✅ Zero manual type definitions
+- ✅ Types always synchronized with API schema
+- ✅ ~250 lines of code eliminated
+
+**When API schema changes:**
+```bash
+# Download latest schema
+curl -s "http://localhost:5001/graphql?sdl" > TimeReportingMcp/schema.graphql
+
+# Rebuild (triggers code regeneration)
+/build-mcp
+```
+
+See [ADR 0009](docs/adr/0009-strawberryshake-typed-graphql-client.md) for architectural decision details.
+
 ## Development Commands - IMPORTANT GUARDRAILS
 
 **⚠️ CRITICAL: DO NOT use direct dotnet or docker-compose commands. Instead, use custom slash commands.**

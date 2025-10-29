@@ -61,7 +61,7 @@ PostgreSQL Database
 
 ### Implementation Guides
 
-- **[Task Index](./docs/TASK-INDEX.md)** - Master task list with 61 atomic tasks
+- **[Task Index](./docs/TASK-INDEX.md)** - Master task list with 65 atomic tasks
 - **[Task Guides](./docs/tasks/)** - Phase-specific implementation tasks
 
 ### Implementation Tasks
@@ -78,8 +78,9 @@ PostgreSQL Database
 - **Phase 10:** MCP Server - Auto-tracking (4 tasks)
 - **Phase 11:** Integration & Testing (5 tasks)
 - **Phase 12:** Documentation & Deployment (5 tasks)
+- **Phase 13:** StrawberryShake Migration (4 tasks)
 
-**Total:** 60 tasks, ~52-65 hours
+**Total:** 65 tasks, ~58-72 hours
 
 ---
 
@@ -209,15 +210,20 @@ time-reporting-system/
 ## 🔧 Technology Stack
 
 ### Single Language: C# 🎯
-- **C# / .NET 8** - Everything (API + MCP Server)
+- **C# / .NET 10** - Everything (API + MCP Server)
 - **HotChocolate 13+** - GraphQL server
 - **Entity Framework Core 8** - ORM
-- **GraphQL.Client** - GraphQL client (for MCP)
+- **StrawberryShake 15** - Strongly-typed GraphQL client with code generation
 - **PostgreSQL 16** - Database
 
 ### Infrastructure
 - **Docker or Podman** - Containerization
 - **Docker Compose / Podman Compose** - Multi-container orchestration
+
+### Code Generation
+- **StrawberryShake** automatically generates C# client code from `.graphql` operation files
+- Provides compile-time type safety and IntelliSense for all GraphQL operations
+- Eliminates ~250 lines of manual type definitions and query strings
 
 **No Node.js, No TypeScript - Just C#!** 🎉
 
@@ -260,11 +266,12 @@ time-reporting-system/
 - ✅ C# GraphQL API implementation (4 queries, 8 mutations)
 - ✅ C# MCP server with 7 tools
 - ✅ Auto-tracking with intelligent suggestions
+- ✅ StrawberryShake typed GraphQL client migration
 - ✅ Docker/Podman deployment
 - ✅ Comprehensive documentation
 - ✅ E2E testing and integration guides
 
-**Status:** Production-ready! All 61 tasks completed (100%)
+**Status:** Production-ready! All 65 tasks completed (100%)
 
 **Documentation:**
 - User Guide for natural language commands
