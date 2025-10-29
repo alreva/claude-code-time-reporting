@@ -91,7 +91,7 @@ public class SessionContextTests
         var suggested = context.GetSuggestedHours();
 
         // Assert
-        Assert.Equal(0.75m, suggested); // 37 min ≈ 0.62 hrs → rounds to 0.75
+        Assert.Equal(0.5m, suggested); // 37 min ≈ 0.62 hrs → rounds to 0.5 (nearest quarter)
     }
 
     [Fact]

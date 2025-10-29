@@ -81,8 +81,8 @@ public class ContextPersistence
                 return null; // Invalid JSON
             }
 
-            // Check if context is stale (too old to be useful)
-            var ageMinutes = (DateTime.UtcNow - persistedData.SavedAt).TotalMinutes;
+            // Check if context is stale (based on last activity time, not save time)
+            var ageMinutes = (DateTime.UtcNow - persistedData.LastActivityAt).TotalMinutes;
             if (ageMinutes > _maxStaleMinutes)
             {
                 Console.Error.WriteLine($"[Persistence] Context is stale ({ageMinutes:F0} min old), ignoring");
