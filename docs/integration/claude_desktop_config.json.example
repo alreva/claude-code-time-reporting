@@ -1,16 +1,11 @@
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "/absolute/path/to/TimeReportingMcp/TimeReportingMcp.csproj"
-      ],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
-        "BEARER_TOKEN": "your-bearer-token-here"
-      }
+      "command": "/absolute/path/to/time-reporting-system/run-mcp.sh"
     }
   }
 }
+
+// Note: The run-mcp.sh wrapper loads environment variables from env.sh
+// Make sure to run './setup.sh' and 'source env.sh' before using Claude Code
+// The wrapper validates that Authentication__BearerToken and GRAPHQL_API_URL are set

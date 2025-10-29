@@ -28,31 +28,41 @@ This MCP server implements the Model Context Protocol (MCP) by:
 
 ## Configuration
 
-Set these environment variables:
+The MCP server uses .NET Configuration system to read from environment variables:
 
 - `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
-- `BEARER_TOKEN` - Authentication token
+- `Authentication__BearerToken` - Authentication token (maps to `Authentication:BearerToken` config key)
+
+**Note:** The double-underscore (`__`) in `Authentication__BearerToken` is .NET's convention for representing nested configuration (maps to `Authentication:BearerToken`).
 
 ## Usage
 
-```bash
-# Run locally
-dotnet run --project TimeReportingMcp.csproj
+### Via Shell (Recommended)
 
-# Or via Claude Code (configured in claude_desktop_config.json)
+```bash
+# 1. Generate token and load environment
+./setup.sh
+source env.sh
+
+# 2. Run MCP server (wrapper script loads environment)
+./run-mcp.sh
+```
+
+### Via Claude Code
+
+The repository includes `.mcp.json` which calls the `run-mcp.sh` wrapper:
+
+```json
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "dotnet",
-      "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "your-token-here"
-      }
+      "command": "./run-mcp.sh"
     }
   }
 }
 ```
+
+The wrapper script validates that environment variables are set before starting the server.
 
 ## Development
 

@@ -650,7 +650,7 @@ Multi-layer validation ensures data integrity:
 - **Keep it simple:** ~200 lines total, just stdio + GraphQL calls
 - No session management, no auto-tracking (v2 feature)
 - Each tool is stateless: read params → call GraphQL → return result
-- Configuration via environment variables (GRAPHQL_API_URL, BEARER_TOKEN)
+- Configuration via .NET Configuration system (GRAPHQL_API_URL, Authentication__BearerToken)
 - Error handling returns structured MCP error responses
 
 ## Security Notes

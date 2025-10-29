@@ -67,7 +67,7 @@ Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4=
 Edit `.env` file in the project root:
 
 ```env
-BEARER_TOKEN=Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4=
+Authentication__BearerToken=Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4=
 ```
 
 Restart the API to apply changes:
@@ -108,7 +108,7 @@ nano ~/.config/claude-code/config.json
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
+        "Authentication__BearerToken": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
       }
     }
   }
@@ -129,7 +129,7 @@ nano ~/.config/claude-code/config.json
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
+        "Authentication__BearerToken": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
       }
     }
   }
@@ -164,7 +164,7 @@ notepad %APPDATA%\claude-code\config.json
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
+        "Authentication__BearerToken": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
       }
     }
   }
@@ -227,12 +227,12 @@ Available Projects:
 | `command` | Command to run MCP server | `"dotnet"` |
 | `args` | Arguments for the command | `["run", "--project", "path/to/.csproj"]` |
 | `GRAPHQL_API_URL` | GraphQL API endpoint | `"http://localhost:5001/graphql"` |
-| `BEARER_TOKEN` | Authentication token | `"Zq8X9v..."` (32-byte base64) |
+| `Authentication__BearerToken` | Authentication token | `"Zq8X9v..."` (32-byte base64) |
 
 ### Important Notes
 
 - **Use Absolute Paths**: The project path must be absolute, not relative
-- **Token Security**: Never commit the actual `BEARER_TOKEN` to version control
+- **Token Security**: Never commit the actual `Authentication__BearerToken` to version control
 - **Token Matching**: The token in Claude Code config must match the token in API `.env` file
 - **Path Format**:
   - macOS/Linux: Use forward slashes `/`
@@ -253,7 +253,7 @@ Available Projects:
 "GRAPHQL_API_URL": "https://api.yourcompany.com/time-reporting/graphql"
 ```
 
-### BEARER_TOKEN
+### Authentication__BearerToken
 
 **Purpose:** Authentication token for API access
 
@@ -341,10 +341,10 @@ cat ~/.config/claude-code/config.json | jq .
 
 ```bash
 # Check API .env file
-cat .env | grep BEARER_TOKEN
+cat .env | grep Authentication__BearerToken
 
 # Check Claude Code config
-cat ~/.config/claude-code/config.json | jq '.mcpServers."time-reporting".env.BEARER_TOKEN'
+cat ~/.config/claude-code/config.json | jq '.mcpServers."time-reporting".env.Authentication__BearerToken'
 
 # Tokens MUST match exactly
 ```
@@ -510,7 +510,7 @@ If your API runs on a different port (e.g., 8080):
       "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:8080/graphql",
-        "BEARER_TOKEN": "your-token-here"
+        "Authentication__BearerToken": "your-token-here"
       }
     }
   }
@@ -529,7 +529,7 @@ For connecting to a remote production API:
       "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "https://api.yourcompany.com/time-reporting/graphql",
-        "BEARER_TOKEN": "production-token-here",
+        "Authentication__BearerToken": "production-token-here",
         "SSL_VERIFY": "true"
       }
     }
@@ -549,7 +549,7 @@ You can configure multiple MCP servers for different environments:
       "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "dev-token"
+        "Authentication__BearerToken": "dev-token"
       }
     },
     "time-reporting-prod": {
@@ -557,7 +557,7 @@ You can configure multiple MCP servers for different environments:
       "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "https://api.yourcompany.com/graphql",
-        "BEARER_TOKEN": "prod-token"
+        "Authentication__BearerToken": "prod-token"
       }
     }
   }
