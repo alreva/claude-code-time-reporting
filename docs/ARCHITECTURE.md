@@ -70,7 +70,7 @@ The Time Reporting System is a modern, cloud-native application that enables dev
 │                                                                   │
 │  Configuration:                                                   │
 │  - GRAPHQL_API_URL                                               │
-│  - BEARER_TOKEN                                                  │
+│  - Authentication__BearerToken                                                  │
 └──────────────────────────────┬──────────────────────────────────┘
                                │
                                │ HTTP/HTTPS
@@ -663,7 +663,7 @@ See [ADR Documentation](./adr/README.md) for complete list.
 │ MCP Server  │
 └──────┬──────┘
        │
-       │ 1. Read BEARER_TOKEN from environment
+       │ 1. Read Authentication__BearerToken from environment
        │
        ▼
 ┌─────────────────────────────────────┐
@@ -678,7 +678,8 @@ See [ADR Documentation](./adr/README.md) for complete list.
 └──────┬──────┘
        │
        │ 2. Extract token from Authorization header
-       │ 3. Compare with BEARER_TOKEN from .env
+       │ 3. Compare with Authentication__BearerToken from configuration
+       │    (loaded from environment variable via IConfiguration)
        │
        ├─ Match? → Allow request ✓
        └─ No match? → Return 401 Unauthorized ✗
