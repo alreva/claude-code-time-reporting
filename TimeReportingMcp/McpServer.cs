@@ -1,8 +1,8 @@
 using System;
 using System.Text.Json;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
 using TimeReportingMcp.Tools;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp;
 
@@ -11,10 +11,10 @@ namespace TimeReportingMcp;
 /// </summary>
 public class McpServer
 {
-    private readonly GraphQLClientWrapper _graphqlClient;
+    private readonly ITimeReportingClient _graphqlClient;
     private readonly List<ToolDefinition> _availableTools;
 
-    public McpServer(GraphQLClientWrapper graphqlClient)
+    public McpServer(ITimeReportingClient graphqlClient)
     {
         _graphqlClient = graphqlClient;
         _availableTools = InitializeToolDefinitions();

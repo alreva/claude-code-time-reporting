@@ -1,8 +1,7 @@
 using System.Text;
 using System.Text.Json;
-using GraphQL;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
@@ -11,9 +10,9 @@ namespace TimeReportingMcp.Tools;
 /// </summary>
 public class QueryEntriesTool
 {
-    private readonly GraphQLClientWrapper _client;
+    private readonly ITimeReportingClient _client;
 
-    public QueryEntriesTool(GraphQLClientWrapper client)
+    public QueryEntriesTool(ITimeReportingClient client)
     {
         _client = client;
     }
@@ -23,56 +22,42 @@ public class QueryEntriesTool
         try
         {
             // 1. Parse filters (all optional)
-            var filters = ParseFilters(arguments);
+            string? projectCode = null;
+            DateOnly? startDate = null;
+            DateOnly? endDate = null;
+            TimeEntryStatus? status = null;
 
-            // 2. Build GraphQL query (using first: 50 for simple pagination)
-            var query = new GraphQLRequest
+            if (arguments.TryGetProperty("projectCode", out var proj))
             {
-                Query = @"
-                    query TimeEntries($first: Int) {
-                        timeEntries(first: $first) {
-                            nodes {
-                                id
-                                project {
-                                    code
-                                    name
-                                }
-                                projectTask {
-                                    taskName
-                                }
-                                issueId
-                                standardHours
-                                overtimeHours
-                                description
-                                startDate
-                                completionDate
-                                status
-                                createdAt
-                                tags {
-                                    tagValue {
-                                        value
-                                        projectTag {
-                                            tagName
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }",
-                Variables = new { first = 50 }
-            };
-
-            // 3. Execute query
-            var response = await _client.SendQueryAsync<QueryTimeEntriesResponse>(query);
-
-            // 4. Handle errors
-            if (response.Errors != null && response.Errors.Length > 0)
-            {
-                return CreateErrorResult(response.Errors);
+                projectCode = proj.GetString();
             }
 
-            // 5. Return formatted results
-            return CreateSuccessResult(response.Data.TimeEntries.Nodes, filters);
+            if (arguments.TryGetProperty("startDate", out var sd))
+            {
+                startDate = DateOnly.Parse(sd.GetString()!);
+            }
+
+            if (arguments.TryGetProperty("endDate", out var ed))
+            {
+                endDate = DateOnly.Parse(ed.GetString()!);
+            }
+
+            if (arguments.TryGetProperty("status", out var stat))
+            {
+                status = Enum.Parse<TimeEntryStatus>(stat.GetString()!, true);
+            }
+
+            // 2. Execute strongly-typed query
+            var result = await _client.QueryTimeEntries.ExecuteAsync(projectCode, startDate, endDate, status);
+
+            // 3. Handle errors
+            if (result.IsErrorResult())
+            {
+                return CreateErrorResult(result.Errors);
+            }
+
+            // 4. Return formatted results
+            return CreateSuccessResult(result.Data!.TimeEntries.Nodes.ToList());
         }
         catch (Exception ex)
         {
@@ -80,51 +65,7 @@ public class QueryEntriesTool
         }
     }
 
-    private object? ParseFilters(JsonElement arguments)
-    {
-        // Return null if no arguments provided (query all)
-        if (arguments.ValueKind == JsonValueKind.Undefined ||
-            arguments.ValueKind == JsonValueKind.Null)
-        {
-            return null;
-        }
-
-        var filters = new Dictionary<string, object>();
-
-        if (arguments.TryGetProperty("projectCode", out var proj))
-        {
-            filters["projectCode"] = proj.GetString()!;
-        }
-
-        if (arguments.TryGetProperty("status", out var stat))
-        {
-            filters["status"] = stat.GetString()!;
-        }
-
-        if (arguments.TryGetProperty("startDate", out var start))
-        {
-            filters["startDate"] = start.GetString()!;
-        }
-
-        if (arguments.TryGetProperty("endDate", out var end))
-        {
-            filters["endDate"] = end.GetString()!;
-        }
-
-        if (arguments.TryGetProperty("limit", out var lim))
-        {
-            filters["limit"] = lim.GetInt32();
-        }
-
-        if (arguments.TryGetProperty("offset", out var off))
-        {
-            filters["offset"] = off.GetInt32();
-        }
-
-        return filters.Count > 0 ? filters : null;
-    }
-
-    private ToolResult CreateSuccessResult(List<TimeEntryData> entries, object? filters)
+    private ToolResult CreateSuccessResult(List<IQueryTimeEntries_TimeEntries_Nodes> entries)
     {
         if (entries.Count == 0)
         {
@@ -180,14 +121,6 @@ public class QueryEntriesTool
                     message.AppendLine($"    {shortDesc}");
                 }
 
-                // Display tags if present
-                if (entry.Tags.Count > 0)
-                {
-                    var tagStrings = entry.Tags.Select(t =>
-                        $"{t.TagValue.ProjectTag.TagName}: {t.TagValue.Value}");
-                    message.AppendLine($"    Tags: {string.Join(", ", tagStrings)}");
-                }
-
                 message.AppendLine($"    ID: {entry.Id}");
             }
             message.AppendLine();
@@ -212,10 +145,13 @@ public class QueryEntriesTool
         };
     }
 
-    private ToolResult CreateErrorResult(GraphQL.GraphQLError[] errors)
+    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
     {
         var errorMessage = "❌ Failed to query time entries:\n\n";
-        errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        if (errors != null)
+        {
+            errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        }
 
         return new ToolResult
         {
@@ -238,15 +174,4 @@ public class QueryEntriesTool
             IsError = true
         };
     }
-}
-
-// Response type
-public class QueryTimeEntriesResponse
-{
-    public TimeEntriesConnection TimeEntries { get; set; } = null!;
-}
-
-public class TimeEntriesConnection
-{
-    public List<TimeEntryData> Nodes { get; set; } = new();
 }

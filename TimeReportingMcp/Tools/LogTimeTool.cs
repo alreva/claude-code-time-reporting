@@ -1,7 +1,6 @@
 using System.Text.Json;
-using GraphQL;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
@@ -10,9 +9,9 @@ namespace TimeReportingMcp.Tools;
 /// </summary>
 public class LogTimeTool
 {
-    private readonly GraphQLClientWrapper _client;
+    private readonly ITimeReportingClient _client;
 
-    public LogTimeTool(GraphQLClientWrapper client)
+    public LogTimeTool(ITimeReportingClient client)
     {
         _client = client;
     }
@@ -21,48 +20,20 @@ public class LogTimeTool
     {
         try
         {
-            // 1. Parse and validate arguments
+            // 1. Parse arguments into strongly-typed input
             var input = ParseArguments(arguments);
 
-            // 2. Build GraphQL mutation
-            var mutation = new GraphQLRequest
-            {
-                Query = @"
-                    mutation LogTime($input: LogTimeInput!) {
-                        logTime(input: $input) {
-                            id
-                            project {
-                                code
-                                name
-                            }
-                            projectTask {
-                                taskName
-                            }
-                            issueId
-                            standardHours
-                            overtimeHours
-                            description
-                            startDate
-                            completionDate
-                            status
-                            createdAt
-                            updatedAt
-                        }
-                    }",
-                Variables = new { input }
-            };
+            // 2. Execute strongly-typed mutation
+            var result = await _client.LogTime.ExecuteAsync(input);
 
-            // 3. Execute mutation
-            var response = await _client.SendMutationAsync<LogTimeResponse>(mutation);
-
-            // 4. Handle errors
-            if (response.Errors != null && response.Errors.Length > 0)
+            // 3. Handle errors
+            if (result.IsErrorResult())
             {
-                return CreateErrorResult(response.Errors);
+                return CreateErrorResult(result.Errors);
             }
 
-            // 5. Return success result
-            return CreateSuccessResult(response.Data.LogTime);
+            // 4. Return success result
+            return CreateSuccessResult(result.Data!.LogTime);
         }
         catch (Exception ex)
         {
@@ -70,17 +41,19 @@ public class LogTimeTool
         }
     }
 
-    private object ParseArguments(JsonElement arguments)
+    private LogTimeInput ParseArguments(JsonElement arguments)
     {
         // Extract required fields
-        var projectCode = arguments.GetProperty("projectCode").GetString();
-        var task = arguments.GetProperty("task").GetString();
-        var standardHours = arguments.GetProperty("standardHours").GetDouble();
-        var startDate = arguments.GetProperty("startDate").GetString();
-        var completionDate = arguments.GetProperty("completionDate").GetString();
+        var projectCode = arguments.GetProperty("projectCode").GetString()!;
+        var task = arguments.GetProperty("task").GetString()!;
+        var standardHours = (decimal)arguments.GetProperty("standardHours").GetDouble();
+        var startDate = DateOnly.Parse(arguments.GetProperty("startDate").GetString()!);
+        var completionDate = DateOnly.Parse(arguments.GetProperty("completionDate").GetString()!);
 
         // Extract optional fields
-        var overtimeHours = arguments.TryGetProperty("overtimeHours", out var ot) ? ot.GetDouble() : 0.0;
+        decimal? overtimeHours = arguments.TryGetProperty("overtimeHours", out var ot)
+            ? (decimal)ot.GetDouble()
+            : null;
         var description = arguments.TryGetProperty("description", out var desc) ? desc.GetString() : null;
         var issueId = arguments.TryGetProperty("issueId", out var issue) ? issue.GetString() : null;
 
@@ -91,21 +64,21 @@ public class LogTimeTool
             tags = JsonSerializer.Deserialize<List<TagInput>>(tagsElement.GetRawText());
         }
 
-        return new
+        return new LogTimeInput
         {
-            projectCode,
-            task,
-            standardHours,
-            overtimeHours,
-            startDate,
-            completionDate,
-            description,
-            issueId,
-            tags
+            ProjectCode = projectCode,
+            Task = task,
+            StandardHours = standardHours,
+            OvertimeHours = overtimeHours,
+            StartDate = startDate,
+            CompletionDate = completionDate,
+            Description = description,
+            IssueId = issueId,
+            Tags = tags
         };
     }
 
-    private ToolResult CreateSuccessResult(TimeEntryData entry)
+    private ToolResult CreateSuccessResult(ILogTime_LogTime entry)
     {
         var message = $"✅ Time entry created successfully!\n\n" +
                       $"ID: {entry.Id}\n" +
@@ -140,10 +113,13 @@ public class LogTimeTool
         };
     }
 
-    private ToolResult CreateErrorResult(GraphQL.GraphQLError[] errors)
+    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
     {
         var errorMessage = "❌ Failed to create time entry:\n\n";
-        errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        if (errors != null)
+        {
+            errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        }
 
         return new ToolResult
         {
@@ -166,10 +142,4 @@ public class LogTimeTool
             IsError = true
         };
     }
-}
-
-// Response type
-public class LogTimeResponse
-{
-    public TimeEntryData LogTime { get; set; } = null!;
 }

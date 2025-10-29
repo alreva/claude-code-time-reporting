@@ -1,8 +1,7 @@
 using System.Text;
 using System.Text.Json;
-using GraphQL;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
@@ -11,9 +10,9 @@ namespace TimeReportingMcp.Tools;
 /// </summary>
 public class GetProjectsTool
 {
-    private readonly GraphQLClientWrapper _client;
+    private readonly ITimeReportingClient _client;
 
-    public GetProjectsTool(GraphQLClientWrapper client)
+    public GetProjectsTool(ITimeReportingClient client)
     {
         _client = client;
     }
@@ -29,42 +28,17 @@ public class GetProjectsTool
                 activeOnly = activeOnlyElement.GetBoolean();
             }
 
-            // 2. Build GraphQL query
-            var query = new GraphQLRequest
-            {
-                Query = @"
-                    query GetProjects($activeOnly: Boolean!) {
-                        projects(where: { isActive: { eq: $activeOnly } }) {
-                            code
-                            name
-                            isActive
-                            availableTasks {
-                                taskName
-                                isActive
-                            }
-                            tags {
-                                tagName
-                                isActive
-                                allowedValues {
-                                    value
-                                }
-                            }
-                        }
-                    }",
-                Variables = new { activeOnly }
-            };
+            // 2. Execute strongly-typed query
+            var result = await _client.GetAvailableProjects.ExecuteAsync(activeOnly);
 
-            // 3. Execute query
-            var response = await _client.SendQueryAsync<GetProjectsResponse>(query);
-
-            // 4. Handle errors
-            if (response.Errors != null && response.Errors.Length > 0)
+            // 3. Handle errors
+            if (result.IsErrorResult())
             {
-                return CreateErrorResult(response.Errors);
+                return CreateErrorResult(result.Errors);
             }
 
-            // 5. Format and return response
-            var output = FormatProjects(response.Data.Projects);
+            // 4. Format and return response
+            var output = FormatProjects(result.Data!.Projects.ToList());
             return CreateSuccessResult(output);
         }
         catch (Exception ex)
@@ -73,7 +47,7 @@ public class GetProjectsTool
         }
     }
 
-    private string FormatProjects(List<ProjectData> projects)
+    private string FormatProjects(List<IGetAvailableProjects_Projects> projects)
     {
         if (projects.Count == 0)
         {
@@ -89,7 +63,7 @@ public class GetProjectsTool
             sb.AppendLine($"   Status: {(project.IsActive ? "Active" : "Inactive")}");
 
             // Tasks
-            var activeTasks = project.Tasks.Where(t => t.IsActive).ToList();
+            var activeTasks = project.AvailableTasks.Where(t => t.IsActive).ToList();
             if (activeTasks.Any())
             {
                 sb.AppendLine($"   Tasks: {string.Join(", ", activeTasks.Select(t => t.TaskName))}");
@@ -128,10 +102,13 @@ public class GetProjectsTool
         };
     }
 
-    private ToolResult CreateErrorResult(GraphQL.GraphQLError[] errors)
+    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
     {
         var errorMessage = "❌ Failed to get projects:\n\n";
-        errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        if (errors != null)
+        {
+            errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        }
 
         return new ToolResult
         {
@@ -154,51 +131,4 @@ public class GetProjectsTool
             IsError = true
         };
     }
-}
-
-/// <summary>
-/// Response wrapper for projects query
-/// </summary>
-public class GetProjectsResponse
-{
-    public List<ProjectData> Projects { get; set; } = new();
-}
-
-/// <summary>
-/// Project data with tasks and tags
-/// </summary>
-public class ProjectData
-{
-    public string Code { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-    public List<TaskData> Tasks { get; set; } = new();
-    public List<TagData> Tags { get; set; } = new();
-}
-
-/// <summary>
-/// Task data within a project
-/// </summary>
-public class TaskData
-{
-    public string TaskName { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-}
-
-/// <summary>
-/// Tag configuration data
-/// </summary>
-public class TagData
-{
-    public string TagName { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-    public List<TagValueData> AllowedValues { get; set; } = new();
-}
-
-/// <summary>
-/// Allowed tag value
-/// </summary>
-public class TagValueData
-{
-    public string Value { get; set; } = string.Empty;
 }

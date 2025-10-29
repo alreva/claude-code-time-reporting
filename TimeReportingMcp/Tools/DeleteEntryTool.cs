@@ -1,18 +1,17 @@
 using System.Text.Json;
-using GraphQL;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
 /// <summary>
-/// Tool to delete a time entry (only allowed for NOT_REPORTED entries)
+/// Tool for deleting time entries
 /// </summary>
 public class DeleteEntryTool
 {
-    private readonly GraphQLClientWrapper _client;
+    private readonly ITimeReportingClient _client;
 
-    public DeleteEntryTool(GraphQLClientWrapper client)
+    public DeleteEntryTool(ITimeReportingClient client)
     {
         _client = client;
     }
@@ -21,32 +20,39 @@ public class DeleteEntryTool
     {
         try
         {
-            // 1. Parse arguments
-            var id = arguments.GetProperty("id").GetString()
-                ?? throw new ArgumentException("id is required");
-
-            // 2. Build GraphQL mutation
-            var mutation = new GraphQLRequest
+            // 1. Parse entry ID (required)
+            if (!arguments.TryGetProperty("id", out var idElement))
             {
-                Query = @"
-                    mutation DeleteTimeEntry($id: UUID!) {
-                        deleteTimeEntry(id: $id)
-                    }",
-                Variables = new { id }
-            };
-
-            // 3. Execute mutation
-            var response = await _client.SendMutationAsync<DeleteTimeEntryResponse>(mutation);
-
-            // 4. Handle errors
-            if (response.Errors != null && response.Errors.Length > 0)
-            {
-                return CreateErrorResult(response.Errors);
+                return CreateValidationError("Entry ID is required");
             }
 
-            // 5. Format success response
-            var result = response.Data.DeleteTimeEntry;
-            return CreateSuccessResult(result, id);
+            var id = Guid.Parse(idElement.GetString()!);
+
+            // 2. Execute strongly-typed mutation
+            var result = await _client.DeleteTimeEntry.ExecuteAsync(id);
+
+            // 3. Handle errors
+            if (result.IsErrorResult())
+            {
+                return CreateErrorResult(result.Errors);
+            }
+
+            // 4. Return success
+            var deleted = result.Data!.DeleteTimeEntry;
+            if (deleted)
+            {
+                return new ToolResult
+                {
+                    Content = new List<ContentItem>
+                    {
+                        ContentItem.CreateText($"✅ Time entry {id} deleted successfully!")
+                    }
+                };
+            }
+            else
+            {
+                return CreateErrorResult(null);
+            }
         }
         catch (Exception ex)
         {
@@ -54,25 +60,29 @@ public class DeleteEntryTool
         }
     }
 
-    private ToolResult CreateSuccessResult(bool success, string id)
+    private ToolResult CreateValidationError(string message)
     {
-        var message = success
-            ? $"✅ Time entry {id} deleted successfully"
-            : $"❌ Failed to delete time entry {id}";
-
         return new ToolResult
         {
             Content = new List<ContentItem>
             {
-                ContentItem.CreateText(message)
-            }
+                ContentItem.CreateText($"❌ Validation Error: {message}")
+            },
+            IsError = true
         };
     }
 
-    private ToolResult CreateErrorResult(GraphQL.GraphQLError[] errors)
+    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
     {
         var errorMessage = "❌ Failed to delete time entry:\n\n";
-        errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        if (errors != null)
+        {
+            errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        }
+        else
+        {
+            errorMessage += "- Delete operation returned false";
+        }
 
         return new ToolResult
         {
@@ -95,12 +105,4 @@ public class DeleteEntryTool
             IsError = true
         };
     }
-}
-
-/// <summary>
-/// Response wrapper for deleteTimeEntry mutation
-/// </summary>
-public class DeleteTimeEntryResponse
-{
-    public bool DeleteTimeEntry { get; set; }
 }

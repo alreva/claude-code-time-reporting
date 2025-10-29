@@ -1,18 +1,17 @@
 using System.Text.Json;
-using GraphQL;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
 /// <summary>
-/// Tool to submit a time entry for approval (changes status to SUBMITTED)
+/// Tool for submitting time entries for approval
 /// </summary>
 public class SubmitEntryTool
 {
-    private readonly GraphQLClientWrapper _client;
+    private readonly ITimeReportingClient _client;
 
-    public SubmitEntryTool(GraphQLClientWrapper client)
+    public SubmitEntryTool(ITimeReportingClient client)
     {
         _client = client;
     }
@@ -21,47 +20,25 @@ public class SubmitEntryTool
     {
         try
         {
-            // 1. Parse arguments
-            var id = arguments.GetProperty("id").GetString()
-                ?? throw new ArgumentException("id is required");
-
-            // 2. Build GraphQL mutation
-            var mutation = new GraphQLRequest
+            // 1. Parse entry ID (required)
+            if (!arguments.TryGetProperty("id", out var idElement))
             {
-                Query = @"
-                    mutation SubmitTimeEntry($id: UUID!) {
-                        submitTimeEntry(id: $id) {
-                            id
-                            project {
-                                code
-                                name
-                            }
-                            projectTask {
-                                taskName
-                            }
-                            standardHours
-                            overtimeHours
-                            startDate
-                            completionDate
-                            status
-                            updatedAt
-                        }
-                    }",
-                Variables = new { id }
-            };
-
-            // 3. Execute mutation
-            var response = await _client.SendMutationAsync<SubmitEntryResponse>(mutation);
-
-            // 4. Handle errors
-            if (response.Errors != null && response.Errors.Length > 0)
-            {
-                return CreateErrorResult(response.Errors);
+                return CreateValidationError("Entry ID is required");
             }
 
-            // 5. Format success response
-            var entry = response.Data.SubmitTimeEntry;
-            return CreateSuccessResult(entry);
+            var id = Guid.Parse(idElement.GetString()!);
+
+            // 2. Execute strongly-typed mutation
+            var result = await _client.SubmitTimeEntry.ExecuteAsync(id);
+
+            // 3. Handle errors
+            if (result.IsErrorResult())
+            {
+                return CreateErrorResult(result.Errors);
+            }
+
+            // 4. Return success
+            return CreateSuccessResult(result.Data!.SubmitTimeEntry);
         }
         catch (Exception ex)
         {
@@ -69,15 +46,12 @@ public class SubmitEntryTool
         }
     }
 
-    private ToolResult CreateSuccessResult(TimeEntryData entry)
+    private ToolResult CreateSuccessResult(ISubmitTimeEntry_SubmitTimeEntry entry)
     {
-        var message = $"✅ Time entry submitted for approval!\n\n" +
+        var message = $"✅ Time entry submitted successfully!\n\n" +
                       $"ID: {entry.Id}\n" +
-                      $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
-                      $"Task: {entry.ProjectTask.TaskName}\n" +
-                      $"Hours: {entry.StandardHours} standard, {entry.OvertimeHours} overtime\n" +
-                      $"Period: {entry.StartDate} to {entry.CompletionDate}\n" +
-                      $"Status: {entry.Status}";
+                      $"New Status: {entry.Status}\n" +
+                      $"Updated At: {entry.UpdatedAt}";
 
         return new ToolResult
         {
@@ -88,10 +62,25 @@ public class SubmitEntryTool
         };
     }
 
-    private ToolResult CreateErrorResult(GraphQL.GraphQLError[] errors)
+    private ToolResult CreateValidationError(string message)
+    {
+        return new ToolResult
+        {
+            Content = new List<ContentItem>
+            {
+                ContentItem.CreateText($"❌ Validation Error: {message}")
+            },
+            IsError = true
+        };
+    }
+
+    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
     {
         var errorMessage = "❌ Failed to submit time entry:\n\n";
-        errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        if (errors != null)
+        {
+            errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        }
 
         return new ToolResult
         {
@@ -114,12 +103,4 @@ public class SubmitEntryTool
             IsError = true
         };
     }
-}
-
-/// <summary>
-/// Response wrapper for submitTimeEntry mutation
-/// </summary>
-public class SubmitEntryResponse
-{
-    public TimeEntryData SubmitTimeEntry { get; set; } = null!;
 }

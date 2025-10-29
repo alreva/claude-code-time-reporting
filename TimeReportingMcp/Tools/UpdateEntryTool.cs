@@ -1,8 +1,6 @@
-using System.Text;
 using System.Text.Json;
-using GraphQL;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
@@ -11,9 +9,9 @@ namespace TimeReportingMcp.Tools;
 /// </summary>
 public class UpdateEntryTool
 {
-    private readonly GraphQLClientWrapper _client;
+    private readonly ITimeReportingClient _client;
 
-    public UpdateEntryTool(GraphQLClientWrapper client)
+    public UpdateEntryTool(ITimeReportingClient client)
     {
         _client = client;
     }
@@ -28,58 +26,22 @@ public class UpdateEntryTool
                 return CreateValidationError("Entry ID is required");
             }
 
-            var id = idElement.GetString();
-            if (string.IsNullOrEmpty(id))
-            {
-                return CreateValidationError("Entry ID cannot be empty");
-            }
+            var id = Guid.Parse(idElement.GetString()!);
 
             // 2. Parse update fields (all optional)
             var input = ParseUpdateFields(arguments);
 
-            if (input == null || ((IDictionary<string, object>)input).Count == 0)
+            // 3. Execute strongly-typed mutation
+            var result = await _client.UpdateTimeEntry.ExecuteAsync(id, input);
+
+            // 4. Handle errors
+            if (result.IsErrorResult())
             {
-                return CreateValidationError("At least one field must be provided to update");
+                return CreateErrorResult(result.Errors);
             }
 
-            // 3. Build GraphQL mutation
-            var mutation = new GraphQLRequest
-            {
-                Query = @"
-                    mutation UpdateTimeEntry($id: UUID!, $input: UpdateTimeEntryInput!) {
-                        updateTimeEntry(id: $id, input: $input) {
-                            id
-                            project {
-                                code
-                                name
-                            }
-                            projectTask {
-                                taskName
-                            }
-                            issueId
-                            standardHours
-                            overtimeHours
-                            description
-                            startDate
-                            completionDate
-                            status
-                            updatedAt
-                        }
-                    }",
-                Variables = new { id, input }
-            };
-
-            // 4. Execute mutation
-            var response = await _client.SendMutationAsync<UpdateTimeEntryResponse>(mutation);
-
-            // 5. Handle errors
-            if (response.Errors != null && response.Errors.Length > 0)
-            {
-                return CreateErrorResult(response.Errors);
-            }
-
-            // 6. Return success result with changes highlighted
-            return CreateSuccessResult(response.Data.UpdateTimeEntry, input);
+            // 5. Return success
+            return CreateSuccessResult(result.Data!.UpdateTimeEntry);
         }
         catch (Exception ex)
         {
@@ -87,132 +49,107 @@ public class UpdateEntryTool
         }
     }
 
-    private object? ParseUpdateFields(JsonElement arguments)
+    private UpdateTimeEntryInput ParseUpdateFields(JsonElement arguments)
     {
-        var updates = new Dictionary<string, object>();
+        var input = new UpdateTimeEntryInput();
 
         if (arguments.TryGetProperty("task", out var task))
         {
-            updates["task"] = task.GetString()!;
+            input.Task = task.GetString();
         }
 
-        if (arguments.TryGetProperty("issueId", out var issueId))
+        if (arguments.TryGetProperty("standardHours", out var sh))
         {
-            updates["issueId"] = issueId.GetString()!;
+            input.StandardHours = (decimal)sh.GetDouble();
         }
 
-        if (arguments.TryGetProperty("standardHours", out var standardHours))
+        if (arguments.TryGetProperty("overtimeHours", out var oh))
         {
-            updates["standardHours"] = standardHours.GetDouble();
+            input.OvertimeHours = (decimal)oh.GetDouble();
         }
 
-        if (arguments.TryGetProperty("overtimeHours", out var overtimeHours))
+        if (arguments.TryGetProperty("startDate", out var sd))
         {
-            updates["overtimeHours"] = overtimeHours.GetDouble();
+            input.StartDate = DateOnly.Parse(sd.GetString()!);
         }
 
-        if (arguments.TryGetProperty("description", out var description))
+        if (arguments.TryGetProperty("completionDate", out var cd))
         {
-            updates["description"] = description.GetString()!;
+            input.CompletionDate = DateOnly.Parse(cd.GetString()!);
         }
 
-        if (arguments.TryGetProperty("startDate", out var startDate))
+        if (arguments.TryGetProperty("description", out var desc))
         {
-            updates["startDate"] = startDate.GetString()!;
+            input.Description = desc.GetString();
         }
 
-        if (arguments.TryGetProperty("completionDate", out var completionDate))
+        if (arguments.TryGetProperty("issueId", out var issue))
         {
-            updates["completionDate"] = completionDate.GetString()!;
+            input.IssueId = issue.GetString();
         }
 
         if (arguments.TryGetProperty("tags", out var tags))
         {
-            updates["tags"] = JsonSerializer.Deserialize<List<TagInput>>(tags.GetRawText())!;
+            input.Tags = JsonSerializer.Deserialize<List<TagInput>>(tags.GetRawText());
         }
 
-        return updates.Count > 0 ? updates : null;
+        return input;
     }
 
-    private ToolResult CreateSuccessResult(TimeEntryData entry, object updates)
+    private ToolResult CreateSuccessResult(IUpdateTimeEntry_UpdateTimeEntry entry)
     {
-        var message = new StringBuilder();
-        message.AppendLine("✅ Time entry updated successfully!\n");
-        message.AppendLine($"ID: {entry.Id}");
-        message.AppendLine($"Project: {entry.Project.Code} - {entry.Project.Name}");
-        message.AppendLine($"Task: {entry.ProjectTask.TaskName}");
-        message.AppendLine($"Hours: {entry.StandardHours} standard");
+        var message = $"✅ Time entry updated successfully!\n\n" +
+                      $"ID: {entry.Id}\n" +
+                      $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
+                      $"Task: {entry.ProjectTask.TaskName}\n" +
+                      $"Hours: {entry.StandardHours} standard";
 
         if (entry.OvertimeHours > 0)
         {
-            message.Append($", {entry.OvertimeHours} overtime");
+            message += $", {entry.OvertimeHours} overtime";
         }
 
-        message.AppendLine($"\nPeriod: {entry.StartDate} to {entry.CompletionDate}");
-        message.AppendLine($"Status: {entry.Status}");
+        message += $"\nPeriod: {entry.StartDate} to {entry.CompletionDate}\n" +
+                   $"Status: {entry.Status}\n" +
+                   $"Last Updated: {entry.UpdatedAt}";
 
         if (!string.IsNullOrEmpty(entry.Description))
         {
-            message.AppendLine($"Description: {entry.Description}");
+            message += $"\nDescription: {entry.Description}";
         }
 
         if (!string.IsNullOrEmpty(entry.IssueId))
         {
-            message.AppendLine($"Issue: {entry.IssueId}");
-        }
-
-        message.AppendLine($"\nUpdated: {entry.UpdatedAt:yyyy-MM-dd HH:mm:ss}");
-
-        // Highlight what changed
-        var updateDict = updates as IDictionary<string, object>;
-        if (updateDict != null && updateDict.Count > 0)
-        {
-            message.AppendLine($"\n**Changes applied:**");
-            foreach (var kvp in updateDict)
-            {
-                message.AppendLine($"  • {kvp.Key}: {kvp.Value}");
-            }
+            message += $"\nIssue: {entry.IssueId}";
         }
 
         return new ToolResult
         {
             Content = new List<ContentItem>
             {
-                ContentItem.CreateText(message.ToString())
+                ContentItem.CreateText(message)
             }
         };
     }
 
-    private ToolResult CreateValidationError(string errorMessage)
+    private ToolResult CreateValidationError(string message)
     {
         return new ToolResult
         {
             Content = new List<ContentItem>
             {
-                ContentItem.CreateText($"❌ Validation error: {errorMessage}")
+                ContentItem.CreateText($"❌ Validation Error: {message}")
             },
             IsError = true
         };
     }
 
-    private ToolResult CreateErrorResult(GraphQL.GraphQLError[] errors)
+    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
     {
         var errorMessage = "❌ Failed to update time entry:\n\n";
-
-        foreach (var error in errors)
+        if (errors != null)
         {
-            errorMessage += $"- {error.Message}\n";
-
-            // Special handling for common errors
-            if (error.Message.Contains("Cannot update"))
-            {
-                errorMessage += "\n💡 Tip: Only entries with status NOT_REPORTED or DECLINED can be updated.\n";
-                errorMessage += "   Submitted or approved entries are read-only.\n";
-            }
-            else if (error.Message.Contains("not found"))
-            {
-                errorMessage += "\n💡 Tip: Double-check the entry ID. You can use query_time_entries to find entries.\n";
-            }
+            errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
         }
 
         return new ToolResult
@@ -236,10 +173,4 @@ public class UpdateEntryTool
             IsError = true
         };
     }
-}
-
-// Response type
-public class UpdateTimeEntryResponse
-{
-    public TimeEntryData UpdateTimeEntry { get; set; } = null!;
 }

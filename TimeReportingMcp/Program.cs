@@ -1,4 +1,7 @@
 using System;
+using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp;
@@ -15,8 +18,21 @@ class Program
             var config = new McpConfig();
             config.Validate();
 
-            // Initialize GraphQL client
-            using var graphqlClient = new GraphQLClientWrapper(config);
+            // Configure dependency injection with StrawberryShake
+            var services = new ServiceCollection();
+
+            // Add StrawberryShake GraphQL client
+            services
+                .AddTimeReportingClient()
+                .ConfigureHttpClient(client =>
+                {
+                    client.BaseAddress = new Uri(config.ApiUrl);
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", config.BearerToken);
+                });
+
+            var serviceProvider = services.BuildServiceProvider();
+            var graphqlClient = serviceProvider.GetRequiredService<ITimeReportingClient>();
 
             // Create and start MCP server
             var server = new McpServer(graphqlClient);

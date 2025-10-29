@@ -1,19 +1,17 @@
 using System.Text.Json;
-using GraphQL;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
-using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
 /// <summary>
-/// Tool to move a time entry to a different project and task.
-/// Useful when an entry was logged to the wrong project.
+/// Tool for moving time entries between projects
 /// </summary>
 public class MoveTaskTool
 {
-    private readonly GraphQLClientWrapper _client;
+    private readonly ITimeReportingClient _client;
 
-    public MoveTaskTool(GraphQLClientWrapper client)
+    public MoveTaskTool(ITimeReportingClient client)
     {
         _client = client;
     }
@@ -22,56 +20,37 @@ public class MoveTaskTool
     {
         try
         {
-            // 1. Parse arguments
-            var entryId = arguments.GetProperty("entryId").GetString()
-                ?? throw new ArgumentException("entryId is required");
-            var newProjectCode = arguments.GetProperty("newProjectCode").GetString()
-                ?? throw new ArgumentException("newProjectCode is required");
-            var newTask = arguments.GetProperty("newTask").GetString()
-                ?? throw new ArgumentException("newTask is required");
-
-            // 2. Build GraphQL mutation
-            var mutation = new GraphQLRequest
+            // 1. Parse required arguments
+            if (!arguments.TryGetProperty("entryId", out var entryIdElement))
             {
-                Query = @"
-                    mutation MoveTaskToProject($entryId: UUID!, $newProjectCode: String!, $newTask: String!) {
-                        moveTaskToProject(entryId: $entryId, newProjectCode: $newProjectCode, newTask: $newTask) {
-                            id
-                            project {
-                                code
-                                name
-                            }
-                            projectTask {
-                                taskName
-                            }
-                            standardHours
-                            overtimeHours
-                            startDate
-                            completionDate
-                            status
-                            updatedAt
-                        }
-                    }",
-                Variables = new
-                {
-                    entryId,
-                    newProjectCode,
-                    newTask
-                }
-            };
-
-            // 3. Execute mutation
-            var response = await _client.SendMutationAsync<MoveTaskResponse>(mutation);
-
-            // 4. Handle errors
-            if (response.Errors != null && response.Errors.Length > 0)
-            {
-                return CreateErrorResult(response.Errors);
+                return CreateValidationError("Entry ID is required");
             }
 
-            // 5. Format success response
-            var entry = response.Data.MoveTaskToProject;
-            return CreateSuccessResult(entry);
+            if (!arguments.TryGetProperty("newProjectCode", out var projElement))
+            {
+                return CreateValidationError("New project code is required");
+            }
+
+            if (!arguments.TryGetProperty("newTask", out var taskElement))
+            {
+                return CreateValidationError("New task is required");
+            }
+
+            var entryId = Guid.Parse(entryIdElement.GetString()!);
+            var newProjectCode = projElement.GetString()!;
+            var newTask = taskElement.GetString()!;
+
+            // 2. Execute strongly-typed mutation
+            var result = await _client.MoveTaskToProject.ExecuteAsync(entryId, newProjectCode, newTask);
+
+            // 3. Handle errors
+            if (result.IsErrorResult())
+            {
+                return CreateErrorResult(result.Errors);
+            }
+
+            // 4. Return success
+            return CreateSuccessResult(result.Data!.MoveTaskToProject);
         }
         catch (Exception ex)
         {
@@ -79,15 +58,21 @@ public class MoveTaskTool
         }
     }
 
-    private ToolResult CreateSuccessResult(TimeEntryData entry)
+    private ToolResult CreateSuccessResult(IMoveTaskToProject_MoveTaskToProject entry)
     {
         var message = $"✅ Time entry moved successfully!\n\n" +
                       $"ID: {entry.Id}\n" +
                       $"New Project: {entry.Project.Code} - {entry.Project.Name}\n" +
-                      $"Task: {entry.ProjectTask.TaskName}\n" +
-                      $"Hours: {entry.StandardHours} standard, {entry.OvertimeHours} overtime\n" +
-                      $"Period: {entry.StartDate} to {entry.CompletionDate}\n" +
-                      $"Status: {entry.Status}";
+                      $"New Task: {entry.ProjectTask.TaskName}\n" +
+                      $"Hours: {entry.StandardHours} standard";
+
+        if (entry.OvertimeHours > 0)
+        {
+            message += $", {entry.OvertimeHours} overtime";
+        }
+
+        message += $"\nPeriod: {entry.StartDate} to {entry.CompletionDate}\n" +
+                   $"Status: {entry.Status}";
 
         return new ToolResult
         {
@@ -98,10 +83,25 @@ public class MoveTaskTool
         };
     }
 
-    private ToolResult CreateErrorResult(GraphQL.GraphQLError[] errors)
+    private ToolResult CreateValidationError(string message)
+    {
+        return new ToolResult
+        {
+            Content = new List<ContentItem>
+            {
+                ContentItem.CreateText($"❌ Validation Error: {message}")
+            },
+            IsError = true
+        };
+    }
+
+    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
     {
         var errorMessage = "❌ Failed to move time entry:\n\n";
-        errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        if (errors != null)
+        {
+            errorMessage += string.Join("\n", errors.Select(e => $"- {e.Message}"));
+        }
 
         return new ToolResult
         {
@@ -124,12 +124,4 @@ public class MoveTaskTool
             IsError = true
         };
     }
-}
-
-/// <summary>
-/// Response wrapper for moveTaskToProject mutation
-/// </summary>
-public class MoveTaskResponse
-{
-    public TimeEntryData MoveTaskToProject { get; set; } = null!;
 }
