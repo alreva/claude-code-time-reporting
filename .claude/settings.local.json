@@ -43,7 +43,8 @@
       "mcp__time-reporting__log_time",
       "mcp__time-reporting__query_time_entries",
       "mcp__time-reporting__submit_time_entry",
-      "mcp__time-reporting__update_time_entry"
+      "mcp__time-reporting__update_time_entry",
+      "mcp__time-reporting__move_task_to_project"
     ],
     "deny": [],
     "ask": []

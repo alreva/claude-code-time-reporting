@@ -5,11 +5,11 @@
       "args": [
         "run",
         "--project",
-        "/Users/oleksandrreva/Documents/git/time-reporting-agent/claude-code-time-reporting/TimeReportingMcp/TimeReportingMcp.csproj"
+        "./TimeReportingMcp/TimeReportingMcp.csproj"
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "/xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU="
+        "BEARER_TOKEN": "${BEARER_TOKEN}"
       }
     }
   }

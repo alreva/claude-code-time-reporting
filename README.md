@@ -4,6 +4,37 @@ A time reporting system that integrates Claude Code with a custom GraphQL-based 
 
 ---
 
+## 🚀 Quick Start
+
+**Get up and running in 2 minutes:**
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/time-reporting-system.git
+cd time-reporting-system
+
+# Run automated setup (generates tokens, starts database, applies migrations)
+./setup.sh
+
+# Start the API
+/run-api
+# Or: dotnet run --project TimeReportingApi
+
+# Connect Claude Code (see docs/integration/CLAUDE-CODE-SETUP.md)
+```
+
+**That's it!** The setup script automatically:
+- ✅ Generates a secure bearer token
+- ✅ Creates `.env` file with configuration
+- ✅ Configures `.mcp.json` for Claude Code
+- ✅ Starts PostgreSQL database
+- ✅ Applies database migrations
+- ✅ Seeds initial project data
+
+**No manual configuration needed!**
+
+---
+
 ## 🎯 Overview
 
 This project allows you to:
