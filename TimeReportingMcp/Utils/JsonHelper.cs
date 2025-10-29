@@ -10,7 +10,10 @@ namespace TimeReportingMcp.Utils;
 /// </summary>
 public static class JsonHelper
 {
-    private static readonly JsonSerializerOptions Options = new()
+    /// <summary>
+    /// Shared JSON serializer options with camelCase naming policy
+    /// </summary>
+    public static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

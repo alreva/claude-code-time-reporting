@@ -1,6 +1,7 @@
 using System.Text.Json;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
+using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
@@ -61,7 +62,7 @@ public class LogTimeTool
         List<TagInput>? tags = null;
         if (arguments.TryGetProperty("tags", out var tagsElement))
         {
-            tags = JsonSerializer.Deserialize<List<TagInput>>(tagsElement.GetRawText());
+            tags = JsonSerializer.Deserialize<List<TagInput>>(tagsElement.GetRawText(), JsonHelper.Options);
         }
 
         return new LogTimeInput

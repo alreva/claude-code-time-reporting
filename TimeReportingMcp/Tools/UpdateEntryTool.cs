@@ -1,6 +1,7 @@
 using System.Text.Json;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
+using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp.Tools;
 
@@ -90,7 +91,7 @@ public class UpdateEntryTool
 
         if (arguments.TryGetProperty("tags", out var tags))
         {
-            input.Tags = JsonSerializer.Deserialize<List<TagInput>>(tags.GetRawText());
+            input.Tags = JsonSerializer.Deserialize<List<TagInput>>(tags.GetRawText(), JsonHelper.Options);
         }
 
         return input;
