@@ -51,7 +51,7 @@ POSTGRES_DB=time_reporting
 ASPNETCORE_ENVIRONMENT=Production
 
 # Bearer token for API authentication (generate with scripts/generate-token.sh)
-BEARER_TOKEN=your_bearer_token_here
+Authentication__BearerToken=your_bearer_token_here
 
 #######################
 # Optional: Local Development Overrides
@@ -105,7 +105,7 @@ echo "======================"
 echo "$TOKEN"
 echo ""
 echo "Add this to your .env file:"
-echo "BEARER_TOKEN=$TOKEN"
+echo "Authentication__BearerToken=$TOKEN"
 echo ""
 echo "Use this in API requests:"
 echo "Authorization: Bearer $TOKEN"
@@ -158,7 +158,7 @@ This document describes all environment variables used by the Time Reporting Sys
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `ASPNETCORE_ENVIRONMENT` | Runtime environment | `Production` | No |
-| `BEARER_TOKEN` | API authentication token | None | Yes |
+| `Authentication__BearerToken` | API authentication token | None | Yes |
 
 **Bearer Token Generation:**
 ```bash
@@ -181,7 +181,7 @@ ASPNETCORE_ENVIRONMENT=Development
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=time_reporting
-BEARER_TOKEN=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
+Authentication__BearerToken=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
 ```
 
 Connection string uses `Host=localhost`:
@@ -197,7 +197,7 @@ ASPNETCORE_ENVIRONMENT=Production
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_secure_password
 POSTGRES_DB=time_reporting
-BEARER_TOKEN=your_bearer_token
+Authentication__BearerToken=your_bearer_token
 ```
 
 Connection string uses `Host=postgres` (service name):
@@ -279,7 +279,7 @@ source .env
 # Test API with bearer token
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $BEARER_TOKEN" \
+  -H "Authorization: Bearer $Authentication__BearerToken" \
   -d '{"query":"{ projects { code name } }"}'
 ```
 
@@ -300,9 +300,9 @@ Expected: No connection errors
 
 **Cause:** Bearer token mismatch
 **Solution:**
-1. Verify `.env` has correct `BEARER_TOKEN` value
+1. Verify `.env` has correct `Authentication__BearerToken` value
 2. Restart API: `podman compose restart api`
-3. Test with correct token: `curl -H "Authorization: Bearer $BEARER_TOKEN" ...`
+3. Test with correct token: `curl -H "Authorization: Bearer $Authentication__BearerToken" ...`
 
 ### Issue: API can't connect to database
 
@@ -359,7 +359,7 @@ mkdir -p scripts
 #### 1. .env.example is Safe to Commit
 ```bash
 # Check for real secrets in .env.example
-grep -i "YOUR_BEARER_TOKEN_HERE\|postgres" .env.example
+grep -i "YOUR_Authentication__BearerToken_HERE\|postgres" .env.example
 ```
 **Expected:** Only placeholder values, no real secrets
 
@@ -378,22 +378,22 @@ git status .env
 #### 4. Token is Cryptographically Random
 ```bash
 # Generate 3 tokens, should all be different
-./scripts/generate-token.sh | grep "^BEARER_TOKEN=" | cut -d'=' -f2
-./scripts/generate-token.sh | grep "^BEARER_TOKEN=" | cut -d'=' -f2
-./scripts/generate-token.sh | grep "^BEARER_TOKEN=" | cut -d'=' -f2
+./scripts/generate-token.sh | grep "^Authentication__BearerToken=" | cut -d'=' -f2
+./scripts/generate-token.sh | grep "^Authentication__BearerToken=" | cut -d'=' -f2
+./scripts/generate-token.sh | grep "^Authentication__BearerToken=" | cut -d'=' -f2
 ```
 **Expected:** Three different tokens
 
 #### 5. Environment Variables Override appsettings
 ```bash
 # Start API with custom token
-export BEARER_TOKEN="test_token_123"
+export Authentication__BearerToken="test_token_123"
 podman compose up -d api
 
 # Check logs for environment override
 podman compose logs api | grep -i "environment"
 ```
-**Expected:** API uses `BEARER_TOKEN` from environment, not appsettings.json
+**Expected:** API uses `Authentication__BearerToken` from environment, not appsettings.json
 
 #### 6. Production appsettings Loaded
 ```bash
@@ -450,7 +450,7 @@ A secure bearer token should have:
 
 **Good token:**
 ```
-YOUR_BEARER_TOKEN_HERE
+YOUR_Authentication__BearerToken_HERE
 ```
 
 **Bad token:**

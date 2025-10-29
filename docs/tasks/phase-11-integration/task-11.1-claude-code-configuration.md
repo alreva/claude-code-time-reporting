@@ -17,7 +17,7 @@ Create MCP server configuration for Claude Code, enabling users to connect Claud
 
 - [ ] Example `claude_desktop_config.json` file created with all required settings
 - [ ] Configuration includes correct paths for .NET 8 and MCP Server project
-- [ ] Environment variables documented for `GRAPHQL_API_URL` and `BEARER_TOKEN`
+- [ ] Environment variables documented for `GRAPHQL_API_URL` and `Authentication__BearerToken`
 - [ ] Instructions provided for different operating systems (macOS, Windows, Linux)
 - [ ] Configuration tested with Claude Code (MCP server appears in tools list)
 - [ ] Troubleshooting section added for common configuration issues
@@ -42,7 +42,7 @@ Create `docs/integration/claude_desktop_config.json.example`:
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "your-bearer-token-here"
+        "Authentication__BearerToken": "your-bearer-token-here"
       }
     }
   }
@@ -51,7 +51,7 @@ Create `docs/integration/claude_desktop_config.json.example`:
 
 **Key Points:**
 - Use absolute paths (not relative) for project path
-- `BEARER_TOKEN` must match the token configured in the GraphQL API
+- `Authentication__BearerToken` must match the token configured in the GraphQL API
 - `GRAPHQL_API_URL` should point to the running GraphQL API (default: `http://localhost:5001/graphql`)
 
 ### Step 2: Document Platform-Specific Paths
@@ -85,7 +85,7 @@ Create `docs/integration/CLAUDE-CODE-SETUP.md`:
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
 | `GRAPHQL_API_URL` | GraphQL API endpoint URL | `http://localhost:5001/graphql` |
-| `BEARER_TOKEN` | Authentication token for API | `your-generated-token-here` |
+| `Authentication__BearerToken` | Authentication token for API | `your-generated-token-here` |
 
 **Generating a Bearer Token:**
 
@@ -99,7 +99,7 @@ openssl rand -base64 32
 Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4=
 ```
 
-**⚠️ Security Note:** Never commit the actual `BEARER_TOKEN` to version control. Use this token in:
+**⚠️ Security Note:** Never commit the actual `Authentication__BearerToken` to version control. Use this token in:
 1. Claude Code config file (`.config/claude-code/config.json`)
 2. GraphQL API configuration (`.env` file or `appsettings.json`)
 
@@ -133,7 +133,7 @@ openssl rand -base64 32
 
 Edit `.env` file:
 ```env
-BEARER_TOKEN=<your-generated-token>
+Authentication__BearerToken=<your-generated-token>
 ```
 
 Restart API:
@@ -157,7 +157,7 @@ Edit `~/.config/claude-code/config.json` (macOS/Linux) or `%APPDATA%\claude-code
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "<same-token-from-step-3>"
+        "Authentication__BearerToken": "<same-token-from-step-3>"
       }
     }
   }
@@ -217,7 +217,7 @@ Add troubleshooting section to `docs/integration/CLAUDE-CODE-SETUP.md`:
 **Problem:** MCP tools return authentication errors
 
 **Solutions:**
-1. Verify `BEARER_TOKEN` in Claude Code config matches the token in API `.env` file
+1. Verify `Authentication__BearerToken` in Claude Code config matches the token in API `.env` file
 2. Verify GraphQL API is running:
    ```bash
    curl http://localhost:5001/health
@@ -365,10 +365,10 @@ echo
 
 # Step 5: Check bearer token is set
 echo "5. Checking bearer token..."
-if grep -q "BEARER_TOKEN" .env 2>/dev/null; then
-    echo "✅ PASS: BEARER_TOKEN found in .env file"
+if grep -q "Authentication__BearerToken" .env 2>/dev/null; then
+    echo "✅ PASS: Authentication__BearerToken found in .env file"
 else
-    echo "⚠️  WARN: BEARER_TOKEN not found in .env file"
+    echo "⚠️  WARN: Authentication__BearerToken not found in .env file"
     echo "         Generate one with: openssl rand -base64 32"
 fi
 echo
@@ -397,7 +397,7 @@ chmod +x tests/integration/verify-mcp-connection.sh
 
 **Referenced:**
 - `TimeReportingMcp/TimeReportingMcp.csproj` - MCP Server project
-- `.env` - API configuration (BEARER_TOKEN)
+- `.env` - API configuration (Authentication__BearerToken)
 - `~/.config/claude-code/config.json` - Claude Code config (user's machine)
 
 ---

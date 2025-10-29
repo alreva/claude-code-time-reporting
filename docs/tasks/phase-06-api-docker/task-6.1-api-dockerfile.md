@@ -325,7 +325,7 @@ podman images time-reporting-api:latest
 # Run the container (connected to host network for database access)
 podman run --rm -p 5001:5001 \
   -e ConnectionStrings__TimeReportingDb="Host=host.containers.internal;Port=5432;Database=time_reporting;Username=postgres;Password=postgres" \
-  -e Authentication__BearerToken="YOUR_BEARER_TOKEN_HERE" \
+  -e Authentication__BearerToken="YOUR_Authentication__BearerToken_HERE" \
   time-reporting-api:latest
 
 # In another terminal, test health endpoint
@@ -334,7 +334,7 @@ curl http://localhost:5001/health
 # Test GraphQL endpoint with bearer token
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_BEARER_TOKEN_HERE" \
+  -H "Authorization: Bearer YOUR_Authentication__BearerToken_HERE" \
   -d '{"query":"{ projects { code name } }"}'
 ```
 
@@ -359,7 +359,7 @@ podman images time-reporting-api:test --format "{{.Size}}"
 podman run --rm -d --name api-test \
   -p 5001:5001 \
   -e ConnectionStrings__TimeReportingDb="Host=host.containers.internal;Port=5432;Database=time_reporting;Username=postgres;Password=postgres" \
-  -e Authentication__BearerToken="YOUR_BEARER_TOKEN_HERE" \
+  -e Authentication__BearerToken="YOUR_Authentication__BearerToken_HERE" \
   time-reporting-api:test
 
 # Wait a few seconds for startup
@@ -381,7 +381,7 @@ echo $?
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_BEARER_TOKEN_HERE" \
+  -H "Authorization: Bearer YOUR_Authentication__BearerToken_HERE" \
   -d '{"query":"{ projects { code name } }"}' | jq
 ```
 **Expected:** Returns valid GraphQL response with projects data

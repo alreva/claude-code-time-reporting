@@ -176,7 +176,7 @@ This MCP server implements the Model Context Protocol (MCP) by:
 Set these environment variables:
 
 - `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
-- `BEARER_TOKEN` - Authentication token
+- `Authentication__BearerToken` - Authentication token
 
 ## Usage
 
@@ -192,7 +192,7 @@ dotnet run --project TimeReportingMcp.csproj
       "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "your-token-here"
+        "Authentication__BearerToken": "your-token-here"
       }
     }
   }

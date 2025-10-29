@@ -64,7 +64,7 @@ Create file: `.env`
 DB_PASSWORD=your_secure_password_here
 
 # API Configuration (for future tasks)
-BEARER_TOKEN=
+Authentication__BearerToken=
 ```
 
 Create file: `.env.example`
@@ -74,7 +74,7 @@ Create file: `.env.example`
 DB_PASSWORD=postgres
 
 # API Configuration
-BEARER_TOKEN=your_bearer_token_here
+Authentication__BearerToken=your_bearer_token_here
 ```
 
 ---

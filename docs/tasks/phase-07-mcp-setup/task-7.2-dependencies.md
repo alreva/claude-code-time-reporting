@@ -86,7 +86,7 @@ public class McpConfig
     public McpConfig()
     {
         GraphQLApiUrl = GetRequiredEnvVar("GRAPHQL_API_URL");
-        BearerToken = GetRequiredEnvVar("BEARER_TOKEN");
+        BearerToken = GetRequiredEnvVar("Authentication__BearerToken");
     }
 
     private static string GetRequiredEnvVar(string name)
@@ -115,7 +115,7 @@ public class McpConfig
         if (BearerToken.Length < 16)
         {
             throw new InvalidOperationException(
-                "BEARER_TOKEN appears to be too short. Use a secure token (32+ characters).");
+                "Authentication__BearerToken appears to be too short. Use a secure token (32+ characters).");
         }
 
         Console.Error.WriteLine($"Configuration loaded:");
@@ -299,7 +299,7 @@ Fatal error: Required environment variable 'GRAPHQL_API_URL' is not set. Please 
 ```bash
 # Set environment variables
 export GRAPHQL_API_URL="http://localhost:5001/graphql"
-export BEARER_TOKEN="test-token-1234567890abcdef"
+export Authentication__BearerToken="test-token-1234567890abcdef"
 
 # Run with env vars
 dotnet run
@@ -332,7 +332,7 @@ Then test MCP server connection:
 ```bash
 # Run MCP server
 export GRAPHQL_API_URL="http://localhost:5001/graphql"
-export BEARER_TOKEN="your-actual-token-from-.env"
+export Authentication__BearerToken="your-actual-token-from-.env"
 
 cd TimeReportingMcp
 dotnet run
@@ -400,7 +400,7 @@ dotnet restore
       "commandName": "Project",
       "environmentVariables": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "your-token-here"
+        "Authentication__BearerToken": "your-token-here"
       }
     }
   }

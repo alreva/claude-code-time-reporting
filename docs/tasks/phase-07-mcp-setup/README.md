@@ -61,7 +61,7 @@ PostgreSQL Database
 
 **What you'll do:**
 - Install `GraphQL.Client` and `GraphQL.Client.Serializer.SystemTextJson`
-- Create `McpConfig.cs` (reads env vars: GRAPHQL_API_URL, BEARER_TOKEN)
+- Create `McpConfig.cs` (reads env vars: GRAPHQL_API_URL, Authentication__BearerToken)
 - Create `GraphQLClientWrapper.cs` (wraps GraphQL client with auth)
 - Test configuration loading
 
@@ -214,7 +214,7 @@ Set these environment variables before running:
 
 ```bash
 export GRAPHQL_API_URL="http://localhost:5001/graphql"
-export BEARER_TOKEN="your-token-from-.env-file"
+export Authentication__BearerToken="your-token-from-.env-file"
 ```
 
 **For Claude Code integration (later):**
@@ -226,7 +226,7 @@ export BEARER_TOKEN="your-token-from-.env-file"
       "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "your-token-here"
+        "Authentication__BearerToken": "your-token-here"
       }
     }
   }
