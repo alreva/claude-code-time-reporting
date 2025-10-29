@@ -12,6 +12,10 @@
     <PackageVersion Include="HotChocolate.AspNetCore.Authorization" Version="15.1.11" />
     <PackageVersion Include="HotChocolate.Data" Version="15.1.11" />
     <PackageVersion Include="HotChocolate.Data.EntityFramework" Version="15.1.11" />
+    <!-- StrawberryShake GraphQL Client (typed client code generation) -->
+    <PackageVersion Include="StrawberryShake" Version="15.1.11" />
+    <PackageVersion Include="StrawberryShake.Server" Version="15.1.10" />
+    <PackageVersion Include="StrawberryShake.Transport.Http" Version="15.1.11" />
   </ItemGroup>
   <ItemGroup Label="Test Dependencies">
     <!-- Testing Framework -->

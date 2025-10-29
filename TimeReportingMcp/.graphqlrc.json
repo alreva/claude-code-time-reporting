@@ -1,0 +1,13 @@
+{
+  "schema": "schema.graphql",
+  "documents": "**/*.graphql",
+  "extensions": {
+    "strawberryShake": {
+      "name": "TimeReportingClient",
+      "namespace": "TimeReportingMcp.Generated",
+      "dependencyInjection": true,
+      "strictSchemaValidation": false,
+      "useSingleFile": true
+    }
+  }
+}

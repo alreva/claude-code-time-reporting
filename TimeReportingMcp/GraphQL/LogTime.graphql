@@ -1,0 +1,21 @@
+mutation LogTime($input: LogTimeInput!) {
+  logTime(input: $input) {
+    id
+    project {
+      code
+      name
+    }
+    projectTask {
+      taskName
+    }
+    issueId
+    standardHours
+    overtimeHours
+    description
+    startDate
+    completionDate
+    status
+    createdAt
+    updatedAt
+  }
+}
