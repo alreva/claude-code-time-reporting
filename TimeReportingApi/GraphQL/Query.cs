@@ -31,6 +31,9 @@ public class Query
         [Service] TimeReportingDbContext context)
     {
         return await context.TimeEntries
+            .Include(e => e.Tags)
+                .ThenInclude(t => t.TagValue)
+                    .ThenInclude(tv => tv.ProjectTag)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
