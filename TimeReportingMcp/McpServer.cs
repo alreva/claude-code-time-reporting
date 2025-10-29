@@ -100,12 +100,41 @@ public class McpServer
     {
         return request.Method switch
         {
+            "initialize" => HandleInitialize(request),
             "tools/list" => HandleToolsList(request),
             "tools/call" => await HandleToolCallAsync(request),
             _ => JsonHelper.ErrorResponse(
                 request.Id,
                 JsonRpcError.MethodNotFound(request.Method)
             )
+        };
+    }
+
+    /// <summary>
+    /// Handle initialize - MCP protocol handshake
+    /// </summary>
+    private JsonRpcResponse HandleInitialize(JsonRpcRequest request)
+    {
+        Console.Error.WriteLine("Handling initialize request");
+
+        var result = new
+        {
+            protocolVersion = "2024-11-05",
+            capabilities = new
+            {
+                tools = new { }
+            },
+            serverInfo = new
+            {
+                name = "time-reporting-mcp",
+                version = "1.0.0"
+            }
+        };
+
+        return new JsonRpcResponse
+        {
+            Id = request.Id,
+            Result = result
         };
     }
 
