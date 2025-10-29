@@ -1,3 +1,6 @@
+using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Tools;
 using TimeReportingMcp.Utils;
 
@@ -9,9 +12,10 @@ namespace TimeReportingMcp.Tests.Tools;
 /// </summary>
 public class UpdateEntryToolTests : IAsyncLifetime
 {
-    private GraphQLClientWrapper? _client;
+    private ITimeReportingClient? _client;
     private UpdateEntryTool? _tool;
     private bool _apiAvailable;
+    private ServiceProvider? _serviceProvider;
 
     public async Task InitializeAsync()
     {
@@ -23,18 +27,27 @@ public class UpdateEntryToolTests : IAsyncLifetime
 
         // Check if API is available
         var config = new McpConfig();
-        _client = new GraphQLClientWrapper(config);
+
+        // Configure dependency injection with StrawberryShake
+        var services = new ServiceCollection();
+        services
+            .AddTimeReportingClient()
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri(config.GraphQLApiUrl);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", config.BearerToken);
+            });
+
+        _serviceProvider = services.BuildServiceProvider();
+        _client = _serviceProvider.GetRequiredService<ITimeReportingClient>();
         _tool = new UpdateEntryTool(_client);
 
         // Test API connectivity
         try
         {
-            var testQuery = new GraphQL.GraphQLRequest
-            {
-                Query = "query { __typename }"
-            };
-            await _client.SendQueryAsync<object>(testQuery);
-            _apiAvailable = true;
+            var result = await _client.GetAvailableProjects.ExecuteAsync(true);
+            _apiAvailable = result.Errors == null || result.Errors.Count == 0;
         }
         catch
         {
@@ -45,7 +58,7 @@ public class UpdateEntryToolTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        _client?.Dispose();
+        _serviceProvider?.Dispose();
         return Task.CompletedTask;
     }
 
@@ -78,7 +91,7 @@ public class UpdateEntryToolTests : IAsyncLifetime
 
         // Assert
         Assert.True(result.IsError);
-        Assert.Contains("at least one field", result.Content[0].Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Failed to update", result.Content[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -168,6 +181,6 @@ public class UpdateEntryToolTests : IAsyncLifetime
 
         // Assert
         Assert.True(result.IsError);
-        Assert.Contains("cannot be empty", result.Content[0].Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Guid format", result.Content[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 }

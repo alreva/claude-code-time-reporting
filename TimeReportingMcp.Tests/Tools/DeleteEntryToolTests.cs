@@ -1,3 +1,6 @@
+using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Tools;
 using TimeReportingMcp.Utils;
 
@@ -9,35 +12,44 @@ namespace TimeReportingMcp.Tests.Tools;
 /// </summary>
 public class DeleteEntryToolTests : IAsyncLifetime
 {
-    private GraphQLClientWrapper? _client;
+    private ITimeReportingClient? _client;
     private DeleteEntryTool? _tool;
     private LogTimeTool? _logTimeTool;
     private bool _apiAvailable;
+    private ServiceProvider? _serviceProvider;
 
     public async Task InitializeAsync()
     {
         // Set environment variables for testing
         Environment.SetEnvironmentVariable("GRAPHQL_API_URL",
-            Environment.GetEnvironmentVariable("GRAPHQL_API_URL") ?? "http://localhost:5000/graphql");
+            Environment.GetEnvironmentVariable("GRAPHQL_API_URL") ?? "http://localhost:5001/graphql");
         Environment.SetEnvironmentVariable("BEARER_TOKEN",
             Environment.GetEnvironmentVariable("BEARER_TOKEN") ?? "test-token-12345");
 
         // Check if API is available
         var config = new McpConfig();
 
-        _client = new GraphQLClientWrapper(config);
+        // Configure dependency injection with StrawberryShake
+        var services = new ServiceCollection();
+        services
+            .AddTimeReportingClient()
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri(config.GraphQLApiUrl);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", config.BearerToken);
+            });
+
+        _serviceProvider = services.BuildServiceProvider();
+        _client = _serviceProvider.GetRequiredService<ITimeReportingClient>();
         _tool = new DeleteEntryTool(_client);
         _logTimeTool = new LogTimeTool(_client);
 
         // Test API connectivity
         try
         {
-            var testQuery = new GraphQL.GraphQLRequest
-            {
-                Query = "query { __typename }"
-            };
-            await _client.SendQueryAsync<object>(testQuery);
-            _apiAvailable = true;
+            var result = await _client.GetAvailableProjects.ExecuteAsync(true);
+            _apiAvailable = result.Errors == null || result.Errors.Count == 0;
         }
         catch
         {
@@ -48,7 +60,7 @@ public class DeleteEntryToolTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        _client?.Dispose();
+        _serviceProvider?.Dispose();
         return Task.CompletedTask;
     }
 

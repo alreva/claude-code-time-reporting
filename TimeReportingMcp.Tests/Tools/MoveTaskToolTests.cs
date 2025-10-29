@@ -1,3 +1,6 @@
+using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
+using TimeReportingMcp.Generated;
 using TimeReportingMcp.Tools;
 using TimeReportingMcp.Utils;
 
@@ -9,36 +12,45 @@ namespace TimeReportingMcp.Tests.Tools;
 /// </summary>
 public class MoveTaskToolTests : IAsyncLifetime
 {
-    private GraphQLClientWrapper? _client;
+    private ITimeReportingClient? _client;
     private MoveTaskTool? _tool;
     private LogTimeTool? _logTimeTool;
     private bool _apiAvailable;
     private string? _testEntryId;
+    private ServiceProvider? _serviceProvider;
 
     public async Task InitializeAsync()
     {
         // Set environment variables for testing
         Environment.SetEnvironmentVariable("GRAPHQL_API_URL",
-            Environment.GetEnvironmentVariable("GRAPHQL_API_URL") ?? "http://localhost:5000/graphql");
+            Environment.GetEnvironmentVariable("GRAPHQL_API_URL") ?? "http://localhost:5001/graphql");
         Environment.SetEnvironmentVariable("BEARER_TOKEN",
             Environment.GetEnvironmentVariable("BEARER_TOKEN") ?? "test-token-12345");
 
         // Check if API is available
         var config = new McpConfig();
 
-        _client = new GraphQLClientWrapper(config);
+        // Configure dependency injection with StrawberryShake
+        var services = new ServiceCollection();
+        services
+            .AddTimeReportingClient()
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri(config.GraphQLApiUrl);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", config.BearerToken);
+            });
+
+        _serviceProvider = services.BuildServiceProvider();
+        _client = _serviceProvider.GetRequiredService<ITimeReportingClient>();
         _tool = new MoveTaskTool(_client);
         _logTimeTool = new LogTimeTool(_client);
 
         // Test API connectivity
         try
         {
-            var testQuery = new GraphQL.GraphQLRequest
-            {
-                Query = "query { __typename }"
-            };
-            await _client.SendQueryAsync<object>(testQuery);
-            _apiAvailable = true;
+            var result = await _client.GetAvailableProjects.ExecuteAsync(true);
+            _apiAvailable = result.Errors == null || result.Errors.Count == 0;
 
             // Create a test entry to use for move operations
             var logArgs = JsonSerializer.SerializeToElement(new
@@ -88,7 +100,7 @@ public class MoveTaskToolTests : IAsyncLifetime
             }
         }
 
-        _client?.Dispose();
+        _serviceProvider?.Dispose();
     }
 
     [Fact]
