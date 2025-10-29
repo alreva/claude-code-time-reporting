@@ -450,7 +450,7 @@ A secure bearer token should have:
 
 **Good token:**
 ```
-C5ZoARiAp+pso1oTQKvL3jRFvxToo//Pc/6ZLbRIsE4=
+YOUR_BEARER_TOKEN_HERE
 ```
 
 **Bad token:**

@@ -6,7 +6,7 @@ Your Time Reporting System is now running and ready for testing!
 
 - **GraphQL Playground:** http://localhost:5001/graphql
 - **Health Check:** http://localhost:5001/health
-- **Bearer Token:** `/xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU=`
+- **Bearer Token:** `YOUR_BEARER_TOKEN_HERE`
 
 ## 📋 Pre-Seeded Test Data
 
@@ -49,7 +49,7 @@ Each project has:
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer /xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU=' \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN_HERE' \
   -d '{"query":"{ projects { code name isActive } }"}'
 ```
 
@@ -84,7 +84,7 @@ curl -X POST http://localhost:5001/graphql \
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer /xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU=' \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN_HERE' \
   -d '{"query":"{ project(code: \"INTERNAL\") { code name tasks { name } tagConfigurations { name isRequired allowedValues { value } } } }"}'
 ```
 
@@ -128,7 +128,7 @@ mutation {
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer /xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU=' \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN_HERE' \
   -d '{"query":"mutation { logTime(input: { projectCode: \"INTERNAL\", task: \"Development\", standardHours: 8, startDate: \"2024-01-15\", completionDate: \"2024-01-15\", tags: [{ name: \"priority\", value: \"High\" }] }) { id projectCode task standardHours status } }"}'
 ```
 
@@ -163,7 +163,7 @@ curl -X POST http://localhost:5001/graphql \
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer /xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU=' \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN_HERE' \
   -d '{"query":"{ timeEntries(projectCode: \"INTERNAL\", limit: 10) { id projectCode task standardHours status } }"}'
 ```
 
@@ -284,7 +284,7 @@ mutation {
 3. Add authentication header:
    ```json
    {
-     "Authorization": "Bearer /xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU="
+     "Authorization": "Bearer YOUR_BEARER_TOKEN_HERE"
    }
    ```
 4. Use the left panel to write queries/mutations

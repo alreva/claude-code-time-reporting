@@ -17,7 +17,7 @@ This guide covers manual testing of the complete Time Reporting System including
 /deploy
 
 # Use production token
-Bearer /xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU=
+Bearer YOUR_BEARER_TOKEN_HERE
 ```
 
 **GraphQL Playground:** http://localhost:5001/graphql
@@ -44,7 +44,7 @@ Bearer dev-token-12345-for-local-testing
 | Environment | Token | Source |
 |-------------|-------|--------|
 | **Development** | `dev-token-12345-for-local-testing` | `appsettings.Development.json` |
-| **Production (Docker)** | `/xd1cC4u+PgEO2DL/D0J1/5+hDcdF4+7HTQpG8196rU=` | `.env` file |
+| **Production (Docker)** | `YOUR_BEARER_TOKEN_HERE` | `.env` file |
 
 ---
 

@@ -153,7 +153,7 @@ POSTGRES_PASSWORD=postgres
 POSTGRES_DB=time_reporting
 
 # API Configuration
-BEARER_TOKEN=C5ZoARiAp+pso1oTQKvL3jRFvxToo//Pc/6ZLbRIsE4=
+BEARER_TOKEN=YOUR_BEARER_TOKEN_HERE
 ```
 
 Optionally add:
@@ -236,7 +236,7 @@ podman compose logs api | grep -i "database\|postgres\|connection"
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer C5ZoARiAp+pso1oTQKvL3jRFvxToo//Pc/6ZLbRIsE4=" \
+  -H "Authorization: Bearer YOUR_BEARER_TOKEN_HERE" \
   -d '{"query":"{ projects { code name } }"}' | jq
 ```
 **Expected:** Returns GraphQL response with projects data
