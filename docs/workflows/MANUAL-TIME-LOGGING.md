@@ -464,10 +464,11 @@ curl http://localhost:5001/health
 ### Authentication Errors
 
 **Verify Token Matches:**
-1. Check `.env` file: `BEARER_TOKEN=...`
-2. Check Claude Code config: `~/.config/claude-code/config.json`
-3. Restart API: `/deploy`
-4. Restart Claude Code
+1. Check `env.sh` file: `Authentication__BearerToken=...`
+2. Ensure you sourced env.sh: `source env.sh`
+3. Check Claude Code config: `~/.config/claude-code/config.json`
+4. Restart API: `/deploy`
+5. Restart Claude Code
 
 ### Database State Issues
 
