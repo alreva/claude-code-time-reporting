@@ -114,7 +114,7 @@ This document provides detailed architectural diagrams and component specificati
       "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "BEARER_TOKEN": "your-token-here"
+        "Authentication__BearerToken": "your-token-here"
       }
     }
   }
@@ -187,14 +187,15 @@ class McpServer
 {
     private readonly GraphQLHttpClient _graphqlClient;
 
-    public McpServer()
+    public McpServer(IConfiguration configuration)
     {
-        _graphqlClient = new GraphQLHttpClient(
-            Environment.GetEnvironmentVariable("GRAPHQL_API_URL"),
-            new SystemTextJsonSerializer());
+        var apiUrl = configuration["GRAPHQL_API_URL"];
+        var bearerToken = configuration["Authentication:BearerToken"];
+
+        _graphqlClient = new GraphQLHttpClient(apiUrl, new SystemTextJsonSerializer());
         _graphqlClient.HttpClient.DefaultRequestHeaders.Add(
             "Authorization",
-            $"Bearer {Environment.GetEnvironmentVariable("BEARER_TOKEN")}");
+            $"Bearer {bearerToken}");
     }
 
     public async Task RunAsync()
@@ -266,7 +267,7 @@ private async Task<JsonRpcResponse> LogTime(Dictionary<string, JsonElement> args
 
 **Configuration:**
 - `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
-- `BEARER_TOKEN` - Authentication token
+- `Authentication__BearerToken` - Authentication token
 
 **That's it!** ~200 lines of C# for the entire MCP server.
 
@@ -633,7 +634,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres;Database=time_reporting;Username=postgres;Password=${DB_PASSWORD}"
-      Authentication__BearerToken: ${BEARER_TOKEN}
+      Authentication__BearerToken: ${Authentication__BearerToken}
     ports:
       - "5000:8080"
     depends_on:
@@ -732,7 +733,7 @@ openssl rand -base64 32
 ```
 
 **Storage:**
-- MCP Server: Environment variable `BEARER_TOKEN`
+- MCP Server: Environment variable `Authentication__BearerToken`
 - API: Configuration file or environment variable
 - **Never** commit tokens to version control
 
