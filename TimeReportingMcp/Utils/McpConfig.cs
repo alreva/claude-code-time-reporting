@@ -20,7 +20,7 @@ public class McpConfig
     public McpConfig()
     {
         GraphQLApiUrl = GetRequiredEnvVar("GRAPHQL_API_URL");
-        BearerToken = GetRequiredEnvVar("BEARER_TOKEN");
+        BearerToken = GetRequiredEnvVar("Authentication__BearerToken");
     }
 
     private static string GetRequiredEnvVar(string name)
@@ -49,7 +49,7 @@ public class McpConfig
         if (BearerToken.Length < 16)
         {
             throw new InvalidOperationException(
-                "BEARER_TOKEN appears to be too short. Use a secure token (32+ characters).");
+                "Authentication__BearerToken appears to be too short. Use a secure token (32+ characters).");
         }
 
         Console.Error.WriteLine($"Configuration loaded:");

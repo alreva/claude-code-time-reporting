@@ -49,19 +49,18 @@ export POSTGRES_USER=postgres
 export POSTGRES_PASSWORD=postgres
 export POSTGRES_DB=time_reporting
 
-# GraphQL API
+# GraphQL API & MCP Server (shared token)
 export ASPNETCORE_ENVIRONMENT=Production
 export Authentication__BearerToken=${BEARER_TOKEN}
 
 # MCP Server
 export GRAPHQL_API_URL=http://localhost:5001/graphql
-export BEARER_TOKEN=${BEARER_TOKEN}
 
 echo "✅ Environment variables loaded"
-echo "   BEARER_TOKEN: \${BEARER_TOKEN:0:10}..."
+echo "   Authentication__BearerToken: \${Authentication__BearerToken:0:10}..."
 echo "   These variables are now available to:"
 echo "     • MCP Server (run-mcp.sh)"
-echo "     • Docker Compose (/deploy)"
+echo "     • GraphQL API (Docker Compose)"
 echo "     • All slash commands"
 EOF
 

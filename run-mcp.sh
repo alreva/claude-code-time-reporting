@@ -9,8 +9,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Verify required environment variables are set
-if [ -z "$BEARER_TOKEN" ]; then
-    echo "❌ Error: BEARER_TOKEN environment variable not set!" >&2
+if [ -z "$Authentication__BearerToken" ]; then
+    echo "❌ Error: Authentication__BearerToken environment variable not set!" >&2
     echo "" >&2
     echo "Please run:" >&2
     echo "  1. ./setup.sh             (if not done yet)" >&2
