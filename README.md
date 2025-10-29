@@ -78,7 +78,7 @@ PostgreSQL Database
 
 ### Technical Documentation
 
-- **[Architecture](./docs/ARCHITECTURE.md)** - System architecture with detailed diagrams
+- **[Architecture](./docs/ARCHITECTURE.md)** - Main architecture documentation (start here!)
 - **[API Documentation](./docs/API.md)** - Complete GraphQL API reference
 - **[Data Model](./docs/prd/data-model.md)** - Database schema and entities
 - **[MCP Tools](./docs/prd/mcp-tools.md)** - Tool definitions for Claude Code
@@ -86,7 +86,7 @@ PostgreSQL Database
 ### Product Specifications
 
 - **[Product Requirements Document (PRD)](./docs/prd/README.md)** - Complete product specification
-- **[Architecture Spec](./docs/prd/architecture.md)** - Original architecture document
+- **[Architecture Specification (PRD)](./docs/prd/architecture.md)** - Detailed implementation spec with code examples
 - **[API Specification](./docs/prd/api-specification.md)** - GraphQL schema and examples
 - **[ADR Index](./docs/adr/README.md)** - Architecture Decision Records
 

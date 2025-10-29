@@ -1,7 +1,9 @@
-# System Architecture
+# System Architecture Specification (PRD)
 
 **Version:** 1.0
 **Last Updated:** 2025-10-24
+
+> **📋 About this document:** This is the detailed architecture specification from the Product Requirements Document (PRD). It contains implementation-focused details, code examples, and technical diagrams for developers. For high-level architecture overview, see [Main Architecture Documentation](../ARCHITECTURE.md).
 
 ---
 

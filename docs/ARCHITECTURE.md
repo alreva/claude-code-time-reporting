@@ -4,6 +4,8 @@
 
 Version: 1.0
 
+> **📖 About this document:** This is the main architecture documentation for users and contributors. For detailed implementation specifications and code examples, see [PRD Architecture Specification](./prd/architecture.md).
+
 ---
 
 ## Table of Contents
