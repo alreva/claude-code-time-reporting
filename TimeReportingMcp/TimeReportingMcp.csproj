@@ -13,6 +13,10 @@
     <PackageReference Include="StrawberryShake" />
     <PackageReference Include="StrawberryShake.Server" />
     <PackageReference Include="StrawberryShake.Transport.Http" />
+
+    <!-- Configuration packages (same approach as API) -->
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,11 @@
 using System;
+using Microsoft.Extensions.Configuration;
 
 namespace TimeReportingMcp.Utils;
 
 /// <summary>
-/// Configuration for MCP server loaded from environment variables
+/// Configuration for MCP server loaded from .NET Configuration system
+/// (Consistent with GraphQL API approach)
 /// </summary>
 public class McpConfig
 {
@@ -17,20 +19,20 @@ public class McpConfig
     /// </summary>
     public string BearerToken { get; }
 
-    public McpConfig()
+    public McpConfig(IConfiguration configuration)
     {
-        GraphQLApiUrl = GetRequiredEnvVar("GRAPHQL_API_URL");
-        BearerToken = GetRequiredEnvVar("Authentication__BearerToken");
+        GraphQLApiUrl = GetRequiredConfigValue(configuration, "GRAPHQL_API_URL");
+        BearerToken = GetRequiredConfigValue(configuration, "Authentication:BearerToken");
     }
 
-    private static string GetRequiredEnvVar(string name)
+    private static string GetRequiredConfigValue(IConfiguration configuration, string key)
     {
-        var value = Environment.GetEnvironmentVariable(name);
+        var value = configuration[key];
         if (string.IsNullOrWhiteSpace(value))
         {
             throw new InvalidOperationException(
-                $"Required environment variable '{name}' is not set. " +
-                $"Please configure it before running the MCP server.");
+                $"Required configuration value '{key}' is not set. " +
+                $"Please set the corresponding environment variable before running the MCP server.");
         }
         return value;
     }

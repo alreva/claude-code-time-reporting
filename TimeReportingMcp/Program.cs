@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Utils;
@@ -14,8 +15,13 @@ class Program
         {
             Console.Error.WriteLine("TimeReporting MCP Server starting...");
 
+            // Build configuration from environment variables (same approach as GraphQL API)
+            var configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
+
             // Load configuration
-            var config = new McpConfig();
+            var config = new McpConfig(configuration);
             config.Validate();
 
             // Configure dependency injection with StrawberryShake
