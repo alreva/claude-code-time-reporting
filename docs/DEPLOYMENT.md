@@ -68,7 +68,7 @@ The MCP Server runs on the host machine (not containerized) and connects to the 
   - Docker Desktop (macOS/Windows)
   - Docker Engine (Linux)
   - Podman (all platforms, Docker Desktop alternative)
-- **.NET 8 SDK** (for MCP server)
+- **.NET 10 SDK** (for MCP server)
 - **Claude Code** (for using the system)
 
 ### System Requirements
@@ -88,8 +88,8 @@ The MCP Server runs on the host machine (not containerized) and connects to the 
 **Podman:**
 - See [PODMAN-SETUP.md](./PODMAN-SETUP.md)
 
-**.NET 8 SDK:**
-- All platforms: https://dotnet.microsoft.com/download/dotnet/8.0
+**.NET 10 SDK:**
+- All platforms: https://dotnet.microsoft.com/download/dotnet/10.0
 
 ---
 

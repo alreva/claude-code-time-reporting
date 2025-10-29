@@ -10,7 +10,7 @@ This guide walks you through configuring Claude Code to work with the Time Repor
 
 Before starting, ensure you have:
 
-- [ ] **.NET 8 SDK** installed (`dotnet --version` shows 8.0.x)
+- [ ] **.NET 10 SDK** installed (`dotnet --version` shows 8.0.x)
 - [ ] **GraphQL API** running (via Docker/Podman)
 - [ ] **PostgreSQL database** seeded with projects
 - [ ] **Claude Code** installed on your machine
@@ -18,7 +18,7 @@ Before starting, ensure you have:
 **Verify Prerequisites:**
 
 ```bash
-# Check .NET 8 SDK
+# Check .NET 10 SDK
 dotnet --version
 
 # Check GraphQL API
@@ -249,7 +249,7 @@ openssl rand -base64 32
 
 **Possible Causes & Solutions:**
 
-**1. .NET 8 SDK not installed or not in PATH**
+**1. .NET 10 SDK not installed or not in PATH**
 
 ```bash
 # Check installation
@@ -259,7 +259,7 @@ dotnet --version
 # macOS:
 brew install dotnet-sdk
 
-# Windows: Download from https://dotnet.microsoft.com/download/dotnet/8.0
+# Windows: Download from https://dotnet.microsoft.com/download/dotnet/10.0
 # Linux: Follow distribution-specific instructions
 ```
 
@@ -410,7 +410,7 @@ brew install dotnet-sdk
 ```
 
 **Windows:**
-1. Download .NET 8 SDK from https://dotnet.microsoft.com/download/dotnet/8.0
+1. Download .NET 10 SDK from https://dotnet.microsoft.com/download/dotnet/10.0
 2. Run installer
 3. Restart terminal/IDE
 
@@ -543,7 +543,7 @@ You can configure multiple MCP servers for different environments:
 
 Use this checklist to verify your setup:
 
-- [ ] .NET 8 SDK installed and in PATH
+- [ ] .NET 10 SDK installed and in PATH
 - [ ] GraphQL API running and healthy
 - [ ] Database seeded with projects
 - [ ] Bearer token generated (32-byte base64)

@@ -60,7 +60,7 @@ PostgreSQL Database
 
 **Components:**
 - **PostgreSQL 16** - Data persistence
-- **ASP.NET Core 8 + HotChocolate** - GraphQL API
+- **ASP.NET Core 10 + HotChocolate** - GraphQL API
 - **C# Console App** - MCP Server (simple!)
 - **Docker/Podman** - Container orchestration
 
@@ -120,7 +120,7 @@ PostgreSQL Database
 ### Prerequisites
 
 - **Docker or Podman** ([Podman setup guide](./docs/PODMAN-SETUP.md))
-- **.NET 8 SDK** (for both API and MCP server)
+- **.NET 10 SDK** (for both API and MCP server)
 - **Claude Code** installed
 - **PostgreSQL client** (optional, for testing)
 
@@ -243,7 +243,7 @@ time-reporting-system/
 ### Single Language: C# 🎯
 - **C# / .NET 10** - Everything (API + MCP Server)
 - **HotChocolate 13+** - GraphQL server
-- **Entity Framework Core 8** - ORM
+- **Entity Framework Core 10** - ORM
 - **StrawberryShake 15** - Strongly-typed GraphQL client with code generation
 - **PostgreSQL 16** - Database
 

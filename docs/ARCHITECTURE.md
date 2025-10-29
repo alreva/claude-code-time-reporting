@@ -79,7 +79,7 @@ The Time Reporting System is a modern, cloud-native application that enables dev
                                │
 ┌──────────────────────────────▼──────────────────────────────────┐
 │                   GRAPHQL API (C#)                               │
-│             ASP.NET Core 8 + HotChocolate 13                     │
+│             ASP.NET Core 10 + HotChocolate 13                     │
 │                                                                   │
 │  Layer Structure:                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -98,7 +98,7 @@ The Time Reporting System is a modern, cloud-native application that enables dev
 │                       │                                           │
 │  ┌────────────────────▼────────────────────────────────────┐   │
 │  │  Data Access Layer                                        │   │
-│  │  - Entity Framework Core 8                                │   │
+│  │  - Entity Framework Core 10                                │   │
 │  │  - TimeReportingDbContext                                 │   │
 │  │  - Entity Models (TimeEntry, Project, etc.)              │   │
 │  │  - Repository Pattern (via DbContext)                     │   │
@@ -366,9 +366,9 @@ TimeReportingApi/
 - `GET /health` - Health check
 
 **Technology:**
-- ASP.NET Core 8
+- ASP.NET Core 10
 - HotChocolate 13 (GraphQL)
-- Entity Framework Core 8
+- Entity Framework Core 10
 - Npgsql (PostgreSQL driver)
 
 ---

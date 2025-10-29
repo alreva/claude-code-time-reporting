@@ -55,7 +55,7 @@ This document provides detailed architectural diagrams and component specificati
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐ │
 │  │              GraphQL API Container                        │ │
-│  │  - ASP.NET Core 8.0                                       │ │
+│  │  - ASP.NET Core 10.0                                       │ │
 │  │  - HotChocolate GraphQL                                   │ │
 │  │  - Entity Framework Core                                  │ │
 │  │  - Bearer token validation                                │ │
@@ -128,7 +128,7 @@ This document provides detailed architectural diagrams and component specificati
 **Purpose:** Simple bridge between Claude Code and GraphQL API
 
 **Technology:**
-- **Framework:** .NET 8 Console Application
+- **Framework:** .NET 10 Console Application
 - **Language:** C#
 - **GraphQL Client:** GraphQL.Client (NuGet package)
 - **JSON:** System.Text.Json for JSON-RPC
@@ -278,9 +278,9 @@ private async Task<JsonRpcResponse> LogTime(Dictionary<string, JsonElement> args
 **Purpose:** Business logic and data access layer
 
 **Technology:**
-- **Framework:** ASP.NET Core 8.0
+- **Framework:** ASP.NET Core 10.0
 - **GraphQL:** HotChocolate 13+
-- **ORM:** Entity Framework Core 8
+- **ORM:** Entity Framework Core 10
 - **Database Provider:** Npgsql (PostgreSQL)
 
 **Architecture:**

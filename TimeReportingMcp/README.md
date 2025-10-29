@@ -12,7 +12,7 @@ This MCP server implements the Model Context Protocol (MCP) by:
 ## Architecture
 
 - **Protocol:** MCP (Model Context Protocol) over stdio
-- **Language:** C# .NET 8.0
+- **Language:** C# .NET 10.0
 - **Client:** GraphQL.Client (NuGet)
 - **Total Lines:** ~200 lines
 

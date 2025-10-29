@@ -16,7 +16,7 @@ Create MCP server configuration for Claude Code, enabling users to connect Claud
 ## Acceptance Criteria
 
 - [ ] Example `claude_desktop_config.json` file created with all required settings
-- [ ] Configuration includes correct paths for .NET 8 and MCP Server project
+- [ ] Configuration includes correct paths for .NET 10 and MCP Server project
 - [ ] Environment variables documented for `GRAPHQL_API_URL` and `Authentication__BearerToken`
 - [ ] Instructions provided for different operating systems (macOS, Windows, Linux)
 - [ ] Configuration tested with Claude Code (MCP server appears in tools list)
@@ -193,7 +193,7 @@ Add troubleshooting section to `docs/integration/CLAUDE-CODE-SETUP.md`:
 **Problem:** MCP server doesn't appear in Claude Code tools list
 
 **Solutions:**
-1. Verify .NET 8 SDK is installed:
+1. Verify .NET 10 SDK is installed:
    ```bash
    dotnet --version
    # Expected: 8.0.x
@@ -248,7 +248,7 @@ Add troubleshooting section to `docs/integration/CLAUDE-CODE-SETUP.md`:
 **Problem:** "dotnet: command not found" error
 
 **Solutions:**
-1. Install .NET 8 SDK:
+1. Install .NET 10 SDK:
    - macOS: `brew install dotnet-sdk`
    - Windows: Download from https://dotnet.microsoft.com/download
    - Linux: Follow distribution-specific instructions
@@ -428,5 +428,5 @@ After completing this task:
 
 - [MCP Protocol Specification](https://modelcontextprotocol.io/)
 - [Claude Code Documentation](https://docs.claude.com/claude-code)
-- [.NET 8 SDK Download](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK Download](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [OpenSSL Documentation](https://www.openssl.org/docs/)

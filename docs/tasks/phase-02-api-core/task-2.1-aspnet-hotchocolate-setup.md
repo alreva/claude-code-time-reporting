@@ -9,13 +9,13 @@
 
 ## Objective
 
-Create a new ASP.NET Core 8 Web API project with HotChocolate GraphQL server, establish the basic project structure, and verify the GraphQL endpoint is accessible.
+Create a new ASP.NET Core 10 Web API project with HotChocolate GraphQL server, establish the basic project structure, and verify the GraphQL endpoint is accessible.
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] ASP.NET Core 8 project created (`TimeReportingApi`)
+- [ ] ASP.NET Core 10 project created (`TimeReportingApi`)
 - [ ] HotChocolate GraphQL packages installed
 - [ ] Project structure established (Models/, GraphQL/, Services/, Data/)
 - [ ] GraphQL server configured in Program.cs
@@ -380,7 +380,7 @@ options.ListenLocalhost(5001); // Use different port
 ## Related Documentation
 
 - **HotChocolate Docs:** https://chillicream.com/docs/hotchocolate/v13
-- **ASP.NET Core 8:** https://learn.microsoft.com/en-us/aspnet/core/
+- **ASP.NET Core 10:** https://learn.microsoft.com/en-us/aspnet/core/
 - **WebApplicationFactory Testing:** https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests
 
 ---
@@ -403,4 +403,4 @@ After completing this task:
 - Banana Cake Pop is HotChocolate's built-in GraphQL IDE (replaces GraphQL Playground)
 - The `hello` query is temporary - will be replaced in Phase 3
 - Tests use `WebApplicationFactory` for true integration testing
-- This setup follows ASP.NET Core 8 minimal API pattern
+- This setup follows ASP.NET Core 10 minimal API pattern

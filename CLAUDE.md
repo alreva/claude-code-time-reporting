@@ -372,7 +372,7 @@ A time reporting system that integrates Claude Code with a GraphQL-based time tr
 
 **Technology Stack:** Single language (C#) for everything
 - **Database:** PostgreSQL 16
-- **API:** ASP.NET Core 8 + HotChocolate GraphQL + Entity Framework Core
+- **API:** ASP.NET Core 10 + HotChocolate GraphQL + Entity Framework Core
 - **MCP Server:** C# Console Application (~200 lines!)
 - **Container:** Docker/Podman
 

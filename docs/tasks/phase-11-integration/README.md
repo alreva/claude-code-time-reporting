@@ -42,7 +42,7 @@ Before starting Phase 11, ensure:
 - [ ] **GraphQL API deployed** - Running via Docker/Podman
 - [ ] **Database seeded** - Test projects and tasks populated
 - [ ] **MCP Server built** - `dotnet build` successful
-- [ ] **.NET 8 SDK installed** - `dotnet --version` shows 8.0.x
+- [ ] **.NET 10 SDK installed** - `dotnet --version` shows 8.0.x
 
 **Verify:**
 ```bash
@@ -214,7 +214,7 @@ curl http://localhost:5001/health
 - MCP server doesn't start
 
 **Solutions:**
-1. Verify .NET 8 SDK installed: `dotnet --version`
+1. Verify .NET 10 SDK installed: `dotnet --version`
 2. Verify MCP Server builds: `cd TimeReportingMcp && dotnet build`
 3. Check Claude Code config file path is correct
 4. Restart Claude Code after config changes
@@ -318,7 +318,7 @@ After completing Phase 11:
 - [MCP Protocol Specification](https://modelcontextprotocol.io/)
 - [Claude Code Documentation](https://docs.claude.com/claude-code)
 - [HotChocolate Docs](https://chillicream.com/docs/hotchocolate)
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
 ---
 
