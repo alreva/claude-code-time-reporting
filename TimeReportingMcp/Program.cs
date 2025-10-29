@@ -26,7 +26,7 @@ class Program
                 .AddTimeReportingClient()
                 .ConfigureHttpClient(client =>
                 {
-                    client.BaseAddress = new Uri(config.ApiUrl);
+                    client.BaseAddress = new Uri(config.GraphQLApiUrl);
                     client.DefaultRequestHeaders.Authorization =
                         new AuthenticationHeaderValue("Bearer", config.BearerToken);
                 });

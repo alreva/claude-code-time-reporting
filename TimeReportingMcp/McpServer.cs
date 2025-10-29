@@ -3,6 +3,7 @@ using System.Text.Json;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
 using TimeReportingMcp.Tools;
+using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp;
 

@@ -27,7 +27,7 @@ public class LogTimeTool
             var result = await _client.LogTime.ExecuteAsync(input);
 
             // 3. Handle errors
-            if (result.IsErrorResult())
+            if (result.Errors is { Count: > 0 })
             {
                 return CreateErrorResult(result.Errors);
             }
@@ -113,7 +113,7 @@ public class LogTimeTool
         };
     }
 
-    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
+    private ToolResult CreateErrorResult(global::System.Collections.Generic.IReadOnlyList<global::StrawberryShake.IClientError>? errors)
     {
         var errorMessage = "❌ Failed to create time entry:\n\n";
         if (errors != null)

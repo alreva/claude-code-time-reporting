@@ -32,7 +32,7 @@ public class GetProjectsTool
             var result = await _client.GetAvailableProjects.ExecuteAsync(activeOnly);
 
             // 3. Handle errors
-            if (result.IsErrorResult())
+            if (result.Errors is { Count: > 0 })
             {
                 return CreateErrorResult(result.Errors);
             }
@@ -102,7 +102,7 @@ public class GetProjectsTool
         };
     }
 
-    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
+    private ToolResult CreateErrorResult(global::System.Collections.Generic.IReadOnlyList<global::StrawberryShake.IClientError>? errors)
     {
         var errorMessage = "❌ Failed to get projects:\n\n";
         if (errors != null)

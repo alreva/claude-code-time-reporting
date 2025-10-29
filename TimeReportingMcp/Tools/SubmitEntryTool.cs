@@ -32,7 +32,7 @@ public class SubmitEntryTool
             var result = await _client.SubmitTimeEntry.ExecuteAsync(id);
 
             // 3. Handle errors
-            if (result.IsErrorResult())
+            if (result.Errors is { Count: > 0 })
             {
                 return CreateErrorResult(result.Errors);
             }
@@ -74,7 +74,7 @@ public class SubmitEntryTool
         };
     }
 
-    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
+    private ToolResult CreateErrorResult(global::System.Collections.Generic.IReadOnlyList<global::StrawberryShake.IClientError>? errors)
     {
         var errorMessage = "❌ Failed to submit time entry:\n\n";
         if (errors != null)

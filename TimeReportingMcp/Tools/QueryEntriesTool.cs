@@ -51,13 +51,13 @@ public class QueryEntriesTool
             var result = await _client.QueryTimeEntries.ExecuteAsync(projectCode, startDate, endDate, status);
 
             // 3. Handle errors
-            if (result.IsErrorResult())
+            if (result.Errors is { Count: > 0 })
             {
                 return CreateErrorResult(result.Errors);
             }
 
             // 4. Return formatted results
-            return CreateSuccessResult(result.Data!.TimeEntries.Nodes.ToList());
+            return CreateSuccessResult(result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>());
         }
         catch (Exception ex)
         {
@@ -145,7 +145,7 @@ public class QueryEntriesTool
         };
     }
 
-    private ToolResult CreateErrorResult(global::StrawberryShake.IClientError[]? errors)
+    private ToolResult CreateErrorResult(global::System.Collections.Generic.IReadOnlyList<global::StrawberryShake.IClientError>? errors)
     {
         var errorMessage = "❌ Failed to query time entries:\n\n";
         if (errors != null)
