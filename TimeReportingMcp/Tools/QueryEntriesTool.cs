@@ -27,28 +27,41 @@ public class QueryEntriesTool
             DateOnly? endDate = null;
             TimeEntryStatus? status = null;
 
-            if (arguments.TryGetProperty("projectCode", out var proj))
+            if (arguments.TryGetProperty("projectCode", out var proj) && proj.ValueKind == JsonValueKind.String)
             {
                 projectCode = proj.GetString();
             }
 
-            if (arguments.TryGetProperty("startDate", out var sd))
+            if (arguments.TryGetProperty("startDate", out var sd) && sd.ValueKind == JsonValueKind.String)
             {
-                startDate = DateOnly.Parse(sd.GetString()!);
+                var dateStr = sd.GetString();
+                if (!string.IsNullOrEmpty(dateStr))
+                {
+                    startDate = DateOnly.Parse(dateStr);
+                }
             }
 
-            if (arguments.TryGetProperty("endDate", out var ed))
+            if (arguments.TryGetProperty("endDate", out var ed) && ed.ValueKind == JsonValueKind.String)
             {
-                endDate = DateOnly.Parse(ed.GetString()!);
+                var dateStr = ed.GetString();
+                if (!string.IsNullOrEmpty(dateStr))
+                {
+                    endDate = DateOnly.Parse(dateStr);
+                }
             }
 
-            if (arguments.TryGetProperty("status", out var stat))
+            if (arguments.TryGetProperty("status", out var stat) && stat.ValueKind == JsonValueKind.String)
             {
-                status = Enum.Parse<TimeEntryStatus>(stat.GetString()!, true);
+                var statusStr = stat.GetString();
+                if (!string.IsNullOrEmpty(statusStr))
+                {
+                    status = Enum.Parse<TimeEntryStatus>(statusStr, true);
+                }
             }
 
-            // 2. Execute strongly-typed query
-            var result = await _client.QueryTimeEntries.ExecuteAsync(projectCode, startDate, endDate, status);
+            // 2. Execute query (fetch all entries, filter client-side)
+            // Note: StrawberryShake input type generation would allow server-side filtering
+            var result = await _client.QueryTimeEntries.ExecuteAsync(null);
 
             // 3. Handle errors
             if (result.Errors is { Count: > 0 })
@@ -56,8 +69,34 @@ public class QueryEntriesTool
                 return CreateErrorResult(result.Errors);
             }
 
-            // 4. Return formatted results
-            return CreateSuccessResult(result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>());
+            // 4. Get all entries
+            var allEntries = result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>();
+
+            // 5. Apply client-side filtering
+            var filteredEntries = allEntries.AsEnumerable();
+
+            if (!string.IsNullOrEmpty(projectCode))
+            {
+                filteredEntries = filteredEntries.Where(e => e.Project.Code == projectCode);
+            }
+
+            if (startDate.HasValue)
+            {
+                filteredEntries = filteredEntries.Where(e => e.StartDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                filteredEntries = filteredEntries.Where(e => e.CompletionDate <= endDate.Value);
+            }
+
+            if (status.HasValue)
+            {
+                filteredEntries = filteredEntries.Where(e => e.Status == status.Value);
+            }
+
+            // 6. Return formatted results
+            return CreateSuccessResult(filteredEntries.ToList());
         }
         catch (Exception ex)
         {

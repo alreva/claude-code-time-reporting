@@ -36,7 +36,15 @@ builder.Services
     .AddProjections()        // Enable field selection optimization
     .AddFiltering()          // Enable filtering
     .AddSorting()            // Enable sorting
-    .AddErrorFilter<GraphQLErrorFilter>();  // Add custom error handling
+    .AddErrorFilter<GraphQLErrorFilter>() // Add custom error handling
+    .ModifyCostOptions(options =>
+    {
+        // Disable cost limits for simple time tracking app
+        options.MaxFieldCost = int.MaxValue;      // Effectively unlimited
+        options.MaxTypeCost = int.MaxValue;       // Effectively unlimited
+        options.EnforceCostLimits = false;        // Disable enforcement
+        options.ApplyCostDefaults = false;        // Don't apply default costs
+    });
 
 // Add health checks
 builder.Services.AddHealthChecks();

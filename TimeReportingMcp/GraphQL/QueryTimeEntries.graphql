@@ -1,19 +1,7 @@
 query QueryTimeEntries(
-  $projectCode: String
-  $startDate: LocalDate
-  $endDate: LocalDate
-  $status: TimeEntryStatus
+  $where: TimeEntryFilterInput
 ) {
-  timeEntries(
-    where: {
-      and: [
-        { project: { code: { eq: $projectCode } } }
-        { startDate: { gte: $startDate } }
-        { completionDate: { lte: $endDate } }
-        { status: { eq: $status } }
-      ]
-    }
-  ) {
+  timeEntries(where: $where) {
     nodes {
       id
       project {
