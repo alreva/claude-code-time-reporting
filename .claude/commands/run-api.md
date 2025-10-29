@@ -13,8 +13,8 @@ Run the GraphQL API application with hot reload enabled.
 
 ### Expected Output
 
-- Server starts on http://localhost:5000
-- GraphQL Playground available at http://localhost:5000/graphql
+- Server starts on http://localhost:5001
+- GraphQL Playground available at http://localhost:5001/graphql
 - Hot reload enabled - file changes trigger automatic recompilation
 
 ### Notes

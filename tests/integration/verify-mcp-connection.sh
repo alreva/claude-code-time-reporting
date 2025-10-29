@@ -21,12 +21,12 @@ echo
 
 # Step 2: Check GraphQL API
 echo "2. Checking GraphQL API..."
-if ! curl -s http://localhost:5000/health > /dev/null 2>&1; then
-    echo "❌ FAIL: GraphQL API not responding at http://localhost:5000/health"
+if ! curl -s http://localhost:5001/health > /dev/null 2>&1; then
+    echo "❌ FAIL: GraphQL API not responding at http://localhost:5001/health"
     echo "   Start the API with: /deploy"
     exit 1
 fi
-API_RESPONSE=$(curl -s http://localhost:5000/health)
+API_RESPONSE=$(curl -s http://localhost:5001/health)
 echo "✅ PASS: GraphQL API is running"
 echo "   Response: $API_RESPONSE"
 echo

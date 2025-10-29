@@ -19,7 +19,7 @@ Create a new ASP.NET Core 8 Web API project with HotChocolate GraphQL server, es
 - [ ] HotChocolate GraphQL packages installed
 - [ ] Project structure established (Models/, GraphQL/, Services/, Data/)
 - [ ] GraphQL server configured in Program.cs
-- [ ] GraphQL endpoint accessible at http://localhost:5000/graphql
+- [ ] GraphQL endpoint accessible at http://localhost:5001/graphql
 - [ ] Banana Cake Pop (GraphQL IDE) loads successfully
 - [ ] Basic health check endpoint works at /health
 - [ ] Project builds successfully with `/build-api`
@@ -191,7 +191,7 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel to listen on port 5000
+// Configure Kestrel to listen on port 5001
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenLocalhost(5000);
@@ -276,17 +276,17 @@ rmdir TimeReportingApi/Controllers
 /run-api
 
 # In another terminal, test with curl
-curl http://localhost:5000/graphql
+curl http://localhost:5001/graphql
 
 # Should return HTML with Banana Cake Pop IDE
 
 # Test health endpoint
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 
 # Should return: Healthy
 ```
 
-Open browser to http://localhost:5000/graphql and verify Banana Cake Pop loads.
+Open browser to http://localhost:5001/graphql and verify Banana Cake Pop loads.
 
 Test the hello query:
 
@@ -339,9 +339,9 @@ time-reporting-system/
 
 - [ ] `/build` completes without errors
 - [ ] `/test-api` shows all tests passing (3/3)
-- [ ] `/run-api` starts server on port 5000
-- [ ] http://localhost:5000/graphql loads Banana Cake Pop IDE
-- [ ] http://localhost:5000/health returns "Healthy"
+- [ ] `/run-api` starts server on port 5001
+- [ ] http://localhost:5001/graphql loads Banana Cake Pop IDE
+- [ ] http://localhost:5001/health returns "Healthy"
 - [ ] `hello` query returns "Hello, GraphQL!"
 - [ ] No compiler warnings
 
@@ -353,7 +353,7 @@ time-reporting-system/
 
 **Solution:** Ensure `public partial class Program { }` is at the bottom of Program.cs
 
-### Issue: Port 5000 already in use
+### Issue: Port 5001 already in use
 
 **Solution:** Stop other services or change port in Program.cs:
 
@@ -399,7 +399,7 @@ After completing this task:
 
 - We're using HotChocolate 15.1.11 (latest stable as of Oct 2025)
 - FluentAssertions 7.0.0 is used (v8+ requires commercial license for commercial use)
-- Port 5000 is hardcoded for consistency with docker-compose.yml
+- Port 5001 is hardcoded for consistency with docker-compose.yml
 - Banana Cake Pop is HotChocolate's built-in GraphQL IDE (replaces GraphQL Playground)
 - The `hello` query is temporary - will be replaced in Phase 3
 - Tests use `WebApplicationFactory` for true integration testing

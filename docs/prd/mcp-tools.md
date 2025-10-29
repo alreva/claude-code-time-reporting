@@ -619,7 +619,7 @@ const server = new Server({
   version: "1.0.0"
 });
 
-const graphqlClient = new GraphQLClient('http://localhost:5000/graphql', {
+const graphqlClient = new GraphQLClient('http://localhost:5001/graphql', {
   headers: {
     Authorization: `Bearer ${process.env.TIME_REPORTING_TOKEN}`
   }

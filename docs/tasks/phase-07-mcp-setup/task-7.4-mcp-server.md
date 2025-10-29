@@ -423,7 +423,7 @@ dotnet build
 Start the server:
 
 ```bash
-export GRAPHQL_API_URL="http://localhost:5000/graphql"
+export GRAPHQL_API_URL="http://localhost:5001/graphql"
 export BEARER_TOKEN="test-token-1234567890"
 
 dotnet run
@@ -485,7 +485,7 @@ Create `test-mcp.sh` for manual testing:
 # Test MCP Server interactively
 
 echo "Starting MCP Server test..."
-export GRAPHQL_API_URL="http://localhost:5000/graphql"
+export GRAPHQL_API_URL="http://localhost:5001/graphql"
 export BEARER_TOKEN="test-token-12345678"
 
 # Start server in background

@@ -113,7 +113,7 @@ This document provides detailed architectural diagrams and component specificati
       "command": "dotnet",
       "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "your-token-here"
       }
     }
@@ -265,7 +265,7 @@ private async Task<JsonRpcResponse> LogTime(Dictionary<string, JsonElement> args
 ```
 
 **Configuration:**
-- `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5000/graphql)
+- `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
 - `BEARER_TOKEN` - Authentication token
 
 **That's it!** ~200 lines of C# for the entire MCP server.
@@ -671,7 +671,7 @@ volumes:
             ▼
     ┌───────────────┐
     │  Host Machine │
-    │  Port 5000    │
+    │  Port 5001    │
     └───────┬───────┘
             │
             │ HTTP (GraphQL)

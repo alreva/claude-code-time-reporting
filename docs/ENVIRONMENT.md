@@ -63,7 +63,7 @@ BEARER_TOKEN=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
 
 Connection string uses `Host=localhost`:
 - Defined in `appsettings.json`
-- API runs on port 5001 (avoid macOS AirPlay port 5000)
+- API runs on port 5001 (avoid macOS AirPlay port 5001)
 
 ### Docker Compose
 

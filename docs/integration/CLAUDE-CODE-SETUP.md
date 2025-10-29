@@ -22,7 +22,7 @@ Before starting, ensure you have:
 dotnet --version
 
 # Check GraphQL API
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 
 # Check database
 /db-psql
@@ -43,7 +43,7 @@ cd /path/to/time-reporting-system
 **Verify API is running:**
 
 ```bash
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 # Expected: {"status":"healthy"}
 ```
 
@@ -107,7 +107,7 @@ nano ~/.config/claude-code/config.json
         "/Users/yourusername/path/to/TimeReportingMcp/TimeReportingMcp.csproj"
       ],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
       }
     }
@@ -128,7 +128,7 @@ nano ~/.config/claude-code/config.json
         "/Users/john/projects/time-reporting-system/TimeReportingMcp/TimeReportingMcp.csproj"
       ],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
       }
     }
@@ -163,7 +163,7 @@ notepad %APPDATA%\claude-code\config.json
         "C:\\Users\\YourUsername\\Projects\\time-reporting-system\\TimeReportingMcp\\TimeReportingMcp.csproj"
       ],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4="
       }
     }
@@ -226,7 +226,7 @@ Available Projects:
 |-------|-------------|---------------|
 | `command` | Command to run MCP server | `"dotnet"` |
 | `args` | Arguments for the command | `["run", "--project", "path/to/.csproj"]` |
-| `GRAPHQL_API_URL` | GraphQL API endpoint | `"http://localhost:5000/graphql"` |
+| `GRAPHQL_API_URL` | GraphQL API endpoint | `"http://localhost:5001/graphql"` |
 | `BEARER_TOKEN` | Authentication token | `"Zq8X9v..."` (32-byte base64) |
 
 ### Important Notes
@@ -246,7 +246,7 @@ Available Projects:
 
 **Purpose:** Specifies the GraphQL API endpoint URL
 
-**Default:** `http://localhost:5000/graphql`
+**Default:** `http://localhost:5001/graphql`
 
 **Production Example:**
 ```json
@@ -353,7 +353,7 @@ cat ~/.config/claude-code/config.json | jq '.mcpServers."time-reporting".env.BEA
 
 ```bash
 # Check API health
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 
 # If not responding, restart API
 /deploy
@@ -385,7 +385,7 @@ podman compose logs graphql-api | grep -i "auth\|401\|unauthorized"
 
 ```bash
 # Verify API is accessible
-curl http://localhost:5000/graphql
+curl http://localhost:5001/graphql
 
 # Should return GraphQL schema or error message (not "connection refused")
 ```
@@ -548,7 +548,7 @@ You can configure multiple MCP servers for different environments:
       "command": "dotnet",
       "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "dev-token"
       }
     },

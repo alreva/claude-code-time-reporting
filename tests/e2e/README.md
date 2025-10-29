@@ -125,7 +125,7 @@ SELECT * FROM time_entries ORDER BY created_at DESC LIMIT 10;
 ### Common Issues
 
 1. **Authentication failures** - Verify BEARER_TOKEN matches in API and Claude Code config
-2. **Connection refused** - Ensure GraphQL API is running on port 5000
+2. **Connection refused** - Ensure GraphQL API is running on port 5001
 3. **Invalid project codes** - Run `/seed-db` to populate test projects
 4. **Stale test data** - Run `./teardown-test-data.sh` then `./setup-test-data.sh`
 

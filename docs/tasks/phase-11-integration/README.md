@@ -53,7 +53,7 @@ Before starting Phase 11, ensure:
 /build-mcp
 
 # Verify API health
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 ```
 
 ### Task Execution Order
@@ -228,7 +228,7 @@ curl http://localhost:5000/health
 
 **Solutions:**
 1. Verify `BEARER_TOKEN` matches in both API and Claude Code config
-2. Check API is running: `curl http://localhost:5000/health`
+2. Check API is running: `curl http://localhost:5001/health`
 3. Restart API after token changes: `/deploy`
 4. Check API logs: `docker-compose logs graphql-api`
 

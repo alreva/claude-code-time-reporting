@@ -458,7 +458,7 @@ To remove this entry, ask a manager to decline it first.
 
 **Check API Health:**
 ```bash
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 ```
 
 ### Authentication Errors

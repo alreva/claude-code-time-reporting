@@ -3,7 +3,7 @@ description: Stop the running GraphQL API
 allowed-tools: Bash(pkill:*)
 ---
 
-Stop the GraphQL API application running on port 5000.
+Stop the GraphQL API application running on port 5001.
 
 ### Execution
 
@@ -14,7 +14,7 @@ pkill -9 -f "TimeReportingApi"
 ### Expected Output
 
 - Kills all TimeReportingApi and dotnet watch processes
-- Frees up port 5000
+- Frees up port 5001
 
 ### Notes
 

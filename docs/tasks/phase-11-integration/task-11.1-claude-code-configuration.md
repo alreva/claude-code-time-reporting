@@ -41,7 +41,7 @@ Create `docs/integration/claude_desktop_config.json.example`:
         "/absolute/path/to/TimeReportingMcp/TimeReportingMcp.csproj"
       ],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "your-bearer-token-here"
       }
     }
@@ -52,7 +52,7 @@ Create `docs/integration/claude_desktop_config.json.example`:
 **Key Points:**
 - Use absolute paths (not relative) for project path
 - `BEARER_TOKEN` must match the token configured in the GraphQL API
-- `GRAPHQL_API_URL` should point to the running GraphQL API (default: `http://localhost:5000/graphql`)
+- `GRAPHQL_API_URL` should point to the running GraphQL API (default: `http://localhost:5001/graphql`)
 
 ### Step 2: Document Platform-Specific Paths
 
@@ -84,7 +84,7 @@ Create `docs/integration/CLAUDE-CODE-SETUP.md`:
 
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
-| `GRAPHQL_API_URL` | GraphQL API endpoint URL | `http://localhost:5000/graphql` |
+| `GRAPHQL_API_URL` | GraphQL API endpoint URL | `http://localhost:5001/graphql` |
 | `BEARER_TOKEN` | Authentication token for API | `your-generated-token-here` |
 
 **Generating a Bearer Token:**
@@ -119,7 +119,7 @@ cd /path/to/time-reporting-system
 **2. Verify API is running:**
 
 ```bash
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 # Expected: {"status":"healthy"}
 ```
 
@@ -156,7 +156,7 @@ Edit `~/.config/claude-code/config.json` (macOS/Linux) or `%APPDATA%\claude-code
         "/absolute/path/to/TimeReportingMcp/TimeReportingMcp.csproj"
       ],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "<same-token-from-step-3>"
       }
     }
@@ -220,7 +220,7 @@ Add troubleshooting section to `docs/integration/CLAUDE-CODE-SETUP.md`:
 1. Verify `BEARER_TOKEN` in Claude Code config matches the token in API `.env` file
 2. Verify GraphQL API is running:
    ```bash
-   curl http://localhost:5000/health
+   curl http://localhost:5001/health
    ```
 3. Check API logs for authentication errors:
    ```bash
@@ -232,15 +232,15 @@ Add troubleshooting section to `docs/integration/CLAUDE-CODE-SETUP.md`:
 **Problem:** MCP server connects but tools fail with "Connection refused"
 
 **Solutions:**
-1. Verify `GRAPHQL_API_URL` is correct (default: `http://localhost:5000/graphql`)
+1. Verify `GRAPHQL_API_URL` is correct (default: `http://localhost:5001/graphql`)
 2. Verify GraphQL API is accessible from your machine:
    ```bash
-   curl http://localhost:5000/graphql
+   curl http://localhost:5001/graphql
    ```
 3. If running Docker with Podman, check port forwarding:
    ```bash
    podman ps
-   # Verify port 5000:8080 mapping
+   # Verify port 5001:8080 mapping
    ```
 
 ---
@@ -328,8 +328,8 @@ echo
 
 # Step 2: Check GraphQL API
 echo "2. Checking GraphQL API..."
-if ! curl -s http://localhost:5000/health > /dev/null; then
-    echo "❌ FAIL: GraphQL API not responding at http://localhost:5000/health"
+if ! curl -s http://localhost:5001/health > /dev/null; then
+    echo "❌ FAIL: GraphQL API not responding at http://localhost:5001/health"
     exit 1
 fi
 echo "✅ PASS: GraphQL API is running"

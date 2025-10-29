@@ -419,7 +419,7 @@ Custom slash commands are defined in `.claude/commands/`. **YOU HAVE PERMISSION*
 - **`/test-mcp`** - Run MCP Server tests only
 
 #### Run Commands
-- **`/run-api`** - Run the GraphQL API with hot reload (http://localhost:5000)
+- **`/run-api`** - Run the GraphQL API with hot reload (http://localhost:5001)
 - **`/run-mcp`** - Run the MCP Server (normally started by Claude Code automatically)
 - **`/stop-api`** - Stop the running GraphQL API
 - **`/stop-mcp`** - Stop the running MCP Server
@@ -440,7 +440,7 @@ After making code changes:
 1. Run `/build` to compile
 2. Run `/test` to verify tests pass
 3. Run `/run-api` to start the server
-4. Test your changes in GraphQL Playground (http://localhost:5000/graphql)
+4. Test your changes in GraphQL Playground (http://localhost:5001/graphql)
 
 ### Why Slash Commands?
 

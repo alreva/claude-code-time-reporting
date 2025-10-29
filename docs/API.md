@@ -21,8 +21,8 @@ Version: 1.0
 
 The Time Reporting API is a GraphQL API built with ASP.NET Core and HotChocolate. It provides comprehensive time tracking functionality with project management, tag configuration, and approval workflows.
 
-**Base URL:** `http://localhost:5000/graphql`
-**GraphQL Playground:** `http://localhost:5000/graphql` (when running in development mode)
+**Base URL:** `http://localhost:5001/graphql`
+**GraphQL Playground:** `http://localhost:5001/graphql` (when running in development mode)
 
 ### Key Features
 

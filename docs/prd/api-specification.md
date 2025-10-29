@@ -9,7 +9,7 @@
 
 This document provides the complete GraphQL schema, queries, mutations, and usage examples for the Time Reporting API built with HotChocolate and ASP.NET Core.
 
-**Base URL:** `http://localhost:5000/graphql`
+**Base URL:** `http://localhost:5001/graphql`
 **Authentication:** Bearer token required in `Authorization` header
 
 ---
@@ -825,7 +825,7 @@ All requests must include Bearer token:
 
 ```http
 POST /graphql HTTP/1.1
-Host: localhost:5000
+Host: localhost:5001
 Content-Type: application/json
 Authorization: Bearer <your-token-here>
 
@@ -854,7 +854,7 @@ Authorization: Bearer <your-token-here>
 
 GraphQL introspection is enabled for development. You can explore the schema using GraphQL Playground or similar tools.
 
-**Endpoint:** `http://localhost:5000/graphql`
+**Endpoint:** `http://localhost:5001/graphql`
 
 ### 9.2 Useful Introspection Queries
 

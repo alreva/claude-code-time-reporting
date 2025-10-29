@@ -288,7 +288,7 @@ public class LogTimeToolTests
         // Arrange
         var config = new McpConfig
         {
-            GraphQLApiUrl = "http://localhost:5000/graphql",
+            GraphQLApiUrl = "http://localhost:5001/graphql",
             BearerToken = "test-token"
         };
         var client = new GraphQLClientWrapper(config);

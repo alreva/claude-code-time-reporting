@@ -21,7 +21,7 @@ Create a production-ready multi-stage Dockerfile for the ASP.NET Core GraphQL AP
 - [ ] Uses multi-stage build pattern (build stage + runtime stage)
 - [ ] Build stage uses `mcr.microsoft.com/dotnet/sdk:10.0-preview` base image
 - [ ] Runtime stage uses `mcr.microsoft.com/dotnet/aspnet:10.0-preview` base image
-- [ ] Application listens on port 5001 (to avoid macOS AirPlay conflict on port 5000)
+- [ ] Application listens on port 5001 (to avoid macOS AirPlay conflict on port 5001)
 - [ ] Non-root user configured for security
 - [ ] All dependencies properly restored and built
 - [ ] Image builds successfully with `docker build` or `podman build`
@@ -84,7 +84,7 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Expose port 5001 (avoid macOS AirPlay conflict on port 5000)
+# Expose port 5001 (avoid macOS AirPlay conflict on port 5001)
 EXPOSE 5001
 
 # Health check using the /health endpoint

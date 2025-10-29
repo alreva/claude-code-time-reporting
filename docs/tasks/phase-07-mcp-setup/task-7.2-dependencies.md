@@ -74,7 +74,7 @@ namespace TimeReportingMcp.Utils;
 public class McpConfig
 {
     /// <summary>
-    /// GraphQL API URL (e.g., http://localhost:5000/graphql)
+    /// GraphQL API URL (e.g., http://localhost:5001/graphql)
     /// </summary>
     public string GraphQLApiUrl { get; }
 
@@ -298,7 +298,7 @@ Fatal error: Required environment variable 'GRAPHQL_API_URL' is not set. Please 
 
 ```bash
 # Set environment variables
-export GRAPHQL_API_URL="http://localhost:5000/graphql"
+export GRAPHQL_API_URL="http://localhost:5001/graphql"
 export BEARER_TOKEN="test-token-1234567890abcdef"
 
 # Run with env vars
@@ -309,9 +309,9 @@ dotnet run
 ```
 TimeReporting MCP Server starting...
 Configuration loaded:
-  GraphQL API: http://localhost:5000/graphql
+  GraphQL API: http://localhost:5001/graphql
   Bearer Token: test-tok...
-GraphQL client initialized for http://localhost:5000/graphql
+GraphQL client initialized for http://localhost:5001/graphql
 MCP Server initialized successfully
 Ready to receive MCP requests on stdin
 ```
@@ -331,7 +331,7 @@ Then test MCP server connection:
 
 ```bash
 # Run MCP server
-export GRAPHQL_API_URL="http://localhost:5000/graphql"
+export GRAPHQL_API_URL="http://localhost:5001/graphql"
 export BEARER_TOKEN="your-actual-token-from-.env"
 
 cd TimeReportingMcp
@@ -399,7 +399,7 @@ dotnet restore
     "TimeReportingMcp": {
       "commandName": "Project",
       "environmentVariables": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "your-token-here"
       }
     }

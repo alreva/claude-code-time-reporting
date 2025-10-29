@@ -213,7 +213,7 @@ Phase 7 provides **placeholder** implementations. Phase 8 adds real GraphQL call
 Set these environment variables before running:
 
 ```bash
-export GRAPHQL_API_URL="http://localhost:5000/graphql"
+export GRAPHQL_API_URL="http://localhost:5001/graphql"
 export BEARER_TOKEN="your-token-from-.env-file"
 ```
 
@@ -225,7 +225,7 @@ export BEARER_TOKEN="your-token-from-.env-file"
       "command": "dotnet",
       "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
       "env": {
-        "GRAPHQL_API_URL": "http://localhost:5000/graphql",
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
         "BEARER_TOKEN": "your-token-here"
       }
     }

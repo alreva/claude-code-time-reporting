@@ -61,7 +61,7 @@ using TimeReportingApi.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel to listen on port 5000
+// Configure Kestrel to listen on port 5001
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenLocalhost(5000);
@@ -394,7 +394,7 @@ Start the API:
 /run-api
 ```
 
-Open http://localhost:5000/graphql and explore the auto-generated capabilities:
+Open http://localhost:5001/graphql and explore the auto-generated capabilities:
 
 ```graphql
 # Simple query
