@@ -115,44 +115,14 @@ PostgreSQL Database
 
 ---
 
-## 🚀 Quick Start
-
-### Prerequisites
+## 📋 Prerequisites
 
 - **Docker or Podman** ([Podman setup guide](./docs/PODMAN-SETUP.md))
 - **.NET 10 SDK** (for both API and MCP server)
 - **Claude Code** installed
 - **PostgreSQL client** (optional, for testing)
 
-### Deploy the System
-
-```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd time-reporting-system
-
-# 2. Configure environment
-# Generate Bearer token
-openssl rand -base64 32
-
-# Edit .env with your token
-nano .env
-
-# 3. Deploy services
-/deploy
-
-# 4. Seed database
-/seed-db
-
-# 5. Configure Claude Code
-# Follow the setup guide
-open docs/integration/CLAUDE-CODE-SETUP.md
-
-# 6. Test the system
-# In Claude Code: "Get available projects"
-```
-
-For detailed instructions, see the [Deployment Guide](./docs/DEPLOYMENT.md).
+For detailed deployment instructions, see the [Deployment Guide](./docs/DEPLOYMENT.md).
 
 ### Development Workflow
 
