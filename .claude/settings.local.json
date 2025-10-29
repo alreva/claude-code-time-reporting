@@ -38,11 +38,20 @@
       "WebFetch(domain:microsoft.com)",
       "WebFetch(domain:postgresql.org)",
       "WebFetch(domain:stackoverflow.com)",
-      "Read(**)"
+      "Read(**)",
+      "mcp__time-reporting__get_available_projects",
+      "mcp__time-reporting__log_time",
+      "mcp__time-reporting__query_time_entries",
+      "mcp__time-reporting__submit_time_entry",
+      "mcp__time-reporting__update_time_entry"
     ],
     "deny": [],
     "ask": []
   },
+  "model": "claude-sonnet-4-5",
+  "enabledMcpjsonServers": [
+    "time-reporting"
+  ],
   "hooks": {
     "PreToolUse": [
       {
@@ -55,6 +64,5 @@
         ]
       }
     ]
-  },
-  "model": "claude-sonnet-4-5"
+  }
 }

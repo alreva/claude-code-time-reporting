@@ -49,8 +49,13 @@ public class UpdateEntryTool
                     mutation UpdateTimeEntry($id: UUID!, $input: UpdateTimeEntryInput!) {
                         updateTimeEntry(id: $id, input: $input) {
                             id
-                            projectCode
-                            task
+                            project {
+                                code
+                                name
+                            }
+                            projectTask {
+                                taskName
+                            }
                             issueId
                             standardHours
                             overtimeHours
@@ -129,12 +134,13 @@ public class UpdateEntryTool
         return updates.Count > 0 ? updates : null;
     }
 
-    private ToolResult CreateSuccessResult(TimeEntry entry, object updates)
+    private ToolResult CreateSuccessResult(TimeEntryData entry, object updates)
     {
         var message = new StringBuilder();
         message.AppendLine("✅ Time entry updated successfully!\n");
         message.AppendLine($"ID: {entry.Id}");
-        message.AppendLine($"Project: {entry.ProjectCode} - {entry.Task}");
+        message.AppendLine($"Project: {entry.Project.Code} - {entry.Project.Name}");
+        message.AppendLine($"Task: {entry.ProjectTask.TaskName}");
         message.AppendLine($"Hours: {entry.StandardHours} standard");
 
         if (entry.OvertimeHours > 0)
@@ -235,5 +241,5 @@ public class UpdateEntryTool
 // Response type
 public class UpdateTimeEntryResponse
 {
-    public TimeEntry UpdateTimeEntry { get; set; } = null!;
+    public TimeEntryData UpdateTimeEntry { get; set; } = null!;
 }

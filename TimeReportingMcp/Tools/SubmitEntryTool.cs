@@ -32,8 +32,13 @@ public class SubmitEntryTool
                     mutation SubmitTimeEntry($id: UUID!) {
                         submitTimeEntry(id: $id) {
                             id
-                            projectCode
-                            task
+                            project {
+                                code
+                                name
+                            }
+                            projectTask {
+                                taskName
+                            }
                             standardHours
                             overtimeHours
                             startDate
@@ -64,11 +69,12 @@ public class SubmitEntryTool
         }
     }
 
-    private ToolResult CreateSuccessResult(SubmittedTimeEntry entry)
+    private ToolResult CreateSuccessResult(TimeEntryData entry)
     {
         var message = $"✅ Time entry submitted for approval!\n\n" +
                       $"ID: {entry.Id}\n" +
-                      $"Project: {entry.ProjectCode} - {entry.Task}\n" +
+                      $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
+                      $"Task: {entry.ProjectTask.TaskName}\n" +
                       $"Hours: {entry.StandardHours} standard, {entry.OvertimeHours} overtime\n" +
                       $"Period: {entry.StartDate} to {entry.CompletionDate}\n" +
                       $"Status: {entry.Status}";
@@ -115,21 +121,5 @@ public class SubmitEntryTool
 /// </summary>
 public class SubmitEntryResponse
 {
-    public SubmittedTimeEntry SubmitTimeEntry { get; set; } = null!;
-}
-
-/// <summary>
-/// Submitted time entry data
-/// </summary>
-public class SubmittedTimeEntry
-{
-    public string Id { get; set; } = string.Empty;
-    public string ProjectCode { get; set; } = string.Empty;
-    public string Task { get; set; } = string.Empty;
-    public decimal StandardHours { get; set; }
-    public decimal OvertimeHours { get; set; }
-    public string StartDate { get; set; } = string.Empty;
-    public string CompletionDate { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public string UpdatedAt { get; set; } = string.Empty;
+    public TimeEntryData SubmitTimeEntry { get; set; } = null!;
 }

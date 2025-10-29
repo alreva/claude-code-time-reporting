@@ -25,27 +25,33 @@ public class QueryEntriesTool
             // 1. Parse filters (all optional)
             var filters = ParseFilters(arguments);
 
-            // 2. Build GraphQL query
+            // 2. Build GraphQL query (using first: 50 for simple pagination)
             var query = new GraphQLRequest
             {
                 Query = @"
-                    query TimeEntries($filters: TimeEntryFiltersInput) {
-                        timeEntries(filters: $filters) {
-                            id
-                            projectCode
-                            task
-                            issueId
-                            standardHours
-                            overtimeHours
-                            description
-                            startDate
-                            completionDate
-                            status
-                            tags
-                            createdAt
+                    query TimeEntries($first: Int) {
+                        timeEntries(first: $first) {
+                            nodes {
+                                id
+                                project {
+                                    code
+                                    name
+                                }
+                                projectTask {
+                                    taskName
+                                }
+                                issueId
+                                standardHours
+                                overtimeHours
+                                description
+                                startDate
+                                completionDate
+                                status
+                                createdAt
+                            }
                         }
                     }",
-                Variables = new { filters }
+                Variables = new { first = 50 }
             };
 
             // 3. Execute query
@@ -58,7 +64,7 @@ public class QueryEntriesTool
             }
 
             // 5. Return formatted results
-            return CreateSuccessResult(response.Data.TimeEntries, filters);
+            return CreateSuccessResult(response.Data.TimeEntries.Nodes, filters);
         }
         catch (Exception ex)
         {
@@ -110,7 +116,7 @@ public class QueryEntriesTool
         return filters.Count > 0 ? filters : null;
     }
 
-    private ToolResult CreateSuccessResult(List<TimeEntry> entries, object? filters)
+    private ToolResult CreateSuccessResult(List<TimeEntryData> entries, object? filters)
     {
         if (entries.Count == 0)
         {
@@ -127,7 +133,7 @@ public class QueryEntriesTool
         message.AppendLine($"📋 Found {entries.Count} time entries:\n");
 
         // Group by project for better readability
-        var groupedEntries = entries.GroupBy(e => e.ProjectCode).OrderBy(g => g.Key);
+        var groupedEntries = entries.GroupBy(e => e.Project.Code).OrderBy(g => g.Key);
 
         foreach (var group in groupedEntries)
         {
@@ -141,7 +147,7 @@ public class QueryEntriesTool
                     message.Append($" to {entry.CompletionDate}");
                 }
 
-                message.Append($" - {entry.Task}");
+                message.Append($" - {entry.ProjectTask.TaskName}");
                 message.Append($" - {entry.StandardHours}h");
 
                 if (entry.OvertimeHours > 0)
@@ -221,5 +227,10 @@ public class QueryEntriesTool
 // Response type
 public class QueryTimeEntriesResponse
 {
-    public List<TimeEntry> TimeEntries { get; set; } = new();
+    public TimeEntriesConnection TimeEntries { get; set; } = null!;
+}
+
+public class TimeEntriesConnection
+{
+    public List<TimeEntryData> Nodes { get; set; } = new();
 }

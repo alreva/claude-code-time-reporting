@@ -31,8 +31,13 @@ public class LogTimeTool
                     mutation LogTime($input: LogTimeInput!) {
                         logTime(input: $input) {
                             id
-                            projectCode
-                            task
+                            project {
+                                code
+                                name
+                            }
+                            projectTask {
+                                taskName
+                            }
                             issueId
                             standardHours
                             overtimeHours
@@ -100,11 +105,12 @@ public class LogTimeTool
         };
     }
 
-    private ToolResult CreateSuccessResult(TimeEntry entry)
+    private ToolResult CreateSuccessResult(TimeEntryData entry)
     {
         var message = $"✅ Time entry created successfully!\n\n" +
                       $"ID: {entry.Id}\n" +
-                      $"Project: {entry.ProjectCode} - {entry.Task}\n" +
+                      $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
+                      $"Task: {entry.ProjectTask.TaskName}\n" +
                       $"Hours: {entry.StandardHours} standard";
 
         if (entry.OvertimeHours > 0)
@@ -165,28 +171,5 @@ public class LogTimeTool
 // Response type
 public class LogTimeResponse
 {
-    public TimeEntry LogTime { get; set; } = null!;
-}
-
-// Input types
-public class TagInput
-{
-    public string Name { get; set; } = string.Empty;
-    public string Value { get; set; } = string.Empty;
-}
-
-public class TimeEntry
-{
-    public Guid Id { get; set; }
-    public string ProjectCode { get; set; } = string.Empty;
-    public string Task { get; set; } = string.Empty;
-    public string? IssueId { get; set; }
-    public decimal StandardHours { get; set; }
-    public decimal OvertimeHours { get; set; }
-    public string? Description { get; set; }
-    public string StartDate { get; set; } = string.Empty;
-    public string CompletionDate { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public TimeEntryData LogTime { get; set; } = null!;
 }

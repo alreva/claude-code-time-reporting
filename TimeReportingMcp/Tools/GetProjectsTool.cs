@@ -33,17 +33,17 @@ public class GetProjectsTool
             var query = new GraphQLRequest
             {
                 Query = @"
-                    query GetProjects($activeOnly: Boolean) {
-                        projects(activeOnly: $activeOnly) {
+                    query GetProjects($activeOnly: Boolean!) {
+                        projects(where: { isActive: { eq: $activeOnly } }) {
                             code
                             name
                             isActive
-                            tasks {
-                                name
+                            availableTasks {
+                                taskName
                                 isActive
                             }
                             tags {
-                                name
+                                tagName
                                 isActive
                                 allowedValues {
                                     value
@@ -92,7 +92,7 @@ public class GetProjectsTool
             var activeTasks = project.Tasks.Where(t => t.IsActive).ToList();
             if (activeTasks.Any())
             {
-                sb.AppendLine($"   Tasks: {string.Join(", ", activeTasks.Select(t => t.Name))}");
+                sb.AppendLine($"   Tasks: {string.Join(", ", activeTasks.Select(t => t.TaskName))}");
             }
             else
             {
@@ -107,7 +107,7 @@ public class GetProjectsTool
                 foreach (var tag in activeTags)
                 {
                     var values = string.Join(", ", tag.AllowedValues.Select(v => v.Value));
-                    sb.AppendLine($"     • {tag.Name}: {values}");
+                    sb.AppendLine($"     • {tag.TagName}: {values}");
                 }
             }
 
@@ -181,7 +181,7 @@ public class ProjectData
 /// </summary>
 public class TaskData
 {
-    public string Name { get; set; } = string.Empty;
+    public string TaskName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
 }
 
@@ -190,7 +190,7 @@ public class TaskData
 /// </summary>
 public class TagData
 {
-    public string Name { get; set; } = string.Empty;
+    public string TagName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public List<TagValueData> AllowedValues { get; set; } = new();
 }

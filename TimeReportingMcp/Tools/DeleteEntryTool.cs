@@ -30,10 +30,7 @@ public class DeleteEntryTool
             {
                 Query = @"
                     mutation DeleteTimeEntry($id: UUID!) {
-                        deleteTimeEntry(id: $id) {
-                            success
-                            message
-                        }
+                        deleteTimeEntry(id: $id)
                     }",
                 Variables = new { id }
             };
@@ -49,7 +46,7 @@ public class DeleteEntryTool
 
             // 5. Format success response
             var result = response.Data.DeleteTimeEntry;
-            return CreateSuccessResult(result);
+            return CreateSuccessResult(result, id);
         }
         catch (Exception ex)
         {
@@ -57,9 +54,11 @@ public class DeleteEntryTool
         }
     }
 
-    private ToolResult CreateSuccessResult(DeleteResult result)
+    private ToolResult CreateSuccessResult(bool success, string id)
     {
-        var message = $"✅ {result.Message}";
+        var message = success
+            ? $"✅ Time entry {id} deleted successfully"
+            : $"❌ Failed to delete time entry {id}";
 
         return new ToolResult
         {
@@ -103,14 +102,5 @@ public class DeleteEntryTool
 /// </summary>
 public class DeleteTimeEntryResponse
 {
-    public DeleteResult DeleteTimeEntry { get; set; } = null!;
-}
-
-/// <summary>
-/// Delete operation result
-/// </summary>
-public class DeleteResult
-{
-    public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
+    public bool DeleteTimeEntry { get; set; }
 }

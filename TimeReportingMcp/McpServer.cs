@@ -284,9 +284,14 @@ public class McpServer
                     properties = new
                     {
                         id = new { type = "string", description = "Time entry ID (UUID)" },
+                        task = new { type = "string", description = "Task name (optional)" },
+                        issueId = new { type = "string", description = "Issue/ticket ID (optional)" },
                         standardHours = new { type = "number", description = "Standard hours (optional)" },
                         overtimeHours = new { type = "number", description = "Overtime hours (optional)" },
-                        description = new { type = "string", description = "Description (optional)" }
+                        description = new { type = "string", description = "Description (optional)" },
+                        startDate = new { type = "string", description = "Start date (YYYY-MM-DD) (optional)" },
+                        completionDate = new { type = "string", description = "Completion date (YYYY-MM-DD) (optional)" },
+                        tags = new { type = "object", description = "Metadata tags (optional)" }
                     },
                     required = new[] { "id" }
                 }

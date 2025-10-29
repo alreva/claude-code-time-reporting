@@ -37,8 +37,13 @@ public class MoveTaskTool
                     mutation MoveTaskToProject($entryId: UUID!, $newProjectCode: String!, $newTask: String!) {
                         moveTaskToProject(entryId: $entryId, newProjectCode: $newProjectCode, newTask: $newTask) {
                             id
-                            projectCode
-                            task
+                            project {
+                                code
+                                name
+                            }
+                            projectTask {
+                                taskName
+                            }
                             standardHours
                             overtimeHours
                             startDate
@@ -78,7 +83,8 @@ public class MoveTaskTool
     {
         var message = $"✅ Time entry moved successfully!\n\n" +
                       $"ID: {entry.Id}\n" +
-                      $"New Project: {entry.ProjectCode} - {entry.Task}\n" +
+                      $"New Project: {entry.Project.Code} - {entry.Project.Name}\n" +
+                      $"Task: {entry.ProjectTask.TaskName}\n" +
                       $"Hours: {entry.StandardHours} standard, {entry.OvertimeHours} overtime\n" +
                       $"Period: {entry.StartDate} to {entry.CompletionDate}\n" +
                       $"Status: {entry.Status}";
@@ -126,20 +132,4 @@ public class MoveTaskTool
 public class MoveTaskResponse
 {
     public TimeEntryData MoveTaskToProject { get; set; } = null!;
-}
-
-/// <summary>
-/// Time entry data returned by the mutation
-/// </summary>
-public class TimeEntryData
-{
-    public string Id { get; set; } = string.Empty;
-    public string ProjectCode { get; set; } = string.Empty;
-    public string Task { get; set; } = string.Empty;
-    public decimal StandardHours { get; set; }
-    public decimal OvertimeHours { get; set; }
-    public string StartDate { get; set; } = string.Empty;
-    public string CompletionDate { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public string UpdatedAt { get; set; } = string.Empty;
 }
