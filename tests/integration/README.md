@@ -18,7 +18,7 @@ The integration test suite verifies:
 ### Prerequisites
 
 1. Podman or Docker Compose installed
-2. `.env` file with valid `BEARER_TOKEN`
+2. `.env` file with valid `Authentication__BearerToken`
 3. Port 5001 available (API)
 4. Port 5432 available (PostgreSQL)
 
@@ -161,7 +161,7 @@ podman compose logs api | grep -i error
 
 # Test mutation directly
 curl -X POST http://localhost:5001/graphql \
-  -H "Authorization: Bearer $BEARER_TOKEN" \
+  -H "Authorization: Bearer $Authentication__BearerToken" \
   -H "Content-Type: application/json" \
   -d '{"query":"mutation { logTime(...) {...} }"}'
 ```
@@ -190,7 +190,7 @@ jobs:
       - name: Set up environment
         run: |
           cp .env.example .env
-          echo "BEARER_TOKEN=$(openssl rand -base64 32)" >> .env
+          echo "Authentication__BearerToken=$(openssl rand -base64 32)" >> .env
 
       - name: Run integration tests
         run: ./tests/integration/docker-stack-test.sh

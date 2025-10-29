@@ -22,8 +22,8 @@ public class QueryEntriesToolTests : IAsyncLifetime
         // Set environment variables for testing
         Environment.SetEnvironmentVariable("GRAPHQL_API_URL",
             Environment.GetEnvironmentVariable("GRAPHQL_API_URL") ?? "http://localhost:5001/graphql");
-        Environment.SetEnvironmentVariable("BEARER_TOKEN",
-            Environment.GetEnvironmentVariable("BEARER_TOKEN") ?? "test-token-12345");
+        Environment.SetEnvironmentVariable("Authentication__BearerToken",
+            Environment.GetEnvironmentVariable("Authentication__BearerToken") ?? "test-token-12345");
 
         // Check if API is available
         var config = new McpConfig();
