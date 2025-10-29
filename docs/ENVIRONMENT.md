@@ -35,7 +35,7 @@ This document describes all environment variables used by the Time Reporting Sys
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `ASPNETCORE_ENVIRONMENT` | Runtime environment | `Production` | No |
-| `BEARER_TOKEN` | API authentication token | None | Yes |
+| `Authentication__BearerToken` | API authentication token | None | Yes |
 
 **Bearer Token Generation:**
 ```bash
@@ -58,7 +58,7 @@ ASPNETCORE_ENVIRONMENT=Development
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=time_reporting
-BEARER_TOKEN=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
+Authentication__BearerToken=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
 ```
 
 Connection string uses `Host=localhost`:
@@ -74,7 +74,7 @@ ASPNETCORE_ENVIRONMENT=Production
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_secure_password
 POSTGRES_DB=time_reporting
-BEARER_TOKEN=your_bearer_token
+Authentication__BearerToken=your_bearer_token
 ```
 
 Connection string uses `Host=postgres` (service name):
@@ -150,13 +150,13 @@ podman compose logs api | grep -i "appsettings\|environment"
 ### Test Bearer Token
 
 ```bash
-# Load token from .env
-source .env
+# Load token from env.sh
+source env.sh
 
 # Test API with bearer token
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $BEARER_TOKEN" \
+  -H "Authorization: Bearer $Authentication__BearerToken" \
   -d '{"query":"{ projects { code name } }"}'
 ```
 
@@ -177,9 +177,9 @@ Expected: No connection errors
 
 **Cause:** Bearer token mismatch
 **Solution:**
-1. Verify `.env` has correct `BEARER_TOKEN` value
+1. Verify `env.sh` has correct `Authentication__BearerToken` value
 2. Restart API: `podman compose restart api`
-3. Test with correct token: `curl -H "Authorization: Bearer $BEARER_TOKEN" ...`
+3. Test with correct token: `curl -H "Authorization: Bearer $Authentication__BearerToken" ...`
 
 ### Issue: API can't connect to database
 
@@ -191,11 +191,12 @@ Expected: No connection errors
 
 ### Issue: Environment variables not loading
 
-**Cause:** `.env` file not in correct location
+**Cause:** Environment variables not sourced into shell
 **Solution:**
-1. Ensure `.env` is in repository root (same directory as `docker-compose.yml`)
-2. Verify `.env` syntax: no spaces around `=`, no quotes for values
-3. Restart Docker Compose: `podman compose down && podman compose up -d`
+1. Ensure you run `source env.sh` before starting Docker Compose
+2. Verify `env.sh` exists in repository root: `ls -la env.sh`
+3. Check variables are in environment: `echo $Authentication__BearerToken`
+4. Restart Docker Compose: `podman compose down && podman compose up -d`
 
 ## References
 

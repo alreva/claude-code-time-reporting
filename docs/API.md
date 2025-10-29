@@ -47,10 +47,10 @@ Authorization: Bearer <your-token-here>
 
 ### Configuration
 
-Set the `BEARER_TOKEN` environment variable in your `.env` file:
+Set the `Authentication__BearerToken` environment variable in your `env.sh` file:
 
 ```bash
-BEARER_TOKEN=your-secure-token-here
+Authentication__BearerToken=your-secure-token-here
 ```
 
 Generate a secure token:
