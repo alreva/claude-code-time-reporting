@@ -1,0 +1,37 @@
+query QueryTimeEntries(
+  $projectCode: String
+  $startDate: LocalDate
+  $endDate: LocalDate
+  $status: TimeEntryStatus
+) {
+  timeEntries(
+    where: {
+      and: [
+        { project: { code: { eq: $projectCode } } }
+        { startDate: { gte: $startDate } }
+        { completionDate: { lte: $endDate } }
+        { status: { eq: $status } }
+      ]
+    }
+  ) {
+    nodes {
+      id
+      project {
+        code
+        name
+      }
+      projectTask {
+        taskName
+      }
+      standardHours
+      overtimeHours
+      startDate
+      completionDate
+      status
+      description
+      issueId
+      createdAt
+      updatedAt
+    }
+  }
+}

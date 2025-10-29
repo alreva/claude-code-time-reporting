@@ -1,0 +1,20 @@
+mutation UpdateTimeEntry($id: UUID!, $input: UpdateTimeEntryInput!) {
+  updateTimeEntry(id: $id, input: $input) {
+    id
+    project {
+      code
+      name
+    }
+    projectTask {
+      taskName
+    }
+    standardHours
+    overtimeHours
+    startDate
+    completionDate
+    status
+    description
+    issueId
+    updatedAt
+  }
+}

@@ -1,0 +1,7 @@
+mutation SubmitTimeEntry($id: UUID!) {
+  submitTimeEntry(id: $id) {
+    id
+    status
+    updatedAt
+  }
+}
