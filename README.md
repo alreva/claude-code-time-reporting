@@ -6,32 +6,28 @@ A time reporting system that integrates Claude Code with a custom GraphQL-based 
 
 ## 🚀 Quick Start
 
-**Get up and running in 2 minutes:**
+**Get up and running in under 1 minute:**
 
 ```bash
 # Clone the repository
 git clone https://github.com/YOUR_USERNAME/time-reporting-system.git
 cd time-reporting-system
 
-# Run automated setup (generates tokens, starts database, applies migrations)
+# Generate bearer token and create .env file
 ./setup.sh
 
-# Start the API
-/run-api
-# Or: dotnet run --project TimeReportingApi
-
-# Connect Claude Code (see docs/integration/CLAUDE-CODE-SETUP.md)
+# Deploy the full stack (database + API)
+/deploy
 ```
 
-**That's it!** The setup script automatically:
-- ✅ Generates a secure bearer token
-- ✅ Creates `.env` file with configuration
-- ✅ Configures `.mcp.json` for Claude Code
-- ✅ Starts PostgreSQL database
-- ✅ Applies database migrations
-- ✅ Seeds initial project data
+**That's it!** All tracked files remain unchanged - your environment-specific token lives only in `.env`:
 
-**No manual configuration needed!**
+- ✅ `./setup.sh` generates a secure bearer token → `.env` file
+- ✅ `.env` is automatically used by MCP server (via `run-mcp.sh` wrapper)
+- ✅ `.env` is automatically used by `/deploy` (docker-compose reads it)
+- ✅ No files are modified after clone - token comes from environment only
+
+**Clone, run two commands, done!**
 
 ---
 
