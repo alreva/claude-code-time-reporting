@@ -48,6 +48,14 @@ public class QueryEntriesTool
                                 completionDate
                                 status
                                 createdAt
+                                tags {
+                                    tagValue {
+                                        value
+                                        projectTag {
+                                            tagName
+                                        }
+                                    }
+                                }
                             }
                         }
                     }",
@@ -170,6 +178,14 @@ public class QueryEntriesTool
                         ? entry.Description.Substring(0, 57) + "..."
                         : entry.Description;
                     message.AppendLine($"    {shortDesc}");
+                }
+
+                // Display tags if present
+                if (entry.Tags.Count > 0)
+                {
+                    var tagStrings = entry.Tags.Select(t =>
+                        $"{t.TagValue.ProjectTag.TagName}: {t.TagValue.Value}");
+                    message.AppendLine($"    Tags: {string.Join(", ", tagStrings)}");
                 }
 
                 message.AppendLine($"    ID: {entry.Id}");

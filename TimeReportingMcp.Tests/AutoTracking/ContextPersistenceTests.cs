@@ -1,4 +1,3 @@
-using Xunit;
 using TimeReportingMcp.AutoTracking;
 
 namespace TimeReportingMcp.Tests.AutoTracking;

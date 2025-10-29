@@ -18,6 +18,7 @@ public class TimeEntryData
     public string? DeclineComment { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public List<TimeEntryTagData> Tags { get; set; } = new();
 }
 
 /// <summary>
@@ -44,4 +45,29 @@ public class TagInput
 {
     public string Name { get; set; } = string.Empty;
     public string Value { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Time entry tag data from GraphQL response
+/// </summary>
+public class TimeEntryTagData
+{
+    public TagValueData TagValue { get; set; } = null!;
+}
+
+/// <summary>
+/// Tag value info with project tag details
+/// </summary>
+public class TagValueData
+{
+    public string Value { get; set; } = string.Empty;
+    public ProjectTagData ProjectTag { get; set; } = null!;
+}
+
+/// <summary>
+/// Project tag info (tag name)
+/// </summary>
+public class ProjectTagData
+{
+    public string TagName { get; set; } = string.Empty;
 }
