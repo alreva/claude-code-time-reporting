@@ -160,6 +160,15 @@ public class QueryEntriesTool
                     message.AppendLine($"    {shortDesc}");
                 }
 
+                // Display tags if present
+                if (entry.Tags != null && entry.Tags.Any())
+                {
+                    var tagStrings = entry.Tags
+                        .Select(t => $"{t.TagValue.ProjectTag.TagName}: {t.TagValue.Value}")
+                        .ToList();
+                    message.AppendLine($"    Tags: {string.Join(", ", tagStrings)}");
+                }
+
                 message.AppendLine($"    ID: {entry.Id}");
             }
             message.AppendLine();

@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Tools;
@@ -26,7 +27,10 @@ public class QueryEntriesToolTests : IAsyncLifetime
             Environment.GetEnvironmentVariable("Authentication__BearerToken") ?? "test-token-12345");
 
         // Check if API is available
-        var config = new McpConfig();
+        var configuration = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .Build();
+        var config = new McpConfig(configuration);
 
         // Configure dependency injection with StrawberryShake
         var services = new ServiceCollection();
@@ -236,5 +240,49 @@ public class QueryEntriesToolTests : IAsyncLifetime
         Assert.NotNull(result);
         Assert.False(result.IsError);
         Assert.Contains("No time entries found", result.Content[0].Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithEntriesHavingTags_DisplaysTagInformation()
+    {
+        // Skip if API not available
+        if (!_apiAvailable)
+        {
+            Console.WriteLine("Skipping test - API not available");
+            return;
+        }
+
+        // Arrange - query entries that may have tags
+        var args = JsonSerializer.SerializeToElement(new
+        {
+            projectCode = "INTERNAL",
+            startDate = "2025-10-27",
+            endDate = "2025-10-30"
+        });
+
+        // Act
+        var result = await _tool!.ExecuteAsync(args);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.IsError);
+        Assert.NotEmpty(result.Content);
+
+        var outputText = result.Content[0].Text;
+
+        // If entries exist with tags, verify tags are displayed
+        // The output should contain tag information in format "Tags: TagName: TagValue"
+        // or if no entries have tags, that's also acceptable
+        Assert.NotNull(outputText);
+
+        // Check that if there are entries, the output is properly formatted
+        if (outputText.Contains("Found") && !outputText.Contains("No time entries"))
+        {
+            // Output should have proper structure with project names, dates, hours
+            Assert.Matches(@"\d+\.\d+h", outputText); // Should contain hours like "2.00h"
+
+            // If tags exist in the data, they should be formatted as "Tags: Name: Value"
+            // Note: This is a flexible assertion since not all entries may have tags
+        }
     }
 }

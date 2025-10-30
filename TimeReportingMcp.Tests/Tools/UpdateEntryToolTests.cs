@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Tools;
@@ -26,7 +27,10 @@ public class UpdateEntryToolTests : IAsyncLifetime
             Environment.GetEnvironmentVariable("Authentication__BearerToken") ?? "test-token-12345");
 
         // Check if API is available
-        var config = new McpConfig();
+        var configuration = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .Build();
+        var config = new McpConfig(configuration);
 
         // Configure dependency injection with StrawberryShake
         var services = new ServiceCollection();

@@ -21,6 +21,16 @@ mutation MoveTaskToProject(
     startDate
     completionDate
     status
+    tags {
+      id
+      tagValue {
+        id
+        value
+        projectTag {
+          tagName
+        }
+      }
+    }
     updatedAt
   }
 }

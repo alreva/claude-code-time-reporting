@@ -15,6 +15,16 @@ mutation UpdateTimeEntry($id: UUID!, $input: UpdateTimeEntryInput!) {
     status
     description
     issueId
+    tags {
+      id
+      tagValue {
+        id
+        value
+        projectTag {
+          tagName
+        }
+      }
+    }
     updatedAt
   }
 }

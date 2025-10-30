@@ -18,6 +18,16 @@ query QueryTimeEntries(
       status
       description
       issueId
+      tags {
+        id
+        tagValue {
+          id
+          value
+          projectTag {
+            tagName
+          }
+        }
+      }
       createdAt
       updatedAt
     }
