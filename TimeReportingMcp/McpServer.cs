@@ -33,7 +33,14 @@ public class McpServer
             while (!cancellationToken.IsCancellationRequested)
             {
                 // Read one line from stdin (JSON-RPC request)
-                var line = await Console.In.ReadLineAsync();
+                var line = await Console.In.ReadLineAsync(cancellationToken);
+
+                // stdin closed by client (graceful shutdown signal per MCP spec)
+                if (line == null)
+                {
+                    Console.Error.WriteLine("stdin closed, shutting down gracefully...");
+                    break;
+                }
 
                 if (string.IsNullOrWhiteSpace(line))
                 {
