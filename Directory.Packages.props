@@ -60,6 +60,18 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.1" />
   </ItemGroup>
+  <ItemGroup Label="Phase 14 - WebSocket MCP & Azure Entra ID">
+    <!-- StreamJsonRpc for WebSocket JSON-RPC 2.0 transport -->
+    <PackageVersion Include="StreamJsonRpc" Version="2.22.23" />
+    <!-- Azure Identity for AzureCliCredential token pass-through -->
+    <PackageVersion Include="Azure.Identity" Version="1.17.0" />
+    <!-- Microsoft Identity Web for API token validation -->
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.0.1" />
+    <!-- JWT Bearer Authentication (aligned with .NET 10 RC2) -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0-rc.2.24564.2" />
+    <!-- System.IdentityModel Tokens for JWT handling -->
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+  </ItemGroup>
   <ItemGroup Label="Future Dependencies - Commented Out">
     <!-- These will be needed in Phase 4-5 when implementing business logic -->
     <!--
