@@ -216,16 +216,48 @@ public class TimeEntry
     /// Used for multi-tenant scenarios and filtering entries by user.
     /// </summary>
     /// <remarks>
-    /// <para><strong>Format:</strong> Typically an email address, username, or external auth system ID</para>
-    /// <para><strong>Examples:</strong> "john.doe@company.com", "auth0|12345", "user-uuid"</para>
+    /// <para><strong>Source:</strong> Extracted from Azure Entra ID token 'oid' or 'sub' claim</para>
+    /// <para><strong>Format:</strong> Azure AD Object ID (GUID) or Subject identifier</para>
+    /// <para><strong>Examples:</strong> "a1b2c3d4-e5f6-7890-abcd-ef1234567890"</para>
     /// <para><strong>Database Column:</strong> user_id (varchar(100), nullable)</para>
     /// <para><strong>Database Index:</strong> idx_time_entries_user (user_id, start_date)</para>
-    /// <para><strong>Security:</strong> Should be validated against authentication system
+    /// <para><strong>Security:</strong> Automatically populated from authenticated token claims
     /// to prevent users from creating entries for others.</para>
-    /// <para><strong>Nullable:</strong> Allows for system-generated or imported entries</para>
+    /// <para><strong>Nullable:</strong> Allows for system-generated or imported entries (pre-Phase 14)</para>
     /// </remarks>
     [MaxLength(100)]
     public string? UserId { get; set; }
+
+    /// <summary>
+    /// Email address of the user who created this time entry.
+    /// Used for display purposes and user-friendly reporting.
+    /// </summary>
+    /// <remarks>
+    /// <para><strong>Source:</strong> Extracted from Azure Entra ID token 'email' claim</para>
+    /// <para><strong>Examples:</strong> "john.doe@company.com", "jane.smith@company.com"</para>
+    /// <para><strong>Database Column:</strong> user_email (varchar(255), nullable)</para>
+    /// <para><strong>Purpose:</strong> Human-readable identifier for reports and UI displays</para>
+    /// <para><strong>Security:</strong> Automatically populated from authenticated token claims</para>
+    /// <para><strong>Note:</strong> May be null for entries created before Phase 14 or by system</para>
+    /// </remarks>
+    [MaxLength(255)]
+    public string? UserEmail { get; set; }
+
+    /// <summary>
+    /// Display name of the user who created this time entry.
+    /// Used for user-friendly identification in reports and UI.
+    /// </summary>
+    /// <remarks>
+    /// <para><strong>Source:</strong> Extracted from Azure Entra ID token 'name', 'given_name', or 'preferred_username' claims</para>
+    /// <para><strong>Examples:</strong> "John Doe", "Jane Smith"</para>
+    /// <para><strong>Database Column:</strong> user_name (varchar(255), nullable)</para>
+    /// <para><strong>Purpose:</strong> Human-readable name for reports, audit logs, and UI displays</para>
+    /// <para><strong>Format:</strong> Typically "FirstName LastName" or preferred username from Entra ID</para>
+    /// <para><strong>Security:</strong> Automatically populated from authenticated token claims</para>
+    /// <para><strong>Note:</strong> May be null for entries created before Phase 14 or by system</para>
+    /// </remarks>
+    [MaxLength(255)]
+    public string? UserName { get; set; }
 
     /// <summary>
     /// Navigation property to the project this time entry is associated with.

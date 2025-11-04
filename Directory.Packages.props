@@ -60,7 +60,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.1" />
   </ItemGroup>
-  <ItemGroup Label="Phase 14 - WebSocket MCP & Azure Entra ID">
+  <ItemGroup Label="Phase 14 - WebSocket MCP and Azure Entra ID">
     <!-- StreamJsonRpc for WebSocket JSON-RPC 2.0 transport -->
     <PackageVersion Include="StreamJsonRpc" Version="2.22.23" />
     <!-- Azure Identity for AzureCliCredential token pass-through -->
