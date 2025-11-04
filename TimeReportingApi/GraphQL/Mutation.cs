@@ -1,4 +1,7 @@
+using System.Security.Claims;
+using HotChocolate.Authorization;
 using TimeReportingApi.Data;
+using TimeReportingApi.Extensions;
 using TimeReportingApi.GraphQL.Inputs;
 using TimeReportingApi.Models;
 using TimeReportingApi.Services;
@@ -11,9 +14,12 @@ public class Mutation
     /// Create a new time entry with validation.
     /// Validates project, task, tags, date range, and hours before creating the entry.
     /// ADR 0001: Uses navigation properties only, never sets FK properties directly.
+    /// Phase 14: Requires authentication and automatically captures user identity from token.
     /// </summary>
+    [Authorize]
     public async Task<TimeEntry> LogTime(
         LogTimeInput input,
+        ClaimsPrincipal user,
         [Service] ValidationService validator,
         [Service] TimeReportingDbContext context)
     {
@@ -36,6 +42,9 @@ public class Mutation
             .FirstAsync(t => EF.Property<string>(t, "ProjectCode") == input.ProjectCode
                           && t.TaskName == input.Task);
 
+        // Extract user identity from authenticated token (Phase 14)
+        var (userId, userEmail, userName) = user.GetUserInfo();
+
         // Create the time entry - ADR 0001: Set navigation properties, EF fills shadow FKs
         var entry = new TimeEntry
         {
@@ -49,6 +58,9 @@ public class Mutation
             StartDate = input.StartDate,
             CompletionDate = input.CompletionDate,
             Status = TimeEntryStatus.NotReported,
+            UserId = userId,            // ← Phase 14: From Entra ID 'oid' or 'sub' claim
+            UserEmail = userEmail,      // ← Phase 14: From Entra ID 'email' claim
+            UserName = userName,        // ← Phase 14: From Entra ID 'name' claim
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -84,10 +96,13 @@ public class Mutation
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
     /// All fields are optional - only provided fields will be updated.
     /// ADR 0001: Uses navigation properties only for ProjectTask updates.
+    /// Phase 14: Requires authentication.
     /// </summary>
+    [Authorize]
     public async Task<TimeEntry> UpdateTimeEntry(
         Guid id,
         UpdateTimeEntryInput input,
+        ClaimsPrincipal user,
         [Service] ValidationService validator,
         [Service] TimeReportingDbContext context)
     {
@@ -217,9 +232,12 @@ public class Mutation
     /// <summary>
     /// Delete a time entry.
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
+    /// Phase 14: Requires authentication.
     /// </summary>
+    [Authorize]
     public async Task<bool> DeleteTimeEntry(
         Guid id,
+        ClaimsPrincipal user,
         [Service] TimeReportingDbContext context)
     {
         // Load the existing entry
@@ -257,11 +275,14 @@ public class Mutation
     /// since tag configurations are project-specific.
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
     /// ADR 0001: Uses navigation properties only for Project and ProjectTask updates.
+    /// Phase 14: Requires authentication.
     /// </summary>
+    [Authorize]
     public async Task<TimeEntry> MoveTaskToProject(
         Guid entryId,
         string newProjectCode,
         string newTask,
+        ClaimsPrincipal user,
         [Service] ValidationService validator,
         [Service] TimeReportingDbContext context)
     {
@@ -336,10 +357,13 @@ public class Mutation
     /// Tags are validated against the entry's project tag configurations.
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
     /// ADR 0001: Uses navigation properties for TagValue relationships.
+    /// Phase 14: Requires authentication.
     /// </summary>
+    [Authorize]
     public async Task<TimeEntry> UpdateTags(
         Guid entryId,
         List<TagInput> tags,
+        ClaimsPrincipal user,
         [Service] ValidationService validator,
         [Service] TimeReportingDbContext context)
     {
@@ -412,9 +436,12 @@ public class Mutation
     /// <summary>
     /// Submit a time entry for approval.
     /// Transitions from NOT_REPORTED or DECLINED to SUBMITTED status.
+    /// Phase 14: Requires authentication.
     /// </summary>
+    [Authorize]
     public async Task<TimeEntry> SubmitTimeEntry(
         Guid id,
+        ClaimsPrincipal user,
         [Service] TimeReportingDbContext context)
     {
         // Load the existing entry
@@ -454,9 +481,12 @@ public class Mutation
     /// Approve a submitted time entry.
     /// Transitions from SUBMITTED to APPROVED status.
     /// Once approved, entries become immutable.
+    /// Phase 14: Requires authentication (manager role).
     /// </summary>
+    [Authorize]
     public async Task<TimeEntry> ApproveTimeEntry(
         Guid id,
+        ClaimsPrincipal user,
         [Service] TimeReportingDbContext context)
     {
         // Load the existing entry
@@ -497,10 +527,13 @@ public class Mutation
     /// Decline a submitted time entry with a comment.
     /// Transitions from SUBMITTED to DECLINED status.
     /// Declined entries can be edited and resubmitted.
+    /// Phase 14: Requires authentication (manager role).
     /// </summary>
+    [Authorize]
     public async Task<TimeEntry> DeclineTimeEntry(
         Guid id,
         string comment,
+        ClaimsPrincipal user,
         [Service] TimeReportingDbContext context)
     {
         // Validate comment is provided
