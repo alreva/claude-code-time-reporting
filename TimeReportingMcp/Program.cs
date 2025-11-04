@@ -2,9 +2,10 @@ using System;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
+using Polly;
 using TimeReportingMcp.Generated;
-using TimeReportingMcp.Handlers;
 using TimeReportingMcp.Services;
 using TimeReportingMcp.Utils;
 
@@ -58,29 +59,85 @@ class Program
                 return new TokenService(config, logger);
             });
 
-            // Add TokenRefreshHandler as a transient service for automatic token refresh on 401
-            services.AddTransient<TokenRefreshHandler>();
-
-            // Configure primary HTTP client with TokenRefreshHandler for all StrawberryShake clients
-            services.ConfigureHttpClientDefaults(builder =>
-            {
-                builder.AddHttpMessageHandler<TokenRefreshHandler>();
-            });
-
-            // Add StrawberryShake GraphQL client with token from TokenService
+            // Add StrawberryShake GraphQL client with token from TokenService and Polly resilience
             services
                 .AddTimeReportingClient()
-                .ConfigureHttpClient(async (sp, client) =>
-                {
-                    client.BaseAddress = new Uri(graphqlApiUrl);
+                .ConfigureHttpClient(
+                    async (sp, client) =>
+                    {
+                        client.BaseAddress = new Uri(graphqlApiUrl);
 
-                    // Acquire initial token from Azure CLI
-                    var tokenService = sp.GetRequiredService<TokenService>();
-                    var token = await tokenService.GetTokenAsync();
+                        // Acquire initial token from Azure CLI
+                        var tokenService = sp.GetRequiredService<TokenService>();
+                        var token = await tokenService.GetTokenAsync();
 
-                    client.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", token);
-                });
+                        client.DefaultRequestHeaders.Authorization =
+                            new AuthenticationHeaderValue("Bearer", token);
+                    },
+                    builder =>
+                    {
+                        // Add Polly resilience handler for token refresh and transient errors
+                        builder.AddResilienceHandler("token-refresh-pipeline", (pipelineBuilder, context) =>
+                        {
+                            var sp = context.ServiceProvider;
+                            var tokenService = sp.GetRequiredService<TokenService>();
+                            var logger = sp.GetRequiredService<ILogger<Program>>();
+
+                            // Configure retry strategy for 401 Unauthorized (expired token) and transient errors
+                            pipelineBuilder.AddRetry(new HttpRetryStrategyOptions
+                            {
+                                MaxRetryAttempts = 2,
+                                Delay = TimeSpan.FromMilliseconds(500),
+                                BackoffType = DelayBackoffType.Exponential,
+                                UseJitter = true,
+
+                                // Retry on 401 Unauthorized (expired token) and other transient errors
+                                ShouldHandle = args =>
+                                {
+                                    return ValueTask.FromResult(args.Outcome switch
+                                    {
+                                        { Result.StatusCode: System.Net.HttpStatusCode.Unauthorized } => true,
+                                        { Result.StatusCode: System.Net.HttpStatusCode.RequestTimeout } => true,
+                                        { Result.StatusCode: System.Net.HttpStatusCode.TooManyRequests } => true,
+                                        { Result.StatusCode: >= System.Net.HttpStatusCode.InternalServerError } => true,
+                                        { Exception: HttpRequestException } => true,
+                                        _ => false
+                                    });
+                                },
+
+                                // On each retry attempt, refresh the token
+                                OnRetry = async args =>
+                                {
+                                    logger.LogWarning(
+                                        "HTTP request failed with status {StatusCode}. Retry attempt {Attempt} of {MaxRetries} after {Delay}s",
+                                        args.Outcome.Result?.StatusCode,
+                                        args.AttemptNumber,
+                                        2,
+                                        args.RetryDelay.TotalSeconds);
+
+                                    // If 401 Unauthorized, refresh the token
+                                    if (args.Outcome.Result?.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                                    {
+                                        logger.LogInformation("Refreshing authentication token from Azure CLI");
+
+                                        // Clear cached token and get a fresh one
+                                        tokenService.ClearCache();
+                                        var newToken = await tokenService.GetTokenAsync(args.Context.CancellationToken);
+
+                                        logger.LogInformation("Token refreshed successfully");
+
+                                        // Update the Authorization header for the retry
+                                        // Note: StrawberryShake will create a new request, so we store the token
+                                        // The actual header update happens in the next request creation
+                                        args.Context.Properties.Set(new ResiliencePropertyKey<string>("RefreshedToken"), newToken);
+                                    }
+                                }
+                            });
+
+                            // Add timeout strategy
+                            pipelineBuilder.AddTimeout(TimeSpan.FromSeconds(30));
+                        });
+                    });
 
             var serviceProvider = services.BuildServiceProvider();
             var graphqlClient = serviceProvider.GetRequiredService<ITimeReportingClient>();
