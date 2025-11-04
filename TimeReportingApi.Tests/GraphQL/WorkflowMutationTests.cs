@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
 using TimeReportingApi.Models;
@@ -16,10 +17,23 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
     private readonly PostgresContainerFixture _fixture;
     private TimeReportingDbContext _context = null!;
     private Mutation _mutation = null!;
+    private ClaimsPrincipal _testUser = null!;
 
     public WorkflowMutationTests(PostgresContainerFixture fixture)
     {
         _fixture = fixture;
+    }
+
+    private static ClaimsPrincipal CreateTestUser(string email = "test@example.com", string name = "Test User", string oid = "test-oid-123")
+    {
+        var claims = new List<Claim>
+        {
+            new Claim("email", email),
+            new Claim("name", name),
+            new Claim("oid", oid)
+        };
+        var identity = new ClaimsIdentity(claims, "Test");
+        return new ClaimsPrincipal(identity);
     }
 
     public async Task InitializeAsync()
@@ -30,6 +44,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         _context = new TimeReportingDbContext(options);
         _mutation = new Mutation();
+        _testUser = CreateTestUser();
 
         await SeedTestDataAsync();
     }
@@ -99,7 +114,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         _context.ChangeTracker.Clear();
 
         // Act
-        var result = await _mutation.SubmitTimeEntry(entry.Id, _context);
+        var result = await _mutation.SubmitTimeEntry(entry.Id, _testUser, _context);
 
         // Assert
         Assert.NotNull(result);
@@ -131,7 +146,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         _context.ChangeTracker.Clear();
 
         // Act
-        var result = await _mutation.SubmitTimeEntry(entry.Id, _context);
+        var result = await _mutation.SubmitTimeEntry(entry.Id, _testUser, _context);
 
         // Assert
         Assert.NotNull(result);
@@ -164,7 +179,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.SubmitTimeEntry(entry.Id, _context));
+            () => _mutation.SubmitTimeEntry(entry.Id, _testUser, _context));
 
         Assert.Contains("already SUBMITTED", exception.Message);
     }
@@ -193,7 +208,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.SubmitTimeEntry(entry.Id, _context));
+            () => _mutation.SubmitTimeEntry(entry.Id, _testUser, _context));
 
         Assert.Contains("APPROVED", exception.Message);
     }
@@ -206,7 +221,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.ValidationException>(
-            () => _mutation.SubmitTimeEntry(nonExistentId, _context));
+            () => _mutation.SubmitTimeEntry(nonExistentId, _testUser, _context));
 
         Assert.Equal("id", exception.Field);
         Assert.Contains(nonExistentId.ToString(), exception.Message);
@@ -239,7 +254,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         _context.ChangeTracker.Clear();
 
         // Act
-        var result = await _mutation.ApproveTimeEntry(entry.Id, _context);
+        var result = await _mutation.ApproveTimeEntry(entry.Id, _testUser, _context);
 
         // Assert
         Assert.NotNull(result);
@@ -271,7 +286,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.ApproveTimeEntry(entry.Id, _context));
+            () => _mutation.ApproveTimeEntry(entry.Id, _testUser, _context));
 
         Assert.Contains("SUBMITTED", exception.Message);
     }
@@ -300,7 +315,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.ApproveTimeEntry(entry.Id, _context));
+            () => _mutation.ApproveTimeEntry(entry.Id, _testUser, _context));
 
         Assert.Contains("already APPROVED", exception.Message);
     }
@@ -313,7 +328,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.ValidationException>(
-            () => _mutation.ApproveTimeEntry(nonExistentId, _context));
+            () => _mutation.ApproveTimeEntry(nonExistentId, _testUser, _context));
 
         Assert.Equal("id", exception.Field);
         Assert.Contains(nonExistentId.ToString(), exception.Message);
@@ -347,7 +362,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act
         var comment = "Please add more details about the work performed";
-        var result = await _mutation.DeclineTimeEntry(entry.Id, comment, _context);
+        var result = await _mutation.DeclineTimeEntry(entry.Id, comment, _testUser, _context);
 
         // Assert
         Assert.NotNull(result);
@@ -380,7 +395,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.DeclineTimeEntry(entry.Id, "Some comment", _context));
+            () => _mutation.DeclineTimeEntry(entry.Id, "Some comment", _testUser, _context));
 
         Assert.Contains("SUBMITTED", exception.Message);
     }
@@ -409,7 +424,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.DeclineTimeEntry(entry.Id, "Some comment", _context));
+            () => _mutation.DeclineTimeEntry(entry.Id, "Some comment", _testUser, _context));
 
         Assert.Contains("APPROVED", exception.Message);
     }
@@ -422,7 +437,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.ValidationException>(
-            () => _mutation.DeclineTimeEntry(nonExistentId, "Some comment", _context));
+            () => _mutation.DeclineTimeEntry(nonExistentId, "Some comment", _testUser, _context));
 
         Assert.Equal("id", exception.Field);
         Assert.Contains(nonExistentId.ToString(), exception.Message);
@@ -452,7 +467,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exceptions.ValidationException>(
-            () => _mutation.DeclineTimeEntry(entry.Id, "", _context));
+            () => _mutation.DeclineTimeEntry(entry.Id, "", _testUser, _context));
 
         Assert.Equal("comment", exception.Field);
         Assert.Contains("required", exception.Message);

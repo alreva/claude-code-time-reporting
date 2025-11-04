@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
 using TimeReportingApi.GraphQL.Inputs;
@@ -17,10 +18,23 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
     private TimeReportingDbContext _context = null!;
     private Mutation _mutation = null!;
     private ValidationService _validator = null!;
+    private ClaimsPrincipal _testUser = null!;
 
     public UpdateTagsMutationTests(PostgresContainerFixture fixture)
     {
         _fixture = fixture;
+    }
+
+    private static ClaimsPrincipal CreateTestUser(string email = "test@example.com", string name = "Test User", string oid = "test-oid-123")
+    {
+        var claims = new List<Claim>
+        {
+            new Claim("email", email),
+            new Claim("name", name),
+            new Claim("oid", oid)
+        };
+        var identity = new ClaimsIdentity(claims, "Test");
+        return new ClaimsPrincipal(identity);
     }
 
     public async Task InitializeAsync()
@@ -32,6 +46,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
         _context = new TimeReportingDbContext(options);
         _validator = new ValidationService(_context);
         _mutation = new Mutation();
+        _testUser = CreateTestUser();
 
         await SeedTestDataAsync();
     }
@@ -143,7 +158,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
             new() { Name = "Billable", Value = "Yes" }
         };
 
-        var result = await _mutation.UpdateTags(entry.Id, newTags, _validator, _context);
+        var result = await _mutation.UpdateTags(entry.Id, newTags, _testUser, _validator, _context);
 
         // Assert
         Assert.NotNull(result);
@@ -190,7 +205,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
         _context.ChangeTracker.Clear();
 
         // Act - Clear all tags
-        var result = await _mutation.UpdateTags(entry.Id, new List<TagInput>(), _validator, _context);
+        var result = await _mutation.UpdateTags(entry.Id, new List<TagInput>(), _testUser, _validator, _context);
 
         // Assert
         Assert.NotNull(result);
@@ -226,7 +241,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
         };
 
         var exception = await Assert.ThrowsAsync<Exceptions.ValidationException>(
-            () => _mutation.UpdateTags(entry.Id, invalidTags, _validator, _context));
+            () => _mutation.UpdateTags(entry.Id, invalidTags, _testUser, _validator, _context));
 
         Assert.Equal("tags", exception.Field);
         Assert.Contains("InvalidTag", exception.Message);
@@ -261,7 +276,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
         };
 
         var exception = await Assert.ThrowsAsync<Exceptions.ValidationException>(
-            () => _mutation.UpdateTags(entry.Id, invalidTags, _validator, _context));
+            () => _mutation.UpdateTags(entry.Id, invalidTags, _testUser, _validator, _context));
 
         Assert.Equal("tags", exception.Field);
         Assert.Contains("InvalidValue", exception.Message);
@@ -293,7 +308,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
         var tags = new List<TagInput> { new() { Name = "Environment", Value = "Production" } };
 
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.UpdateTags(entry.Id, tags, _validator, _context));
+            () => _mutation.UpdateTags(entry.Id, tags, _testUser, _validator, _context));
 
         Assert.Contains("SUBMITTED", exception.Message);
     }
@@ -324,7 +339,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
         var tags = new List<TagInput> { new() { Name = "Environment", Value = "Production" } };
 
         var exception = await Assert.ThrowsAsync<Exceptions.BusinessRuleException>(
-            () => _mutation.UpdateTags(entry.Id, tags, _validator, _context));
+            () => _mutation.UpdateTags(entry.Id, tags, _testUser, _validator, _context));
 
         Assert.Contains("APPROVED", exception.Message);
         Assert.Contains("immutable", exception.Message);
@@ -354,7 +369,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
 
         // Act
         var tags = new List<TagInput> { new() { Name = "Environment", Value = "Production" } };
-        var result = await _mutation.UpdateTags(entry.Id, tags, _validator, _context);
+        var result = await _mutation.UpdateTags(entry.Id, tags, _testUser, _validator, _context);
 
         // Assert
         Assert.NotNull(result);
@@ -372,7 +387,7 @@ public class UpdateTagsMutationTests : IClassFixture<PostgresContainerFixture>, 
         var tags = new List<TagInput> { new() { Name = "Environment", Value = "Production" } };
 
         var exception = await Assert.ThrowsAsync<Exceptions.ValidationException>(
-            () => _mutation.UpdateTags(nonExistentId, tags, _validator, _context));
+            () => _mutation.UpdateTags(nonExistentId, tags, _testUser, _validator, _context));
 
         Assert.Equal("id", exception.Field);
         Assert.Contains(nonExistentId.ToString(), exception.Message);
