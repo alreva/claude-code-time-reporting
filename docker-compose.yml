@@ -53,6 +53,39 @@ services:
     networks:
       - time-reporting-network
 
+  # MCP WebSocket Server Service
+  mcp:
+    build:
+      context: .
+      dockerfile: TimeReportingMcp.WebSocket/Dockerfile
+    container_name: time-reporting-mcp
+    environment:
+      # ASP.NET Core Configuration
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:5002
+
+      # GraphQL API Connection
+      # IMPORTANT: Use 'api' service name to communicate within Docker network
+      GraphQL__ApiUrl: "http://api:5001/graphql"
+
+      # Azure AD Configuration for token acquisition
+      AzureAd__TenantId: ${AzureAd__TenantId}
+      AzureAd__ClientId: ${AzureAd__ClientId}
+    ports:
+      - "5002:5002"
+    depends_on:
+      api:
+        condition: service_healthy  # Wait for API to be healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:5002/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s  # Give MCP server time to start up
+    restart: unless-stopped
+    networks:
+      - time-reporting-network
+
 volumes:
   postgres_data:
     driver: local

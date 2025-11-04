@@ -7,6 +7,21 @@ using TimeReportingMcp.WebSocket.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen on port 5002
+// In production/Docker, listen on all interfaces (0.0.0.0)
+// In development, listen on localhost only for security
+builder.WebHost.ConfigureKestrel(options =>
+{
+    if (builder.Environment.IsProduction())
+    {
+        options.ListenAnyIP(5002);  // Listen on 0.0.0.0:5002 (all interfaces)
+    }
+    else
+    {
+        options.ListenLocalhost(5002);  // Listen on 127.0.0.1:5002 (localhost only)
+    }
+});
+
 // Add services
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<McpServer>();
@@ -119,19 +134,19 @@ app.MapGet("/", () => Results.Ok(new
     authentication = "Azure Entra ID (via Azure CLI)",
     endpoints = new
     {
-        websocket = "/mcp (ws://localhost:8080/mcp)",
+        websocket = "/mcp (ws://localhost:5002/mcp)",
         health = "/health"
     },
     instructions = new[]
     {
         "1. Ensure you are logged in: az login",
-        "2. Configure Claude Code to connect to ws://localhost:8080/mcp",
+        "2. Configure Claude Code to connect to ws://localhost:5002/mcp",
         "3. Use MCP tools to log time against projects"
     }
 }));
 
 app.Logger.LogInformation("Starting Time Reporting MCP WebSocket Server");
-app.Logger.LogInformation("WebSocket endpoint: ws://localhost:8080/mcp");
-app.Logger.LogInformation("Health check: http://localhost:8080/health");
+app.Logger.LogInformation("WebSocket endpoint: ws://localhost:5002/mcp");
+app.Logger.LogInformation("Health check: http://localhost:5002/health");
 
 await app.RunAsync();

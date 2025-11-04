@@ -5,7 +5,7 @@
 
 const WebSocket = require('ws');
 
-const ws = new WebSocket('ws://localhost:8080/mcp');
+const ws = new WebSocket('ws://localhost:5002/mcp');
 
 let messageId = 1;
 
@@ -21,7 +21,7 @@ function sendMessage(method, params = []) {
 }
 
 ws.on('open', () => {
-    console.log('✅ WebSocket connected to ws://localhost:8080/mcp');
+    console.log('✅ WebSocket connected to ws://localhost:5002/mcp');
 
     // Step 1: Initialize MCP session
     // StreamJsonRpc expects positional params array
