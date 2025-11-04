@@ -28,17 +28,34 @@ public class GetProjectsTool
                 activeOnly = activeOnlyElement.GetBoolean();
             }
 
-            // 2. Execute strongly-typed query
-            var result = await _client.GetAvailableProjects.ExecuteAsync(activeOnly);
+            // 2. Execute strongly-typed query (choose based on activeOnly)
+            List<IGetAvailableProjects_Projects> projects;
 
-            // 3. Handle errors
-            if (result.Errors is { Count: > 0 })
+            if (activeOnly)
             {
-                return CreateErrorResult(result.Errors);
+                var result = await _client.GetActiveProjects.ExecuteAsync();
+
+                if (result.Errors is { Count: > 0 })
+                {
+                    return CreateErrorResult(result.Errors);
+                }
+
+                projects = result.Data!.Projects.Cast<IGetAvailableProjects_Projects>().ToList();
+            }
+            else
+            {
+                var result = await _client.GetAvailableProjects.ExecuteAsync();
+
+                if (result.Errors is { Count: > 0 })
+                {
+                    return CreateErrorResult(result.Errors);
+                }
+
+                projects = result.Data!.Projects.ToList();
             }
 
-            // 4. Format and return response
-            var output = FormatProjects(result.Data!.Projects.ToList());
+            // 3. Format and return response
+            var output = FormatProjects(projects);
             return CreateSuccessResult(output);
         }
         catch (Exception ex)

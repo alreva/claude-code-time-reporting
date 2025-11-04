@@ -1,5 +1,24 @@
-query GetAvailableProjects($activeOnly: Boolean!) {
-  projects(where: { isActive: { eq: $activeOnly } }) {
+query GetAvailableProjects {
+  projects {
+    code
+    name
+    isActive
+    availableTasks {
+      taskName
+      isActive
+    }
+    tags {
+      tagName
+      isActive
+      allowedValues {
+        value
+      }
+    }
+  }
+}
+
+query GetActiveProjects {
+  projects(where: { isActive: { eq: true } }) {
     code
     name
     isActive
