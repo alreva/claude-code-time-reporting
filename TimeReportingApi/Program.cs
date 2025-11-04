@@ -52,6 +52,7 @@ builder.Services
     .AddGraphQLServer()
     .AddQueryType<Query>()
     .AddMutationType<Mutation>()
+    .AddAuthorization()      // Enable @authorize directive for HotChocolate
     .AddProjections()        // Enable field selection optimization
     .AddFiltering()          // Enable filtering
     .AddSorting()            // Enable sorting
