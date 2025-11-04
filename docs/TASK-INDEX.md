@@ -286,47 +286,6 @@
 
 ---
 
-## Phase 14: WebSocket MCP with Azure Entra ID (6 tasks)
-
-| # | Task | Description | Est. Time | Status | Details |
-|---|------|-------------|-----------|--------|---------|
-| 14.1 | Database User Tracking | Add user_id, user_email, user_name columns to time_entries table | 1 hr | ☐ Pending | Create |
-| 14.2 | API Authentication Setup | Configure Microsoft.Identity.Web for Entra ID token validation | 1.5 hrs | ☐ Pending | Create |
-| 14.3 | User Context Extraction | Extract user claims from tokens in GraphQL resolvers | 2 hrs | ☐ Pending | Create |
-| 14.4 | WebSocket MCP Server | Create new ASP.NET Core project with StreamJsonRpc WebSocket endpoint | 3-4 hrs | ☐ Pending | Create |
-| 14.5 | Azure CLI Token Integration | Implement TokenService with AzureCliCredential for token pass-through | 2-3 hrs | ☐ Pending | Create |
-| 14.6 | Integration Testing | Test end-to-end flow with Entra ID authentication | 2 hrs | ☐ Pending | Create |
-
-**Phase 14 Total:** 11.5-13.5 hours
-
-**Key Deliverables:**
-- `db/schema/migrations/003_add_user_tracking.sql` - User tracking columns
-- `TimeReportingApi/Program.cs` - Microsoft.Identity.Web authentication
-- `TimeReportingApi/appsettings.json` - Azure AD configuration
-- `TimeReportingApi/GraphQL/Mutation.cs` - User context extraction in mutations
-- `TimeReportingMcp.WebSocket/` - New WebSocket MCP server project
-- `TimeReportingMcp.WebSocket/Program.cs` - WebSocket endpoint with StreamJsonRpc
-- `TimeReportingMcp.WebSocket/Services/TokenService.cs` - AzureCliCredential integration
-- `TimeReportingMcp.WebSocket.Tests/` - Integration tests
-
-**Benefits:**
-- ✅ Individual user tracking (essential for time reporting)
-- ✅ Secure authentication via Azure Entra ID
-- ✅ Token pass-through leverages existing `az login`
-- ✅ Remote MCP server deployment ready
-- ✅ Native JSON-RPC 2.0 via StreamJsonRpc
-- ✅ Backward compatible (v1 stdio server unchanged)
-
-**Prerequisites:**
-- Azure Entra ID tenant and app registration
-- Developers authenticated via `az login`
-- .NET 10 SDK
-
-**Related:**
-- [ADR 0010 - WebSocket MCP Transport with Azure Entra ID Authentication](../adr/0010-websocket-mcp-with-entra-id.md)
-
----
-
 ## Summary
 
 ### Total Time Estimate
@@ -346,13 +305,12 @@
 | Phase 11 | 5 | 5.5 |
 | Phase 12 | 5 | 5-6 |
 | Phase 13 | 4 | 4.5-5.5 |
-| Phase 14 | 6 | 11.5-13.5 |
-| **TOTAL** | **71** | **69.5-86 hours** |
+| **TOTAL** | **65** | **58-72.5 hours** |
 
 **Estimated Project Duration:**
-- **Full-time (8 hrs/day):** 8.5-11 working days
-- **Part-time (4 hrs/day):** 17-21.5 working days
-- **Side project (2 hrs/day):** 34.5-43 days
+- **Full-time (8 hrs/day):** 7-9 working days
+- **Part-time (4 hrs/day):** 14.5-18 working days
+- **Side project (2 hrs/day):** 29-36 days
 
 ---
 

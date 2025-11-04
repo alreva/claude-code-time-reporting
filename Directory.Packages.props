@@ -39,6 +39,11 @@
     <!-- Direct PostgreSQL connections for testing -->
     <PackageVersion Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
+  <ItemGroup Label="Logging Dependencies">
+    <!-- Microsoft Extensions Logging -->
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.10" />
+  </ItemGroup>
   <ItemGroup Label="Analyzer Dependencies">
     <!-- Roslyn Analyzers - Explicit versions to resolve EF Core Design conflicts (per dotnet/efcore#35143) -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
@@ -60,9 +65,9 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.1" />
   </ItemGroup>
-  <ItemGroup Label="Phase 14 - WebSocket MCP and Azure Entra ID">
-    <!-- StreamJsonRpc for WebSocket JSON-RPC 2.0 transport -->
-    <PackageVersion Include="StreamJsonRpc" Version="2.22.23" />
+  <ItemGroup Label="Phase 14 - SSE MCP and Azure Entra ID">
+    <!-- MCP SDK for SSE transport -->
+    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.6" />
     <!-- Azure Identity for AzureCliCredential token pass-through -->
     <PackageVersion Include="Azure.Identity" Version="1.17.0" />
     <!-- Microsoft Identity Web for API token validation -->

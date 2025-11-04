@@ -1,8 +1,11 @@
 {
   "mcpServers": {
     "time-reporting": {
-      "url": "http://localhost:5002/sse",
-      "transport": "sse"
+      "command": "dotnet",
+      "args": ["run", "--project", "TimeReportingMcp"],
+      "env": {
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql"
+      }
     }
   }
 }

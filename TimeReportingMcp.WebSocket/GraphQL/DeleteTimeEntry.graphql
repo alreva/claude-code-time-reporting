@@ -1,3 +1,0 @@
-mutation DeleteTimeEntry($id: UUID!) {
-  deleteTimeEntry(id: $id)
-}

@@ -1,7 +1,9 @@
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace TimeReportingMcp.WebSocket.Services;
+namespace TimeReportingMcp.Services;
 
 /// <summary>
 /// Service for acquiring Azure Entra ID access tokens via Azure CLI authentication.

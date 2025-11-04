@@ -96,7 +96,7 @@ What other options did we evaluate and why did we reject them?
 | [0007](0007-testcontainers-for-integration-tests.md) | Testcontainers for Integration Tests | Accepted | 2025-10-28 |
 | [0008](0008-direct-mutation-implementation.md) | Direct Mutation Implementation Pattern | Accepted | 2025-10-28 |
 | [0009](0009-strawberryshake-typed-graphql-client.md) | StrawberryShake Typed GraphQL Client | Accepted | 2025-10-29 |
-| [0010](0010-websocket-mcp-with-entra-id.md) | WebSocket MCP Transport with Azure Entra ID Authentication | Accepted | 2025-10-31 |
+| [0010](0010-websocket-mcp-with-entra-id.md) | WebSocket MCP Transport with Azure Entra ID Authentication | Superseded | 2025-10-31 |
 
 ## Process for Claude Code
 

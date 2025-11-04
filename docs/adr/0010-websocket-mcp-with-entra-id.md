@@ -2,7 +2,9 @@
 
 ## Status
 
-**Accepted**
+**Superseded**
+
+This decision has been superseded. The WebSocket MCP implementation has been removed in favor of the stdio transport approach.
 
 ## Context
 

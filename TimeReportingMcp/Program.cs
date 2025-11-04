@@ -2,7 +2,9 @@ using System;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TimeReportingMcp.Generated;
+using TimeReportingMcp.Services;
 using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp;
@@ -15,26 +17,59 @@ class Program
         {
             Console.Error.WriteLine("TimeReporting MCP Server starting...");
 
-            // Build configuration from environment variables (same approach as GraphQL API)
+            // Build configuration from environment variables
             var configuration = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
+                .AddJsonFile("appsettings.json", optional: true)
                 .Build();
 
-            // Load configuration
-            var config = new McpConfig(configuration);
-            config.Validate();
+            // Load GraphQL API URL
+            var graphqlApiUrl = configuration["GRAPHQL_API_URL"]
+                ?? configuration["GraphQL:ApiUrl"]
+                ?? throw new InvalidOperationException("GRAPHQL_API_URL not configured");
 
-            // Configure dependency injection with StrawberryShake
+            var azureAdScope = configuration["AzureAd:ApiScope"]
+                ?? "api://8b3f87d7-bc23-4932-88b5-f24056999600/.default";
+
+            Console.Error.WriteLine($"GraphQL API: {graphqlApiUrl}");
+            Console.Error.WriteLine($"Azure AD Scope: {azureAdScope}");
+
+            // Configure dependency injection
             var services = new ServiceCollection();
 
-            // Add StrawberryShake GraphQL client
+            // Add logging
+            services.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.SetMinimumLevel(LogLevel.Information);
+            });
+
+            // Add TokenService for Azure CLI authentication
+            services.AddSingleton<TokenService>(sp =>
+            {
+                var config = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["AzureAd:ApiScope"] = azureAdScope
+                    })
+                    .Build();
+                var logger = sp.GetRequiredService<ILogger<TokenService>>();
+                return new TokenService(config, logger);
+            });
+
+            // Add StrawberryShake GraphQL client with token from TokenService
             services
                 .AddTimeReportingClient()
-                .ConfigureHttpClient(client =>
+                .ConfigureHttpClient(async (sp, client) =>
                 {
-                    client.BaseAddress = new Uri(config.GraphQLApiUrl);
+                    client.BaseAddress = new Uri(graphqlApiUrl);
+
+                    // Acquire token from Azure CLI
+                    var tokenService = sp.GetRequiredService<TokenService>();
+                    var token = await tokenService.GetTokenAsync();
+
                     client.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", config.BearerToken);
+                        new AuthenticationHeaderValue("Bearer", token);
                 });
 
             var serviceProvider = services.BuildServiceProvider();

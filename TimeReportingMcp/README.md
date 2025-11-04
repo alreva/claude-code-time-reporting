@@ -1,23 +1,4 @@
-# ⚠️  DEPRECATED: TimeReporting MCP Server (stdio)
-
-**This stdio-based MCP server is deprecated and should not be used.**
-
-**Issue:** The stdio-based MCP server does not work properly with Azure Entra ID token acquisition. Token refresh fails due to stdio transport limitations.
-
-**Replacement:** Use `TimeReportingMcp.WebSocket` instead, which:
-- Runs as a containerized service on port 5002
-- Properly handles Azure Entra ID token acquisition
-- Uses WebSocket transport with StreamJsonRpc
-- Integrates with the full Docker stack (postgres + api + mcp)
-
-**How to use the new WebSocket MCP:**
-1. Start the stack: `podman compose up -d`
-2. MCP server available at: `ws://localhost:5002/mcp`
-3. Claude Code connects automatically via `.mcp.json` configuration
-
----
-
-# TimeReporting MCP Server (stdio) - LEGACY
+# TimeReporting MCP Server (stdio)
 
 A lightweight C# console application that bridges Claude Code to the TimeReporting GraphQL API.
 
