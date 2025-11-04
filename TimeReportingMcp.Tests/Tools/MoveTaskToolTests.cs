@@ -22,17 +22,8 @@ public class MoveTaskToolTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // Set environment variables for testing
-        Environment.SetEnvironmentVariable("GRAPHQL_API_URL",
-            Environment.GetEnvironmentVariable("GRAPHQL_API_URL") ?? "http://localhost:5001/graphql");
-        Environment.SetEnvironmentVariable("Authentication__BearerToken",
-            Environment.GetEnvironmentVariable("Authentication__BearerToken") ?? "test-token-12345");
-
-        // Check if API is available
-        var configuration = new ConfigurationBuilder()
-            .AddEnvironmentVariables()
-            .Build();
-        var config = new McpConfig(configuration);
+        // Get API URL from environment
+        var apiUrl = Environment.GetEnvironmentVariable("GRAPHQL_API_URL") ?? "http://localhost:5001/graphql";
 
         // Configure dependency injection with StrawberryShake
         var services = new ServiceCollection();
@@ -40,9 +31,8 @@ public class MoveTaskToolTests : IAsyncLifetime
             .AddTimeReportingClient()
             .ConfigureHttpClient(client =>
             {
-                client.BaseAddress = new Uri(config.GraphQLApiUrl);
-                client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", config.BearerToken);
+                client.BaseAddress = new Uri(apiUrl);
+                // Note: Tests use Azure AD JWT authentication, not bearer token
             });
 
         _serviceProvider = services.BuildServiceProvider();
@@ -53,7 +43,7 @@ public class MoveTaskToolTests : IAsyncLifetime
         // Test API connectivity
         try
         {
-            var result = await _client.GetAvailableProjects.ExecuteAsync(true);
+            var result = await _client.GetAvailableProjects.ExecuteAsync(CancellationToken.None);
             _apiAvailable = result.Errors == null || result.Errors.Count == 0;
 
             // Create a test entry to use for move operations

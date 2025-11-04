@@ -17,7 +17,7 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
     public TimeEntriesQuerySchemaTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
-        _client = _factory.CreateDefaultClient(new AuthenticationHandler(factory.BearerToken));
+        _client = _factory.CreateDefaultClient(new AuthenticationHandler("test-bearer-token-12345"));
     }
 
     private async Task<JsonDocument> ExecuteGraphQL(string query)

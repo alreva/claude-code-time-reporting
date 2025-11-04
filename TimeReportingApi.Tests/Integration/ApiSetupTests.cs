@@ -11,7 +11,7 @@ public class ApiSetupTests : IClassFixture<TestWebApplicationFactory>
     public ApiSetupTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
-        _testToken = factory.BearerToken;
+        _testToken = "test-bearer-token-12345";
     }
 
     [Fact]

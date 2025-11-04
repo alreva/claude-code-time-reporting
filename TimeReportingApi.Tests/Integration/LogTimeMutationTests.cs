@@ -50,9 +50,6 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
                         options.UseNpgsql(_fixture.ConnectionString);
                     });
                 });
-
-                // Use test bearer token
-                builder.UseSetting("Authentication:BearerToken", "test-bearer-token-12345");
             });
 
         _client = _factory.CreateDefaultClient(new AuthenticationHandler("test-bearer-token-12345"));

@@ -4,7 +4,6 @@ using Microsoft.Identity.Web;
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
 using TimeReportingApi.GraphQL.Errors;
-using TimeReportingApi.Middleware;
 using TimeReportingApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);

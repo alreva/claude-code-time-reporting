@@ -16,7 +16,7 @@ public class SimpleQueryTest : IClassFixture<TestWebApplicationFactory>
     public SimpleQueryTest(TestWebApplicationFactory factory)
     {
         _factory = factory;
-        _client = _factory.CreateDefaultClient(new AuthenticationHandler(factory.BearerToken));
+        _client = _factory.CreateDefaultClient(new AuthenticationHandler("test-bearer-token-12345"));
     }
 
     [Fact]
