@@ -395,6 +395,21 @@ PostgreSQL Database
 3. **MCP Server** - Lightweight C# console app that bridges Claude Code to the GraphQL API (just reads JSON from stdin, calls GraphQL, writes JSON to stdout)
 4. **Claude Code Integration** - MCP server provides 7 tools for time tracking operations
 
+### Database Schema & Seeding
+
+**Schema Management:** EF Core Code-First Migrations
+- **Location**: `TimeReportingApi/Migrations/`
+- **Apply migrations**: Automatically applied on API startup OR use `/ef-migration` slash command
+- **Create new migration**: `dotnet ef migrations add <MigrationName> --project TimeReportingApi`
+
+**Seed Data:** TimeReportingSeeder Console Application
+- **Location**: `TimeReportingSeeder/`
+- **Purpose**: Populate database with sample projects, tasks, tags, and time entries
+- **Run seeder**: Use `/seed-db` slash command OR `dotnet run --project TimeReportingSeeder`
+- **Data seeded**: Projects (INTERNAL, CLIENT-A, MAINT), tasks, tag configurations, sample time entries with user information
+
+**IMPORTANT**: Do NOT use SQL files - all schema changes are managed via EF Core migrations, and seed data is managed via the TimeReportingSeeder project.
+
 ### StrawberryShake Typed GraphQL Client
 
 The MCP server uses **StrawberryShake 15** for strongly-typed GraphQL client code generation:

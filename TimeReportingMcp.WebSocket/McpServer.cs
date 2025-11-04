@@ -116,11 +116,16 @@ public class McpServer
     [JsonRpcMethod("tools/call")]
     public async Task<object> CallTool(JsonElement toolParams)
     {
-        _logger.LogInformation("Tool call received: {Params}", toolParams);
+        _logger.LogInformation("Tool call received. ValueKind: {Kind}, Raw: {Params}", toolParams.ValueKind, toolParams.GetRawText());
 
         try
         {
             // Parse tool name and arguments
+            if (toolParams.ValueKind != JsonValueKind.Object)
+            {
+                return CreateErrorResponse($"Expected object, got {toolParams.ValueKind}");
+            }
+
             if (!toolParams.TryGetProperty("name", out var nameElement))
             {
                 return CreateErrorResponse("Missing 'name' property in tool call");
