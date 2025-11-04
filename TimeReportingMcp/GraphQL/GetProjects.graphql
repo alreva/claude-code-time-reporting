@@ -16,22 +16,3 @@ query GetAvailableProjects {
     }
   }
 }
-
-query GetActiveProjects {
-  projects(where: { isActive: { eq: true } }) {
-    code
-    name
-    isActive
-    availableTasks {
-      taskName
-      isActive
-    }
-    tags {
-      tagName
-      isActive
-      allowedValues {
-        value
-      }
-    }
-  }
-}

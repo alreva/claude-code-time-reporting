@@ -21,40 +21,17 @@ public class GetProjectsTool
     {
         try
         {
-            // 1. Parse arguments
-            var activeOnly = true; // default
-            if (arguments.TryGetProperty("activeOnly", out var activeOnlyElement))
+            // 1. Execute query to get all projects
+            var result = await _client.GetAvailableProjects.ExecuteAsync();
+
+            // 2. Handle errors
+            if (result.Errors is { Count: > 0 })
             {
-                activeOnly = activeOnlyElement.GetBoolean();
-            }
-
-            // 2. Execute strongly-typed query (choose based on activeOnly)
-            List<IGetAvailableProjects_Projects> projects;
-
-            if (activeOnly)
-            {
-                var result = await _client.GetActiveProjects.ExecuteAsync();
-
-                if (result.Errors is { Count: > 0 })
-                {
-                    return CreateErrorResult(result.Errors);
-                }
-
-                projects = result.Data!.Projects.Cast<IGetAvailableProjects_Projects>().ToList();
-            }
-            else
-            {
-                var result = await _client.GetAvailableProjects.ExecuteAsync();
-
-                if (result.Errors is { Count: > 0 })
-                {
-                    return CreateErrorResult(result.Errors);
-                }
-
-                projects = result.Data!.Projects.ToList();
+                return CreateErrorResult(result.Errors);
             }
 
             // 3. Format and return response
+            var projects = result.Data!.Projects.ToList();
             var output = FormatProjects(projects);
             return CreateSuccessResult(output);
         }
