@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Common properties inherited from Directory.Build.props -->
+  <!-- TargetFramework, Nullable, ImplicitUsings, TreatWarningsAsErrors, etc. -->
+
+  <ItemGroup>
+    <!-- Package versions managed in Directory.Packages.props -->
+    <PackageReference Include="StreamJsonRpc" />
+    <PackageReference Include="Azure.Identity" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Global usings for MCP WebSocket server -->
+    <Using Include="System.Net.WebSockets" />
+  </ItemGroup>
+
+</Project>

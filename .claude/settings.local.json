@@ -44,7 +44,8 @@
       "mcp__time-reporting__query_time_entries",
       "mcp__time-reporting__submit_time_entry",
       "mcp__time-reporting__update_time_entry",
-      "mcp__time-reporting__move_task_to_project"
+      "mcp__time-reporting__move_task_to_project",
+      "SlashCommand(/ef-migration:*)"
     ],
     "deny": [],
     "ask": []
