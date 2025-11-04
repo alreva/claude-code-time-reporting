@@ -68,7 +68,7 @@
     <!-- Microsoft Identity Web for API token validation -->
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.0.1" />
     <!-- JWT Bearer Authentication (aligned with .NET 10 RC2) -->
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0-rc.2.24564.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0-rc.2.25502.107" />
     <!-- System.IdentityModel Tokens for JWT handling -->
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>

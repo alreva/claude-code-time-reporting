@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
 using TimeReportingApi.GraphQL.Errors;
@@ -5,6 +8,11 @@ using TimeReportingApi.Middleware;
 using TimeReportingApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Disable default claim type mapping to preserve original JWT claim names
+// This allows us to access claims like "email", "oid", "name" directly
+// instead of mapped URIs like "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 // Configure Kestrel to listen on port 5001 (5000 is used by macOS AirPlay)
 // In production/Docker, listen on all interfaces (0.0.0.0)
@@ -27,6 +35,17 @@ builder.Services.AddDbContext<TimeReportingDbContext>(options =>
 
 // Add business services
 builder.Services.AddScoped<ValidationService>();
+
+// Add HTTP context accessor for accessing user claims in services
+builder.Services.AddHttpContextAccessor();
+
+// Add Microsoft.Identity.Web authentication
+// This validates Azure Entra ID JWT tokens and extracts user claims
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+// Add authorization services
+builder.Services.AddAuthorization();
 
 // Add services to the container
 builder.Services
@@ -64,8 +83,10 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-// Add Bearer token authentication
-app.UseBearerAuthentication();
+// Add authentication and authorization middleware
+// Order matters: Authentication must come before Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 
