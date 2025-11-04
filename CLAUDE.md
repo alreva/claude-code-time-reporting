@@ -18,7 +18,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Write Test → Run /test (FAIL ❌) → Write Code → Run /test (PASS ✅) → Commit
 ```
 
-**Available Commands:** `/build`, `/test`, `/run-api`, `/db-start` (see full list below)
+**Available Commands:** `/build`, `/test`, `/deploy`, `/db-start` (see full list below)
+**Note:** Use `/deploy` by default for API deployment (containerized), not `/run-api`
 
 ---
 
@@ -460,7 +461,8 @@ Custom slash commands are defined in `.claude/commands/`. **YOU HAVE PERMISSION*
 - **`/test-mcp`** - Run MCP Server tests only
 
 #### Run Commands
-- **`/run-api`** - Run the GraphQL API with hot reload (http://localhost:5001)
+- **`/deploy`** - Build and deploy the full Docker stack (PostgreSQL + API) - **USE THIS BY DEFAULT**
+- **`/run-api`** - Run the GraphQL API locally with hot reload (http://localhost:5001) - **ONLY when explicitly needed for debugging**
 - **`/run-mcp`** - Run the MCP Server (normally started by Claude Code automatically)
 - **`/stop-api`** - Stop the running GraphQL API
 - **`/stop-mcp`** - Stop the running MCP Server
@@ -475,13 +477,27 @@ Custom slash commands are defined in `.claude/commands/`. **YOU HAVE PERMISSION*
 #### Entity Framework Commands
 - **`/ef-migration`** - Create and apply Entity Framework migrations
 
+#### Deployment Commands
+- **`/seed-db`** - Run database seeder to populate seed data
+
 ### Usage Pattern
 
+**Default workflow (containerized deployment):**
 After making code changes:
 1. Run `/build` to compile
 2. Run `/test` to verify tests pass
-3. Run `/run-api` to start the server
+3. Run `/deploy` to deploy the full stack (PostgreSQL + API in containers)
 4. Test your changes in GraphQL Playground (http://localhost:5001/graphql)
+
+**Alternative workflow (local development with hot reload):**
+Only use this when you need rapid iteration or debugging:
+1. Run `/build` to compile
+2. Run `/test` to verify tests pass
+3. Run `/db-start` to start PostgreSQL container
+4. Run `/run-api` to start API locally with hot reload
+5. Test your changes in GraphQL Playground (http://localhost:5001/graphql)
+
+**IMPORTANT:** By default, always use `/deploy` for a production-like containerized environment. Only use `/run-api` when explicitly requested or when you need hot reload for rapid development iterations.
 
 ### Why Slash Commands?
 
