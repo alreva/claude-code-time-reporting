@@ -1,7 +1,8 @@
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "./run-mcp.sh"
+      "url": "ws://localhost:5002/mcp",
+      "transport": "websocket"
     }
   }
 }

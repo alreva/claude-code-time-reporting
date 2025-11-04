@@ -1,7 +1,28 @@
 #!/bin/bash
 
-# MCP Server Wrapper Script
-# Checks that environment variables are set and runs the MCP server
+# ⚠️  DEPRECATED: This stdio-based MCP server does not work properly with Azure Entra ID tokens
+#
+# Use the WebSocket MCP server instead:
+#   - The server runs in Docker on port 5002
+#   - Start with: podman compose up -d
+#   - Configure Claude Code to connect to: ws://localhost:5002/mcp
+#   - See .mcp.json for WebSocket configuration
+#
+# This script is kept for reference only and should not be used.
+
+echo "⚠️  DEPRECATED: This stdio-based MCP server is deprecated"
+echo ""
+echo "The stdio MCP server does not work properly with Azure Entra ID token acquisition."
+echo ""
+echo "Please use the WebSocket MCP server instead:"
+echo "  1. Start the full stack: podman compose up -d"
+echo "  2. MCP server will be available at: ws://localhost:5002/mcp"
+echo "  3. Claude Code is configured via .mcp.json to connect automatically"
+echo ""
+exit 1
+
+# OLD CODE BELOW - DO NOT USE
+# ============================================================
 
 set -e
 
