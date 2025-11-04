@@ -1,4 +1,6 @@
+using System.Text.Json;
 using StreamJsonRpc;
+using TimeReportingMcp.WebSocket.Generated;
 using TimeReportingMcp.WebSocket.Services;
 
 namespace TimeReportingMcp.WebSocket;
@@ -22,17 +24,14 @@ namespace TimeReportingMcp.WebSocket;
 /// </remarks>
 public class McpServer
 {
-    private readonly TokenService _tokenService;
-    private readonly IConfiguration _configuration;
+    private readonly ITimeReportingClient _client;
     private readonly ILogger<McpServer> _logger;
 
     public McpServer(
-        TokenService tokenService,
-        IConfiguration configuration,
+        ITimeReportingClient client,
         ILogger<McpServer> logger)
     {
-        _tokenService = tokenService;
-        _configuration = configuration;
+        _client = client;
         _logger = logger;
     }
 
@@ -115,28 +114,255 @@ public class McpServer
     /// MCP tools/call method. Executes a specific tool.
     /// </summary>
     [JsonRpcMethod("tools/call")]
-    public Task<object> CallTool(object toolParams)
+    public async Task<object> CallTool(JsonElement toolParams)
     {
         _logger.LogInformation("Tool call received: {Params}", toolParams);
 
-        // TODO: Parse toolParams, extract tool name and arguments
-        // TODO: Acquire token via TokenService
-        // TODO: Call GraphQL API with token
-        // TODO: Return formatted result
+        try
+        {
+            // Parse tool name and arguments
+            if (!toolParams.TryGetProperty("name", out var nameElement))
+            {
+                return CreateErrorResponse("Missing 'name' property in tool call");
+            }
 
-        // Placeholder response
-        var result = new
+            var toolName = nameElement.GetString();
+            if (string.IsNullOrEmpty(toolName))
+            {
+                return CreateErrorResponse("Tool name cannot be empty");
+            }
+
+            if (!toolParams.TryGetProperty("arguments", out var argsElement))
+            {
+                return CreateErrorResponse("Missing 'arguments' property in tool call");
+            }
+
+            _logger.LogInformation("Executing tool: {ToolName}", toolName);
+
+            // Execute tool based on name using StrawberryShake generated client
+            return toolName switch
+            {
+                "log_time" => await ExecuteLogTime(argsElement),
+                "get_available_projects" => await ExecuteGetAvailableProjects(argsElement),
+                "query_time_entries" => await ExecuteQueryTimeEntries(argsElement),
+                "update_time_entry" => await ExecuteUpdateTimeEntry(argsElement),
+                "submit_time_entry" => await ExecuteSubmitTimeEntry(argsElement),
+                "move_task_to_project" => await ExecuteMoveTaskToProject(argsElement),
+                "delete_time_entry" => await ExecuteDeleteTimeEntry(argsElement),
+                _ => CreateErrorResponse($"Unknown tool: {toolName}")
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error executing tool");
+            return CreateErrorResponse($"Tool execution failed: {ex.Message}");
+        }
+    }
+
+    private object CreateErrorResponse(string errorMessage)
+    {
+        _logger.LogError("Tool execution error: {Error}", errorMessage);
+        return new
         {
             content = new[]
             {
                 new
                 {
                     type = "text",
-                    text = "Tool execution not yet implemented. Coming in Task 14.5."
+                    text = $"❌ Error: {errorMessage}"
+                }
+            },
+            isError = true
+        };
+    }
+
+    private async Task<object> ExecuteLogTime(JsonElement args)
+    {
+        // Parse arguments into strongly-typed input
+        var projectCode = args.GetProperty("projectCode").GetString()!;
+        var task = args.GetProperty("task").GetString()!;
+        var standardHours = (decimal)args.GetProperty("standardHours").GetDouble();
+        var startDate = DateOnly.Parse(args.GetProperty("startDate").GetString()!);
+        var completionDate = DateOnly.Parse(args.GetProperty("completionDate").GetString()!);
+
+        decimal? overtimeHours = args.TryGetProperty("overtimeHours", out var ot) ? (decimal)ot.GetDouble() : null;
+        var description = args.TryGetProperty("description", out var desc) ? desc.GetString() : null;
+        var issueId = args.TryGetProperty("issueId", out var issue) ? issue.GetString() : null;
+
+        // Parse tags if provided
+        List<TagInput>? tags = null;
+        if (args.TryGetProperty("tags", out var tagsElement))
+        {
+            tags = JsonSerializer.Deserialize<List<TagInput>>(tagsElement.GetRawText());
+        }
+
+        var input = new LogTimeInput
+        {
+            ProjectCode = projectCode,
+            Task = task,
+            StandardHours = standardHours,
+            OvertimeHours = overtimeHours,
+            StartDate = startDate,
+            CompletionDate = completionDate,
+            Description = description,
+            IssueId = issueId,
+            Tags = tags
+        };
+
+        // Execute strongly-typed mutation
+        var result = await _client.LogTime.ExecuteAsync(input);
+
+        // Handle errors
+        if (result.Errors is { Count: > 0 })
+        {
+            var errorMessage = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+            return CreateErrorResponse($"GraphQL error:\n{errorMessage}");
+        }
+
+        // Format success response
+        var entry = result.Data!.LogTime;
+        var message = $"✅ Time entry logged successfully!\n\n" +
+                      $"ID: {entry.Id}\n" +
+                      $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
+                      $"Task: {entry.ProjectTask.TaskName}\n" +
+                      $"Hours: {entry.StandardHours} standard";
+
+        if (entry.OvertimeHours > 0)
+        {
+            message += $", {entry.OvertimeHours} overtime";
+        }
+
+        message += $"\nPeriod: {entry.StartDate} to {entry.CompletionDate}\n" +
+                   $"Status: {entry.Status}";
+
+        if (!string.IsNullOrEmpty(entry.Description))
+        {
+            message += $"\nDescription: {entry.Description}";
+        }
+
+        if (!string.IsNullOrEmpty(entry.IssueId))
+        {
+            message += $"\nIssue: {entry.IssueId}";
+        }
+
+        return new
+        {
+            content = new[]
+            {
+                new
+                {
+                    type = "text",
+                    text = message
                 }
             }
         };
+    }
 
-        return Task.FromResult<object>(result);
+    private async Task<object> ExecuteGetAvailableProjects(JsonElement args)
+    {
+        var activeOnly = args.TryGetProperty("activeOnly", out var active) ? active.GetBoolean() : true;
+
+        // Execute strongly-typed query
+        var result = await _client.GetAvailableProjects.ExecuteAsync(activeOnly);
+
+        // Handle errors
+        if (result.Errors is { Count: > 0 })
+        {
+            var errorMessage = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+            return CreateErrorResponse($"GraphQL error:\n{errorMessage}");
+        }
+
+        // Format projects
+        var projects = result.Data!.Projects.ToList();
+        if (projects.Count == 0)
+        {
+            return new
+            {
+                content = new[]
+                {
+                    new
+                    {
+                        type = "text",
+                        text = "No projects found."
+                    }
+                }
+            };
+        }
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Available Projects ({projects.Count}):\n");
+
+        foreach (var project in projects)
+        {
+            sb.AppendLine($"📊 {project.Code} - {project.Name}");
+            sb.AppendLine($"   Status: {(project.IsActive ? "Active" : "Inactive")}");
+
+            // Tasks
+            var activeTasks = project.AvailableTasks.Where(t => t.IsActive).ToList();
+            if (activeTasks.Any())
+            {
+                sb.AppendLine($"   Tasks: {string.Join(", ", activeTasks.Select(t => t.TaskName))}");
+            }
+            else
+            {
+                sb.AppendLine("   Tasks: None");
+            }
+
+            // Tags
+            var activeTags = project.Tags.Where(t => t.IsActive).ToList();
+            if (activeTags.Any())
+            {
+                sb.AppendLine("   Tags:");
+                foreach (var tag in activeTags)
+                {
+                    var values = string.Join(", ", tag.AllowedValues.Select(v => v.Value));
+                    sb.AppendLine($"     • {tag.TagName}: {values}");
+                }
+            }
+
+            sb.AppendLine();
+        }
+
+        return new
+        {
+            content = new[]
+            {
+                new
+                {
+                    type = "text",
+                    text = sb.ToString()
+                }
+            }
+        };
+    }
+
+    private Task<object> ExecuteQueryTimeEntries(JsonElement args)
+    {
+        // TODO: Implement query_time_entries tool using StrawberryShake
+        return Task.FromResult(CreateErrorResponse("query_time_entries tool not yet implemented"));
+    }
+
+    private Task<object> ExecuteUpdateTimeEntry(JsonElement args)
+    {
+        // TODO: Implement update_time_entry tool using StrawberryShake
+        return Task.FromResult(CreateErrorResponse("update_time_entry tool not yet implemented"));
+    }
+
+    private Task<object> ExecuteSubmitTimeEntry(JsonElement args)
+    {
+        // TODO: Implement submit_time_entry tool using StrawberryShake
+        return Task.FromResult(CreateErrorResponse("submit_time_entry tool not yet implemented"));
+    }
+
+    private Task<object> ExecuteMoveTaskToProject(JsonElement args)
+    {
+        // TODO: Implement move_task_to_project tool using StrawberryShake
+        return Task.FromResult(CreateErrorResponse("move_task_to_project tool not yet implemented"));
+    }
+
+    private Task<object> ExecuteDeleteTimeEntry(JsonElement args)
+    {
+        // TODO: Implement delete_time_entry tool using StrawberryShake
+        return Task.FromResult(CreateErrorResponse("delete_time_entry tool not yet implemented"));
     }
 }

@@ -1,0 +1,35 @@
+query QueryTimeEntries(
+  $where: TimeEntryFilterInput
+) {
+  timeEntries(where: $where) {
+    nodes {
+      id
+      project {
+        code
+        name
+      }
+      projectTask {
+        taskName
+      }
+      standardHours
+      overtimeHours
+      startDate
+      completionDate
+      status
+      description
+      issueId
+      tags {
+        id
+        tagValue {
+          id
+          value
+          projectTag {
+            tagName
+          }
+        }
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}

@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using StreamJsonRpc;
 using TimeReportingMcp.WebSocket;
+using TimeReportingMcp.WebSocket.Generated;
 using TimeReportingMcp.WebSocket.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +10,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddScoped<McpServer>();
+
+// Add StrawberryShake GraphQL client with token authentication
+var apiUrl = builder.Configuration["GraphQL:ApiUrl"];
+if (string.IsNullOrEmpty(apiUrl))
+{
+    throw new InvalidOperationException("GraphQL:ApiUrl not configured in appsettings.json");
+}
+
+builder.Services
+    .AddTimeReportingClient()
+    .ConfigureHttpClient(async (serviceProvider, client) =>
+    {
+        client.BaseAddress = new Uri(apiUrl);
+
+        // Acquire token from TokenService
+        var tokenService = serviceProvider.GetRequiredService<TokenService>();
+        var token = await tokenService.GetTokenAsync();
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    });
 
 // Add logging
 builder.Logging.ClearProviders();
