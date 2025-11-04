@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TimeReportingMcp.Generated;
+using TimeReportingMcp.Handlers;
 using TimeReportingMcp.Services;
 using TimeReportingMcp.Utils;
 
@@ -57,6 +58,15 @@ class Program
                 return new TokenService(config, logger);
             });
 
+            // Add TokenRefreshHandler as a transient service for automatic token refresh on 401
+            services.AddTransient<TokenRefreshHandler>();
+
+            // Configure primary HTTP client with TokenRefreshHandler for all StrawberryShake clients
+            services.ConfigureHttpClientDefaults(builder =>
+            {
+                builder.AddHttpMessageHandler<TokenRefreshHandler>();
+            });
+
             // Add StrawberryShake GraphQL client with token from TokenService
             services
                 .AddTimeReportingClient()
@@ -64,7 +74,7 @@ class Program
                 {
                     client.BaseAddress = new Uri(graphqlApiUrl);
 
-                    // Acquire token from Azure CLI
+                    // Acquire initial token from Azure CLI
                     var tokenService = sp.GetRequiredService<TokenService>();
                     var token = await tokenService.GetTokenAsync();
 
