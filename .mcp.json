@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "time-reporting": {
-      "url": "ws://localhost:5002/mcp",
-      "transport": "websocket"
+      "url": "http://localhost:5002/sse",
+      "transport": "sse"
     }
   }
 }
