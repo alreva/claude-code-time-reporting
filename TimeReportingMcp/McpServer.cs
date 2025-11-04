@@ -219,6 +219,8 @@ public class McpServer
             "delete_time_entry" => await new DeleteEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "get_available_projects" => await new GetProjectsTool(_graphqlClient).ExecuteAsync(argumentsElement),
             "submit_time_entry" => await new SubmitEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
+            "approve_time_entry" => await new ApproveEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
+            "decline_time_entry" => await new DeclineEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
             _ => throw new InvalidOperationException($"Unknown tool: {toolParams.Name}")
         };
     }
@@ -359,6 +361,35 @@ public class McpServer
                         id = new { type = "string", description = "Time entry ID (UUID)" }
                     },
                     required = new[] { "id" }
+                }
+            },
+            new()
+            {
+                Name = "approve_time_entry",
+                Description = "Approve a submitted time entry",
+                InputSchema = new
+                {
+                    type = "object",
+                    properties = new
+                    {
+                        id = new { type = "string", description = "Time entry ID (UUID)" }
+                    },
+                    required = new[] { "id" }
+                }
+            },
+            new()
+            {
+                Name = "decline_time_entry",
+                Description = "Decline a submitted time entry with a reason",
+                InputSchema = new
+                {
+                    type = "object",
+                    properties = new
+                    {
+                        id = new { type = "string", description = "Time entry ID (UUID)" },
+                        comment = new { type = "string", description = "Reason for declining" }
+                    },
+                    required = new[] { "id", "comment" }
                 }
             }
         };
