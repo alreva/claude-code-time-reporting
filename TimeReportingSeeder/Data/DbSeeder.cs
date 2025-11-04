@@ -128,7 +128,9 @@ public static class DbSeeder
             StartDate = new DateOnly(2025, 10, 21),
             CompletionDate = new DateOnly(2025, 10, 21),
             Status = TimeEntryStatus.Approved,
-            UserId = "user-1"
+            UserId = "user-1",
+            UserEmail = "alice@example.com",
+            UserName = "Alice Johnson"
         };
         context.TimeEntries.Add(entry1);
         context.SaveChanges();
@@ -158,7 +160,9 @@ public static class DbSeeder
             StartDate = new DateOnly(2025, 10, 21),
             CompletionDate = new DateOnly(2025, 10, 21),
             Status = TimeEntryStatus.Approved,
-            UserId = "user-1"
+            UserId = "user-1",
+            UserEmail = "alice@example.com",
+            UserName = "Alice Johnson"
         };
         context.TimeEntries.Add(entry2);
         context.SaveChanges();
@@ -183,7 +187,9 @@ public static class DbSeeder
             StartDate = new DateOnly(2025, 10, 22),
             CompletionDate = new DateOnly(2025, 10, 22),
             Status = TimeEntryStatus.Submitted,
-            UserId = "user-2"
+            UserId = "user-2",
+            UserEmail = "bob@example.com",
+            UserName = "Bob Smith"
         };
         context.TimeEntries.Add(entry3);
         context.SaveChanges();
@@ -210,7 +216,9 @@ public static class DbSeeder
             StartDate = new DateOnly(2025, 10, 23),
             CompletionDate = new DateOnly(2025, 10, 23),
             Status = TimeEntryStatus.NotReported,
-            UserId = "user-2"
+            UserId = "user-2",
+            UserEmail = "bob@example.com",
+            UserName = "Bob Smith"
         };
         context.TimeEntries.Add(entry4);
         context.SaveChanges();
@@ -235,7 +243,9 @@ public static class DbSeeder
             StartDate = new DateOnly(2025, 10, 23),
             CompletionDate = new DateOnly(2025, 10, 23),
             Status = TimeEntryStatus.Approved,
-            UserId = "user-3"
+            UserId = "user-3",
+            UserEmail = "charlie@example.com",
+            UserName = "Charlie Brown"
         };
         context.TimeEntries.Add(entry5);
         context.SaveChanges();
