@@ -4,14 +4,14 @@ schema {
 }
 
 type Mutation {
-  logTime(input: LogTimeInput!): TimeEntry! @cost(weight: "10")
-  updateTimeEntry(id: UUID! input: UpdateTimeEntryInput!): TimeEntry! @cost(weight: "10")
-  deleteTimeEntry(id: UUID!): Boolean! @cost(weight: "10")
-  moveTaskToProject(entryId: UUID! newProjectCode: String! newTask: String!): TimeEntry! @cost(weight: "10")
-  updateTags(entryId: UUID! tags: [TagInput!]!): TimeEntry! @cost(weight: "10")
-  submitTimeEntry(id: UUID!): TimeEntry! @cost(weight: "10")
-  approveTimeEntry(id: UUID!): TimeEntry! @cost(weight: "10")
-  declineTimeEntry(id: UUID! comment: String!): TimeEntry! @cost(weight: "10")
+  logTime(input: LogTimeInput!): TimeEntry! @authorize
+  updateTimeEntry(id: UUID! input: UpdateTimeEntryInput!): TimeEntry! @authorize
+  deleteTimeEntry(id: UUID!): Boolean! @authorize
+  moveTaskToProject(entryId: UUID! newProjectCode: String! newTask: String!): TimeEntry! @authorize
+  updateTags(entryId: UUID! tags: [TagInput!]!): TimeEntry! @authorize
+  submitTimeEntry(id: UUID!): TimeEntry! @authorize
+  approveTimeEntry(id: UUID!): TimeEntry! @authorize
+  declineTimeEntry(id: UUID! comment: String!): TimeEntry! @authorize
 }
 
 "Information about pagination in a connection."
@@ -55,10 +55,10 @@ type ProjectTask {
 
 type Query {
   hello: String!
-  timeEntries("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: TimeEntryFilterInput @cost(weight: "10") order: [TimeEntrySortInput!] @cost(weight: "10")): TimeEntriesConnection @listSize(assumedSize: 200, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 50, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
-  timeEntry(id: UUID!): TimeEntry @cost(weight: "10")
-  projects(where: ProjectFilterInput @cost(weight: "10") order: [ProjectSortInput!] @cost(weight: "10")): [Project!]! @cost(weight: "10")
-  project(code: String!): Project @cost(weight: "10")
+  timeEntries("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: TimeEntryFilterInput order: [TimeEntrySortInput!]): TimeEntriesConnection @authorize
+  timeEntry(id: UUID!): TimeEntry @authorize
+  projects(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
+  project(code: String!): Project
 }
 
 type TagValue {
@@ -98,6 +98,8 @@ type TimeEntry {
   createdAt: DateTime!
   updatedAt: DateTime!
   userId: String
+  userEmail: String
+  userName: String
   project: Project!
   projectTask: ProjectTask!
   tags: [TimeEntryTag!]!
@@ -110,103 +112,103 @@ type TimeEntryTag {
 }
 
 input BooleanOperationFilterInput {
-  eq: Boolean @cost(weight: "10")
-  neq: Boolean @cost(weight: "10")
+  eq: Boolean
+  neq: Boolean
 }
 
 input DateTimeOperationFilterInput {
-  eq: DateTime @cost(weight: "10")
-  neq: DateTime @cost(weight: "10")
-  in: [DateTime] @cost(weight: "10")
-  nin: [DateTime] @cost(weight: "10")
-  gt: DateTime @cost(weight: "10")
-  ngt: DateTime @cost(weight: "10")
-  gte: DateTime @cost(weight: "10")
-  ngte: DateTime @cost(weight: "10")
-  lt: DateTime @cost(weight: "10")
-  nlt: DateTime @cost(weight: "10")
-  lte: DateTime @cost(weight: "10")
-  nlte: DateTime @cost(weight: "10")
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime]
+  nin: [DateTime]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
 }
 
 input DecimalOperationFilterInput {
-  eq: Decimal @cost(weight: "10")
-  neq: Decimal @cost(weight: "10")
-  in: [Decimal] @cost(weight: "10")
-  nin: [Decimal] @cost(weight: "10")
-  gt: Decimal @cost(weight: "10")
-  ngt: Decimal @cost(weight: "10")
-  gte: Decimal @cost(weight: "10")
-  ngte: Decimal @cost(weight: "10")
-  lt: Decimal @cost(weight: "10")
-  nlt: Decimal @cost(weight: "10")
-  lte: Decimal @cost(weight: "10")
-  nlte: Decimal @cost(weight: "10")
+  eq: Decimal
+  neq: Decimal
+  in: [Decimal]
+  nin: [Decimal]
+  gt: Decimal
+  ngt: Decimal
+  gte: Decimal
+  ngte: Decimal
+  lt: Decimal
+  nlt: Decimal
+  lte: Decimal
+  nlte: Decimal
 }
 
 input IntOperationFilterInput {
-  eq: Int @cost(weight: "10")
-  neq: Int @cost(weight: "10")
-  in: [Int] @cost(weight: "10")
-  nin: [Int] @cost(weight: "10")
-  gt: Int @cost(weight: "10")
-  ngt: Int @cost(weight: "10")
-  gte: Int @cost(weight: "10")
-  ngte: Int @cost(weight: "10")
-  lt: Int @cost(weight: "10")
-  nlt: Int @cost(weight: "10")
-  lte: Int @cost(weight: "10")
-  nlte: Int @cost(weight: "10")
+  eq: Int
+  neq: Int
+  in: [Int]
+  nin: [Int]
+  gt: Int
+  ngt: Int
+  gte: Int
+  ngte: Int
+  lt: Int
+  nlt: Int
+  lte: Int
+  nlte: Int
 }
 
 input ListFilterInputTypeOfProjectTagFilterInput {
-  all: ProjectTagFilterInput @cost(weight: "10")
-  none: ProjectTagFilterInput @cost(weight: "10")
-  some: ProjectTagFilterInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
+  all: ProjectTagFilterInput
+  none: ProjectTagFilterInput
+  some: ProjectTagFilterInput
+  any: Boolean
 }
 
 input ListFilterInputTypeOfProjectTaskFilterInput {
-  all: ProjectTaskFilterInput @cost(weight: "10")
-  none: ProjectTaskFilterInput @cost(weight: "10")
-  some: ProjectTaskFilterInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
+  all: ProjectTaskFilterInput
+  none: ProjectTaskFilterInput
+  some: ProjectTaskFilterInput
+  any: Boolean
 }
 
 input ListFilterInputTypeOfTagValueFilterInput {
-  all: TagValueFilterInput @cost(weight: "10")
-  none: TagValueFilterInput @cost(weight: "10")
-  some: TagValueFilterInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
+  all: TagValueFilterInput
+  none: TagValueFilterInput
+  some: TagValueFilterInput
+  any: Boolean
 }
 
 input ListFilterInputTypeOfTimeEntryFilterInput {
-  all: TimeEntryFilterInput @cost(weight: "10")
-  none: TimeEntryFilterInput @cost(weight: "10")
-  some: TimeEntryFilterInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
+  all: TimeEntryFilterInput
+  none: TimeEntryFilterInput
+  some: TimeEntryFilterInput
+  any: Boolean
 }
 
 input ListFilterInputTypeOfTimeEntryTagFilterInput {
-  all: TimeEntryTagFilterInput @cost(weight: "10")
-  none: TimeEntryTagFilterInput @cost(weight: "10")
-  some: TimeEntryTagFilterInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
+  all: TimeEntryTagFilterInput
+  none: TimeEntryTagFilterInput
+  some: TimeEntryTagFilterInput
+  any: Boolean
 }
 
 input LocalDateOperationFilterInput {
-  eq: LocalDate @cost(weight: "10")
-  neq: LocalDate @cost(weight: "10")
-  in: [LocalDate] @cost(weight: "10")
-  nin: [LocalDate] @cost(weight: "10")
-  gt: LocalDate @cost(weight: "10")
-  ngt: LocalDate @cost(weight: "10")
-  gte: LocalDate @cost(weight: "10")
-  ngte: LocalDate @cost(weight: "10")
-  lt: LocalDate @cost(weight: "10")
-  nlt: LocalDate @cost(weight: "10")
-  lte: LocalDate @cost(weight: "10")
-  nlte: LocalDate @cost(weight: "10")
+  eq: LocalDate
+  neq: LocalDate
+  in: [LocalDate]
+  nin: [LocalDate]
+  gt: LocalDate
+  ngt: LocalDate
+  gte: LocalDate
+  ngte: LocalDate
+  lt: LocalDate
+  nlt: LocalDate
+  lte: LocalDate
+  nlte: LocalDate
 }
 
 input LogTimeInput {
@@ -235,11 +237,11 @@ input ProjectFilterInput {
 }
 
 input ProjectSortInput {
-  code: SortEnumType @cost(weight: "10")
-  name: SortEnumType @cost(weight: "10")
-  isActive: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  updatedAt: SortEnumType @cost(weight: "10")
+  code: SortEnumType
+  name: SortEnumType
+  isActive: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
 }
 
 input ProjectTagFilterInput {
@@ -263,25 +265,25 @@ input ProjectTaskFilterInput {
 }
 
 input ProjectTaskSortInput {
-  id: SortEnumType @cost(weight: "10")
-  taskName: SortEnumType @cost(weight: "10")
-  isActive: SortEnumType @cost(weight: "10")
-  project: ProjectSortInput @cost(weight: "10")
+  id: SortEnumType
+  taskName: SortEnumType
+  isActive: SortEnumType
+  project: ProjectSortInput
 }
 
 input StringOperationFilterInput {
   and: [StringOperationFilterInput!]
   or: [StringOperationFilterInput!]
-  eq: String @cost(weight: "10")
-  neq: String @cost(weight: "10")
-  contains: String @cost(weight: "20")
-  ncontains: String @cost(weight: "20")
-  in: [String] @cost(weight: "10")
-  nin: [String] @cost(weight: "10")
-  startsWith: String @cost(weight: "20")
-  nstartsWith: String @cost(weight: "20")
-  endsWith: String @cost(weight: "20")
-  nendsWith: String @cost(weight: "20")
+  eq: String
+  neq: String
+  contains: String
+  ncontains: String
+  in: [String]
+  nin: [String]
+  startsWith: String
+  nstartsWith: String
+  endsWith: String
+  nendsWith: String
 }
 
 input TagInput {
@@ -312,33 +314,37 @@ input TimeEntryFilterInput {
   createdAt: DateTimeOperationFilterInput
   updatedAt: DateTimeOperationFilterInput
   userId: StringOperationFilterInput
+  userEmail: StringOperationFilterInput
+  userName: StringOperationFilterInput
   project: ProjectFilterInput
   projectTask: ProjectTaskFilterInput
   tags: ListFilterInputTypeOfTimeEntryTagFilterInput
 }
 
 input TimeEntrySortInput {
-  id: SortEnumType @cost(weight: "10")
-  issueId: SortEnumType @cost(weight: "10")
-  standardHours: SortEnumType @cost(weight: "10")
-  overtimeHours: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  startDate: SortEnumType @cost(weight: "10")
-  completionDate: SortEnumType @cost(weight: "10")
-  status: SortEnumType @cost(weight: "10")
-  declineComment: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  updatedAt: SortEnumType @cost(weight: "10")
-  userId: SortEnumType @cost(weight: "10")
-  project: ProjectSortInput @cost(weight: "10")
-  projectTask: ProjectTaskSortInput @cost(weight: "10")
+  id: SortEnumType
+  issueId: SortEnumType
+  standardHours: SortEnumType
+  overtimeHours: SortEnumType
+  description: SortEnumType
+  startDate: SortEnumType
+  completionDate: SortEnumType
+  status: SortEnumType
+  declineComment: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+  userId: SortEnumType
+  userEmail: SortEnumType
+  userName: SortEnumType
+  project: ProjectSortInput
+  projectTask: ProjectTaskSortInput
 }
 
 input TimeEntryStatusOperationFilterInput {
-  eq: TimeEntryStatus @cost(weight: "10")
-  neq: TimeEntryStatus @cost(weight: "10")
-  in: [TimeEntryStatus!] @cost(weight: "10")
-  nin: [TimeEntryStatus!] @cost(weight: "10")
+  eq: TimeEntryStatus
+  neq: TimeEntryStatus
+  in: [TimeEntryStatus!]
+  nin: [TimeEntryStatus!]
 }
 
 input TimeEntryTagFilterInput {
@@ -361,18 +367,28 @@ input UpdateTimeEntryInput {
 }
 
 input UuidOperationFilterInput {
-  eq: UUID @cost(weight: "10")
-  neq: UUID @cost(weight: "10")
-  in: [UUID] @cost(weight: "10")
-  nin: [UUID] @cost(weight: "10")
-  gt: UUID @cost(weight: "10")
-  ngt: UUID @cost(weight: "10")
-  gte: UUID @cost(weight: "10")
-  ngte: UUID @cost(weight: "10")
-  lt: UUID @cost(weight: "10")
-  nlt: UUID @cost(weight: "10")
-  lte: UUID @cost(weight: "10")
-  nlte: UUID @cost(weight: "10")
+  eq: UUID
+  neq: UUID
+  in: [UUID]
+  nin: [UUID]
+  gt: UUID
+  ngt: UUID
+  gte: UUID
+  ngte: UUID
+  lt: UUID
+  nlt: UUID
+  lte: UUID
+  nlte: UUID
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
 }
 
 enum SortEnumType {
@@ -387,11 +403,8 @@ enum TimeEntryStatus {
   DECLINED
 }
 
-"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
-directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION
-
-"The purpose of the `@listSize` directive is to either inform the static analysis about the size of returned lists (if that information is statically available), or to point the analysis to where to find that information."
-directive @listSize("The `assumedSize` argument can be used to statically define the maximum length of a list returned by a field." assumedSize: Int "The `slicingArguments` argument can be used to define which of the field's arguments with numeric type are slicing arguments, so that their value determines the size of the list returned by that field. It may specify a list of multiple slicing arguments." slicingArguments: [String!] "The `slicingArgumentDefaultValue` argument can be used to define a default value for a slicing argument, which is used if the argument is not present in a query." slicingArgumentDefaultValue: Int "The `sizedFields` argument can be used to define that the value of the `assumedSize` argument or of a slicing argument does not affect the size of a list returned by a field itself, but that of a list returned by one of its sub-fields." sizedFields: [String!] "The `requireOneSlicingArgument` argument can be used to inform the static analysis that it should expect that exactly one of the defined slicing arguments is present in a query. If that is not the case (i.e., if none or multiple slicing arguments are present), the static analysis may throw an error." requireOneSlicingArgument: Boolean! = true) on FIELD_DEFINITION
+"The authorize directive."
+directive @authorize("The name of the authorization policy that determines access to the annotated resource." policy: String "Roles that are allowed to access the annotated resource." roles: [String!] "Defines when when the authorize directive shall be applied.By default the authorize directives are applied during the validation phase." apply: ApplyPolicy! = BEFORE_RESOLVER) repeatable on OBJECT | FIELD_DEFINITION
 
 "The `@specifiedBy` directive is used within the type system definition language to provide a URL for specifying the behavior of custom scalar definitions."
 directive @specifiedBy("The specifiedBy URL points to a human-readable specification. This field will only read a result for scalar types." url: String!) on SCALAR
