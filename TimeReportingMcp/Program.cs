@@ -148,7 +148,7 @@ class Program
             Console.Error.WriteLine("MCP Server initialized successfully");
             Console.Error.WriteLine("Waiting for requests...");
 
-            // Run server (blocks until Ctrl+C)
+            // Run server (blocks until Ctrl+C or stdin closes)
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (s, e) =>
             {
@@ -158,10 +158,20 @@ class Program
             };
 
             await server.RunAsync(cts.Token);
+
+            Console.Error.WriteLine("MCP Server exited successfully");
+            Environment.Exit(0);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected cancellation - exit cleanly
+            Console.Error.WriteLine("MCP Server cancelled - exiting cleanly");
+            Environment.Exit(0);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            Console.Error.WriteLine($"Stack trace: {ex.StackTrace}");
             Environment.Exit(1);
         }
     }

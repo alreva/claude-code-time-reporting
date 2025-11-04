@@ -51,6 +51,18 @@ public class McpServer
                 // Process request and write response to stdout
                 await HandleRequestAsync(line);
             }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Console.Error.WriteLine("Cancellation requested, shutting down...");
+            }
+
+            Console.Error.WriteLine("MCP Server shutdown complete");
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when cancellation token is triggered
+            Console.Error.WriteLine("MCP Server cancelled gracefully");
         }
         catch (Exception ex)
         {
