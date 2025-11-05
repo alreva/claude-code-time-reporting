@@ -700,15 +700,18 @@ Multi-layer validation ensures data integrity:
 - **Keep it simple:** ~200 lines total, just stdio + GraphQL calls
 - No session management, no auto-tracking (v2 feature)
 - Each tool is stateless: read params → call GraphQL → return result
-- Configuration via .NET Configuration system (GRAPHQL_API_URL, Authentication__BearerToken)
+- Configuration via .NET Configuration system (GRAPHQL_API_URL, AzureAd:ApiScope)
+- Authentication via AzureCliCredential (acquires tokens from `az login`)
 - Error handling returns structured MCP error responses
 
 ## Security Notes
 
-- Bearer token authentication for API access
-- Tokens stored in environment variables (never commit to version control)
+- Azure Entra ID authentication for API access (JWT token validation)
+- MCP Server uses AzureCliCredential to acquire tokens from `az login`
+- API validates tokens with Microsoft.Identity.Web
+- User identity tracked: all time entries include Azure AD user info (oid, email, name)
 - Input validation at GraphQL schema, business logic, and database constraint levels
-- Use `openssl rand -base64 32` to generate secure tokens
+- No secrets in configuration files - authentication via Azure CLI
 
 ## Test-Driven Development (TDD) Workflow - MANDATORY
 

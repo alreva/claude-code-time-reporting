@@ -72,12 +72,13 @@ The Time Reporting System is a modern, cloud-native application that enables dev
 │                                                                   │
 │  Configuration:                                                   │
 │  - GRAPHQL_API_URL                                               │
-│  - Authentication__BearerToken                                                  │
+│  - Azure AD Scope (api://8b3f87d7-bc23-4932-88b5-f24056999600/.default)      │
+│  - Authentication: AzureCliCredential (from az login)            │
 └──────────────────────────────┬──────────────────────────────────┘
                                │
                                │ HTTP/HTTPS
                                │ GraphQL Queries/Mutations
-                               │ Bearer Token Authentication
+                               │ Azure AD JWT Token Authentication
                                │
 ┌──────────────────────────────▼──────────────────────────────────┐
 │                   GRAPHQL API (C#)                               │
@@ -665,12 +666,13 @@ See [ADR Documentation](./adr/README.md) for complete list.
 │ MCP Server  │
 └──────┬──────┘
        │
-       │ 1. Read Authentication__BearerToken from environment
+       │ 1. Acquire Azure AD token via AzureCliCredential
+       │    (from ~/.azure/ created by 'az login')
        │
        ▼
 ┌─────────────────────────────────────┐
 │ HTTP Request to GraphQL API         │
-│ Authorization: Bearer <token>       │
+│ Authorization: Bearer <azure-ad-jwt>│
 └──────┬──────────────────────────────┘
        │
        ▼
@@ -679,12 +681,16 @@ See [ADR Documentation](./adr/README.md) for complete list.
 │ Middleware  │
 └──────┬──────┘
        │
-       │ 2. Extract token from Authorization header
-       │ 3. Compare with Authentication__BearerToken from configuration
-       │    (loaded from environment variable via IConfiguration)
+       │ 2. Extract JWT token from Authorization header
+       │ 3. Validate with Azure Entra ID:
+       │    - Signature verification (cryptographic)
+       │    - Issuer check (Microsoft Entra ID)
+       │    - Audience check (api://8b3f87d7-bc23-4932-88b5-f24056999600)
+       │    - Expiration check (token validity)
+       │ 4. Extract user claims (oid, email, name)
        │
-       ├─ Match? → Allow request ✓
-       └─ No match? → Return 401 Unauthorized ✗
+       ├─ Valid? → Allow request ✓ (with user identity)
+       └─ Invalid? → Return 401 Unauthorized ✗
 ```
 
 ### Security Best Practices

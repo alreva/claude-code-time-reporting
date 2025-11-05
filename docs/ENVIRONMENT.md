@@ -4,19 +4,18 @@ This document describes all environment variables used by the Time Reporting Sys
 
 ## Quick Start
 
-1. Copy the example environment file:
+1. Authenticate with Azure:
    ```bash
-   cp .env.example .env
+   az login
    ```
 
-2. Generate a secure bearer token:
+2. Run setup script to create environment file:
    ```bash
-   ./scripts/generate-token.sh
+   ./setup.sh
+   source env.sh
    ```
 
-3. Edit `.env` and replace placeholder values with real credentials
-
-4. **IMPORTANT:** Never commit `.env` file with real secrets!
+3. **IMPORTANT:** Authentication uses Azure Entra ID - no bearer tokens needed!
 
 ## Required Variables
 
@@ -35,17 +34,12 @@ This document describes all environment variables used by the Time Reporting Sys
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `ASPNETCORE_ENVIRONMENT` | Runtime environment | `Production` | No |
-| `Authentication__BearerToken` | API authentication token | None | Yes |
 
-**Bearer Token Generation:**
-```bash
-./scripts/generate-token.sh
-```
-
-The bearer token must be:
-- At least 32 bytes (base64 encoded = 44 characters)
-- Randomly generated (use `openssl rand -base64 32`)
-- Kept secret (never commit to version control)
+**Authentication:**
+- Uses Azure Entra ID with JWT token validation
+- API validates tokens using Microsoft.Identity.Web
+- No bearer token configuration needed
+- Azure AD tenant and client ID configured in `appsettings.json`
 
 ## Environment-Specific Configuration
 
@@ -58,12 +52,17 @@ ASPNETCORE_ENVIRONMENT=Development
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=time_reporting
-Authentication__BearerToken=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
+GRAPHQL_API_URL=http://localhost:5001/graphql
 ```
 
 Connection string uses `Host=localhost`:
 - Defined in `appsettings.json`
 - API runs on port 5001 (avoid macOS AirPlay port 5001)
+
+**Authentication:**
+- Run `az login` before starting development
+- MCP Server uses AzureCliCredential to acquire tokens
+- API validates tokens with Azure Entra ID
 
 ### Docker Compose
 
@@ -74,7 +73,6 @@ ASPNETCORE_ENVIRONMENT=Production
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_secure_password
 POSTGRES_DB=time_reporting
-Authentication__BearerToken=your_bearer_token
 ```
 
 Connection string uses `Host=postgres` (service name):
@@ -147,20 +145,23 @@ Result: Environment variable wins, API connects to `postgres` host.
 podman compose logs api | grep -i "appsettings\|environment"
 ```
 
-### Test Bearer Token
+### Test Azure AD Authentication
 
 ```bash
-# Load token from env.sh
-source env.sh
+# Ensure you're logged in to Azure
+az login
 
-# Test API with bearer token
+# Get Azure AD token
+TOKEN=$(az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600 --query accessToken -o tsv)
+
+# Test API with Azure AD token
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $Authentication__BearerToken" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{"query":"{ projects { code name } }"}'
 ```
 
-Expected: Valid GraphQL response
+Expected: Valid GraphQL response with project data
 
 ### Test Database Connection
 
@@ -175,11 +176,12 @@ Expected: No connection errors
 
 ### Issue: API returns 401 Unauthorized
 
-**Cause:** Bearer token mismatch
+**Cause:** Azure AD authentication issue
 **Solution:**
-1. Verify `env.sh` has correct `Authentication__BearerToken` value
-2. Restart API: `podman compose restart api`
-3. Test with correct token: `curl -H "Authorization: Bearer $Authentication__BearerToken" ...`
+1. Verify you're logged in: `az login`
+2. Check Azure AD configuration in `appsettings.json` (tenant ID, client ID)
+3. Get fresh token: `az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600`
+4. Verify API Azure AD middleware is configured in `Program.cs`
 
 ### Issue: API can't connect to database
 
@@ -195,7 +197,7 @@ Expected: No connection errors
 **Solution:**
 1. Ensure you run `source env.sh` before starting Docker Compose
 2. Verify `env.sh` exists in repository root: `ls -la env.sh`
-3. Check variables are in environment: `echo $Authentication__BearerToken`
+3. Check variables are in environment: `echo $GRAPHQL_API_URL`
 4. Restart Docker Compose: `podman compose down && podman compose up -d`
 
 ## References
@@ -203,4 +205,5 @@ Expected: No connection errors
 - [ASP.NET Core Configuration](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/)
 - [12-Factor App: Config](https://12factor.net/config)
 - [Docker Compose Environment Variables](https://docs.docker.com/compose/environment-variables/)
-- [OpenSSL Random Number Generation](https://www.openssl.org/docs/man1.1.1/man1/rand.html)
+- [Azure Identity Library](https://learn.microsoft.com/en-us/dotnet/api/azure.identity)
+- [Microsoft.Identity.Web](https://learn.microsoft.com/en-us/azure/active-directory/develop/microsoft-identity-web)

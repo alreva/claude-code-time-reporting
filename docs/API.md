@@ -47,16 +47,18 @@ Authorization: Bearer <your-token-here>
 
 ### Configuration
 
-Set the `Authentication__BearerToken` environment variable in your `env.sh` file:
+Authenticate with Azure CLI (the API validates Azure AD tokens):
 
 ```bash
-Authentication__BearerToken=your-secure-token-here
+az login
 ```
 
-Generate a secure token:
+The API is configured to validate JWT tokens from Azure Entra ID (see `appsettings.json`).
+
+Get an Azure AD token for testing:
 
 ```bash
-openssl rand -base64 32
+az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600 --query accessToken -o tsv
 ```
 
 ### Unauthorized Response
