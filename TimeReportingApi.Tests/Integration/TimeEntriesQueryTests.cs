@@ -95,6 +95,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         await _context.SaveChangesAsync();
 
         // Create time entries
+        // Use the same userId that TestAuthHandler creates (oid claim)
         var entry1 = new TimeEntry
         {
             Id = Guid.NewGuid(),
@@ -102,7 +103,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
             StartDate = new DateOnly(2025, 10, 20),
             CompletionDate = new DateOnly(2025, 10, 20),
             Status = TimeEntryStatus.NotReported,
-            UserId = "user1",
+            UserId = "test-oid-123",  // Must match oid claim from TestAuthHandler
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Project = project,
@@ -116,7 +117,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
             StartDate = new DateOnly(2025, 10, 21),
             CompletionDate = new DateOnly(2025, 10, 21),
             Status = TimeEntryStatus.Submitted,
-            UserId = "user2",
+            UserId = "test-oid-123",  // Must match oid claim from TestAuthHandler
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Project = project,
