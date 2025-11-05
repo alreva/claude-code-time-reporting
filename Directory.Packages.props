@@ -81,8 +81,6 @@
   </ItemGroup>
   <ItemGroup Label="Future Dependencies - Commented Out">
     <!-- These will be needed in Phase 4-5 when implementing business logic -->
-    <!--
-    <PackageVersion Include="Moq" Version="4.20.70" />
-    -->
+    <!-- Moq moved to Test Dependencies -->
   </ItemGroup>
 </Project>

@@ -29,4 +29,11 @@
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <!-- Export GraphQL schema after build for MCP sync validation -->
+  <Target Name="ExportGraphQLSchema" AfterTargets="Build">
+    <Message Text="Exporting GraphQL schema to $(OutputPath)schema.graphql" Importance="high" />
+    <Exec Command="dotnet run --project $(ProjectPath) --no-build -- export-schema $(OutputPath)schema.graphql"
+          WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
 </Project>

@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
@@ -23,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../TimeReportingMcp/TimeReportingMcp.csproj" />
+    <ProjectReference Include="../TimeReportingApi/TimeReportingApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>

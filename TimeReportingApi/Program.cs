@@ -1,11 +1,20 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
+using HotChocolate.Execution;
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
 using TimeReportingApi.GraphQL.Errors;
 using TimeReportingApi.Services;
 
+// Check for schema export command (used by MSBuild to export schema for MCP sync validation)
+if (args.Length > 0 && args[0] == "export-schema")
+{
+    await ExportSchemaAsync(args[1]);
+    return;
+}
+
+// Normal API startup
 var builder = WebApplication.CreateBuilder(args);
 
 // Disable default claim type mapping to preserve original JWT claim names
@@ -28,45 +37,7 @@ builder.WebHost.ConfigureKestrel(options =>
     }
 });
 
-// Add Entity Framework Core with PostgreSQL
-builder.Services.AddDbContext<TimeReportingDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("TimeReportingDb")));
-
-// Add business services
-builder.Services.AddScoped<ValidationService>();
-
-// Add HTTP context accessor for accessing user claims in services
-builder.Services.AddHttpContextAccessor();
-
-// Add Microsoft.Identity.Web authentication
-// This validates Azure Entra ID JWT tokens and extracts user claims
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-
-// Add authorization services
-builder.Services.AddAuthorization();
-
-// Add services to the container
-builder.Services
-    .AddGraphQLServer()
-    .AddQueryType<Query>()
-    .AddMutationType<Mutation>()
-    .AddAuthorization()      // Enable @authorize directive for HotChocolate
-    .AddProjections()        // Enable field selection optimization
-    .AddFiltering()          // Enable filtering
-    .AddSorting()            // Enable sorting
-    .AddErrorFilter<GraphQLErrorFilter>() // Add custom error handling
-    .ModifyCostOptions(options =>
-    {
-        // Disable cost limits for simple time tracking app
-        options.MaxFieldCost = int.MaxValue;      // Effectively unlimited
-        options.MaxTypeCost = int.MaxValue;       // Effectively unlimited
-        options.EnforceCostLimits = false;        // Disable enforcement
-        options.ApplyCostDefaults = false;        // Don't apply default costs
-    });
-
-// Add health checks
-builder.Services.AddHealthChecks();
+ConfigureServices(builder);
 
 var app = builder.Build();
 
@@ -93,6 +64,64 @@ app.MapHealthChecks("/health");
 app.MapGraphQL();
 
 app.Run();
+
+// Export GraphQL schema to file (used by MSBuild for MCP sync validation)
+static async Task ExportSchemaAsync(string outputPath)
+{
+    var builder = WebApplication.CreateBuilder();
+    ConfigureServices(builder);
+    var app = builder.Build();
+
+    var schema = await app.Services.GetRequiredService<IRequestExecutorResolver>()
+        .GetRequestExecutorAsync();
+    await File.WriteAllTextAsync(outputPath, schema.Schema.Print());
+
+    Console.WriteLine($"✅ Schema exported to {outputPath}");
+}
+
+// Shared service configuration used by both schema export and normal API startup
+static void ConfigureServices(WebApplicationBuilder builder)
+{
+    // Add Entity Framework Core with PostgreSQL
+    builder.Services.AddDbContext<TimeReportingDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("TimeReportingDb")));
+
+    // Add business services
+    builder.Services.AddScoped<ValidationService>();
+
+    // Add HTTP context accessor for accessing user claims in services
+    builder.Services.AddHttpContextAccessor();
+
+    // Add Microsoft.Identity.Web authentication
+    // This validates Azure Entra ID JWT tokens and extracts user claims
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+    // Add authorization services
+    builder.Services.AddAuthorization();
+
+    // Add GraphQL server
+    builder.Services
+        .AddGraphQLServer()
+        .AddQueryType<Query>()
+        .AddMutationType<Mutation>()
+        .AddAuthorization()      // Enable @authorize directive for HotChocolate
+        .AddProjections()        // Enable field selection optimization
+        .AddFiltering()          // Enable filtering
+        .AddSorting()            // Enable sorting
+        .AddErrorFilter<GraphQLErrorFilter>() // Add custom error handling
+        .ModifyCostOptions(options =>
+        {
+            // Disable cost limits for simple time tracking app
+            options.MaxFieldCost = int.MaxValue;      // Effectively unlimited
+            options.MaxTypeCost = int.MaxValue;       // Effectively unlimited
+            options.EnforceCostLimits = false;        // Disable enforcement
+            options.ApplyCostDefaults = false;        // Don't apply default costs
+        });
+
+    // Add health checks
+    builder.Services.AddHealthChecks();
+}
 
 // Make Program class accessible to test project
 public partial class Program { }
