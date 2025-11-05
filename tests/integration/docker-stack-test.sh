@@ -23,8 +23,8 @@ else
     exit 1
 fi
 
-if [ -z "${Authentication__BearerToken:-}" ]; then
-    echo -e "${RED}ERROR: Authentication__BearerToken not set in .env${NC}"
+if [ -z "${AZURE_AD_TOKEN:-}" ]; then
+    echo -e "${RED}ERROR: AZURE_AD_TOKEN not set in .env${NC}"
     exit 1
 fi
 
@@ -68,7 +68,7 @@ function graphql_query() {
     if [ "$auth" = "true" ]; then
         curl -s -X POST "$API_URL" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $Authentication__BearerToken" \
+            -H "Authorization: Bearer $AZURE_AD_TOKEN" \
             -d "{\"query\":\"$query\"}"
     else
         curl -s -X POST "$API_URL" \

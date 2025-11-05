@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
-# Generate a secure random bearer token for API authentication
+# DEPRECATED: This script generated bearer tokens for the old authentication system
+#
+# The system now uses Azure Entra ID authentication.
+# Please use the following instead:
 
 set -euo pipefail
 
-# Generate 32 bytes of random data, encode as base64
-TOKEN=$(openssl rand -base64 32)
-
-echo "Generated Bearer Token:"
-echo "======================"
-echo "$TOKEN"
+echo "⚠️  DEPRECATED: Bearer token authentication has been replaced"
 echo ""
-echo "Note: Use ./setup.sh instead to automatically configure everything"
+echo "The system now uses Azure Entra ID authentication."
 echo ""
-echo "Or manually add to your env.sh:"
-echo "export Authentication__BearerToken=$TOKEN"
+echo "To set up authentication:"
+echo "  1. az login"
+echo "  2. ./setup.sh"
+echo "  3. source env.sh"
 echo ""
-echo "Use this in API requests:"
-echo "Authorization: Bearer $TOKEN"
+echo "To get a token for testing:"
+echo "  az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600 --query accessToken -o tsv"
+echo ""
+exit 1

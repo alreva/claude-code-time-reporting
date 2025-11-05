@@ -72,11 +72,11 @@ if [[ -f "$CONFIG_PATH" ]]; then
             API_URL=$(jq -r '.mcpServers."time-reporting".env.GRAPHQL_API_URL' "$CONFIG_PATH")
             echo "   GraphQL API URL: $API_URL"
 
-            # Check Authentication__BearerToken is set (don't display actual value)
-            if jq -e '.mcpServers."time-reporting".env.Authentication__BearerToken' "$CONFIG_PATH" > /dev/null 2>&1; then
-                echo "   ✅ Authentication__BearerToken is configured"
+            # Check AZURE_AD_TOKEN is set (don't display actual value)
+            if jq -e '.mcpServers."time-reporting".env.AZURE_AD_TOKEN' "$CONFIG_PATH" > /dev/null 2>&1; then
+                echo "   ✅ AZURE_AD_TOKEN is configured"
             else
-                echo "   ⚠️  WARN: Authentication__BearerToken not found in config"
+                echo "   ⚠️  WARN: AZURE_AD_TOKEN not found in config"
             fi
         else
             echo "   ⚠️  WARN: time-reporting server not found in config"
@@ -94,13 +94,13 @@ echo
 # Step 5: Check bearer token is set in API
 echo "5. Checking bearer token configuration..."
 if [[ -f ".env" ]]; then
-    if grep -q "Authentication__BearerToken" .env 2>/dev/null; then
-        echo "✅ PASS: Authentication__BearerToken found in .env file"
+    if grep -q "AZURE_AD_TOKEN" .env 2>/dev/null; then
+        echo "✅ PASS: AZURE_AD_TOKEN found in .env file"
 
         # Extract tokens and compare (without displaying them)
         if [[ -f "$CONFIG_PATH" ]] && command -v jq &> /dev/null; then
-            API_TOKEN=$(grep Authentication__BearerToken .env | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
-            CLAUDE_TOKEN=$(jq -r '.mcpServers."time-reporting".env.Authentication__BearerToken' "$CONFIG_PATH" 2>/dev/null || echo "")
+            API_TOKEN=$(grep AZURE_AD_TOKEN .env | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
+            CLAUDE_TOKEN=$(jq -r '.mcpServers."time-reporting".env.AZURE_AD_TOKEN' "$CONFIG_PATH" 2>/dev/null || echo "")
 
             if [[ "$API_TOKEN" == "$CLAUDE_TOKEN" ]] && [[ -n "$API_TOKEN" ]]; then
                 echo "   ✅ Tokens match in API and Claude Code config"
@@ -109,14 +109,14 @@ if [[ -f ".env" ]]; then
             fi
         fi
     else
-        echo "⚠️  WARN: Authentication__BearerToken not found in .env file"
+        echo "⚠️  WARN: AZURE_AD_TOKEN not found in .env file"
         echo "         Generate one with: openssl rand -base64 32"
-        echo "         Add to .env: Authentication__BearerToken=<your-token>"
+        echo "         Add to .env: AZURE_AD_TOKEN=<your-token>"
         echo "         Restart API: /deploy"
     fi
 else
     echo "⚠️  WARN: .env file not found"
-    echo "         Create .env file with Authentication__BearerToken"
+    echo "         Create .env file with AZURE_AD_TOKEN"
 fi
 echo
 
@@ -165,7 +165,7 @@ else
     echo "⚠️  Claude Code Config: Not found (needs setup)"
 fi
 
-if grep -q "Authentication__BearerToken" .env 2>/dev/null; then
+if grep -q "AZURE_AD_TOKEN" .env 2>/dev/null; then
     echo "✅ Bearer Token: Configured"
 else
     echo "⚠️  Bearer Token: Not configured"
