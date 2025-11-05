@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Tools;
 using TimeReportingMcp.Utils;
+using TimeReportingMcp.Tests.Helpers;
 
 namespace TimeReportingMcp.Tests.Tools;
 
@@ -31,8 +32,7 @@ public class MoveTaskToolTests : IAsyncLifetime
             .AddTimeReportingClient()
             .ConfigureHttpClient(client =>
             {
-                client.BaseAddress = new Uri(apiUrl);
-                // Note: Tests use Azure AD JWT authentication, not bearer token
+                TestAuthHelper.ConfigureTestAuthentication(client, apiUrl);
             });
 
         _serviceProvider = services.BuildServiceProvider();
@@ -40,11 +40,20 @@ public class MoveTaskToolTests : IAsyncLifetime
         _tool = new MoveTaskTool(_client);
         _logTimeTool = new LogTimeTool(_client);
 
-        // Test API connectivity
+        // Test API connectivity AND authentication
+        // We test with QueryTimeEntries (requires auth) instead of GetProjects (anonymous)
+        // This ensures tests skip when API uses Azure AD instead of test auth
         try
         {
-            var result = await _client.GetAvailableProjects.ExecuteAsync(CancellationToken.None);
+            var result = await _client.QueryTimeEntries.ExecuteAsync(null, CancellationToken.None);
             _apiAvailable = result.Errors == null || result.Errors.Count == 0;
+
+            if (!_apiAvailable && result.Errors != null)
+            {
+                Console.WriteLine("⚠️  API not available or authentication failed - MCP tests will be skipped");
+                Console.WriteLine($"     Error: {result.Errors.FirstOrDefault()?.Message}");
+                return; // Don't try to create test entry if auth failed
+            }
 
             // Create a test entry to use for move operations
             var logArgs = JsonSerializer.SerializeToElement(new
