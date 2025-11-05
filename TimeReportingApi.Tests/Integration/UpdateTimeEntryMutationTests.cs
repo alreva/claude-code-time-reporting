@@ -4,6 +4,7 @@ using TimeReportingApi.Data;
 using TimeReportingApi.Models;
 using TimeReportingApi.Tests.Fixtures;
 using TimeReportingApi.Tests.Handlers;
+using TimeReportingApi.Tests.Helpers;
 
 namespace TimeReportingApi.Tests.Integration;
 
@@ -50,10 +51,10 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
                     {
                         options.UseNpgsql(_fixture.ConnectionString);
                     });
-                });
 
-                // Use test bearer token
-                builder.UseSetting("Authentication:BearerToken", "test-bearer-token-12345");
+                    // Add test authentication to bypass Azure AD
+                    services.AddTestAuthentication();
+                });
             });
 
         _client = _factory.CreateDefaultClient(new AuthenticationHandler("test-bearer-token-12345"));

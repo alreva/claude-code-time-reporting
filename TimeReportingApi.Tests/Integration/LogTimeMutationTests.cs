@@ -4,6 +4,7 @@ using TimeReportingApi.Data;
 using TimeReportingApi.Models;
 using TimeReportingApi.Tests.Fixtures;
 using TimeReportingApi.Tests.Handlers;
+using TimeReportingApi.Tests.Helpers;
 
 namespace TimeReportingApi.Tests.Integration;
 
@@ -49,6 +50,9 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
                     {
                         options.UseNpgsql(_fixture.ConnectionString);
                     });
+
+                    // Add test authentication to bypass Azure AD
+                    services.AddTestAuthentication();
                 });
             });
 
