@@ -1,3 +1,4 @@
+using System.Diagnostics;
 
 namespace TimeReportingMcp.Tests;
 
@@ -10,26 +11,48 @@ public class SchemaValidationTests
     [Fact]
     public async Task McpSchemaFile_MatchesGeneratedApiSchema()
     {
-        // Get the API-generated schema from the build output
-        var apiSchemaPath = Path.Combine(
+        // Execute the API schema export command
+        var solutionRoot = Path.Combine(
             Path.GetDirectoryName(typeof(SchemaValidationTests).Assembly.Location)!,
             "..", "..", "..",  // Navigate up from bin/Debug/net10.0 to TimeReportingMcp.Tests
-            "..",               // Navigate up to solution root
-            "TimeReportingApi",
-            "bin", "Debug", "net10.0",
-            "schema.graphql"
+            ".."                // Navigate up to solution root
         );
+        solutionRoot = Path.GetFullPath(solutionRoot);
 
-        apiSchemaPath = Path.GetFullPath(apiSchemaPath);
+        var apiDllPath = Path.Combine(solutionRoot, "TimeReportingApi", "bin", "Debug", "net10.0", "TimeReportingApi.dll");
 
-        if (!File.Exists(apiSchemaPath))
+        if (!File.Exists(apiDllPath))
         {
-            Assert.Fail($"❌ API schema file not found at: {apiSchemaPath}\n\n" +
-                       $"The API project must be built first to export the schema.\n" +
+            Assert.Fail($"❌ API DLL not found at: {apiDllPath}\n\n" +
+                       $"The API project must be built first.\n" +
                        $"Run: /build-api");
         }
 
-        var generatedSchema = await File.ReadAllTextAsync(apiSchemaPath);
+        // Run the schema export command and capture stdout
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"\"{apiDllPath}\" export-schema",
+                WorkingDirectory = solutionRoot,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        var generatedSchema = await process.StandardOutput.ReadToEndAsync();
+        var errors = await process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            Assert.Fail($"❌ Schema export failed with exit code {process.ExitCode}\n\n" +
+                       $"Errors: {errors}");
+        }
 
         // Read the MCP schema file
         var mcpSchemaPath = Path.Combine(
@@ -75,12 +98,13 @@ public class SchemaValidationTests
                 $"First 100 chars (generated): {first100Generated}\n" +
                 $"First 100 chars (MCP): {first100Mcp}\n\n" +
                 $"TO FIX:\n" +
-                $"1. Build the API project first: /build-api\n" +
-                $"2. Copy the generated schema:\n" +
-                $"   cp TimeReportingApi/bin/Debug/net10.0/schema.graphql TimeReportingMcp/schema.graphql\n" +
-                $"3. Rebuild MCP: /build-mcp\n" +
-                $"4. Re-run tests: /test\n\n" +
-                $"Expected schema location: {mcpSchemaPath}\n"
+                $"1. Export the current API schema:\n" +
+                $"   dotnet run --project TimeReportingApi -- export-schema > TimeReportingMcp/schema.graphql\n" +
+                $"2. Rebuild MCP to regenerate StrawberryShake types:\n" +
+                $"   /build-mcp\n" +
+                $"3. Re-run tests:\n" +
+                $"   /test\n\n" +
+                $"MCP schema location: {mcpSchemaPath}\n"
             );
         }
 

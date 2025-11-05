@@ -429,23 +429,20 @@ The MCP server uses **StrawberryShake 15** for strongly-typed GraphQL client cod
 
 **Schema Synchronization (Automated):**
 
-The API project automatically exports its GraphQL schema during every build:
-1. **API Build**: MSBuild target exports schema to `TimeReportingApi/bin/Debug/net10.0/schema.graphql`
-2. **Schema Validation Test**: `SchemaValidationTests.cs` compares exported schema with `TimeReportingMcp/schema.graphql`
+The schema validation test executes the API's schema export command and compares it with the MCP schema:
+1. **Schema Export Command**: `dotnet run --project TimeReportingApi -- export-schema` prints schema to stdout
+2. **Schema Validation Test**: `SchemaValidationTests.cs` executes export command and compares with `TimeReportingMcp/schema.graphql`
 3. **Test Failure**: If schemas don't match, test fails with helpful instructions
 
 **When API schema changes and test fails:**
 ```bash
-# 1. Build the API project first (exports schema)
-/build-api
+# 1. Export the current API schema to MCP project
+dotnet run --project TimeReportingApi -- export-schema > TimeReportingMcp/schema.graphql
 
-# 2. Copy the generated schema to MCP project
-cp TimeReportingApi/bin/Debug/net10.0/schema.graphql TimeReportingMcp/schema.graphql
-
-# 3. Rebuild MCP (triggers StrawberryShake code regeneration)
+# 2. Rebuild MCP (triggers StrawberryShake code regeneration)
 /build-mcp
 
-# 4. Re-run tests to verify
+# 3. Re-run tests to verify
 /test
 ```
 
@@ -453,7 +450,8 @@ cp TimeReportingApi/bin/Debug/net10.0/schema.graphql TimeReportingMcp/schema.gra
 - ✅ Prevents MCP schema drift from API schema
 - ✅ StrawberryShake code generation always uses correct types
 - ✅ Test-driven validation catches schema mismatches early
-- ✅ No manual schema downloads or external tools required
+- ✅ No build dependencies - test executes export command directly
+- ✅ Unix-friendly: schema export prints to stdout (can redirect anywhere)
 - ✅ Works in any environment (CI/CD, local dev, not Claude Code-specific)
 
 See [ADR 0009](docs/adr/0009-strawberryshake-typed-graphql-client.md) for architectural decision details.
