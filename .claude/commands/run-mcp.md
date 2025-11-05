@@ -8,7 +8,7 @@ Run the MCP Server for testing (normally started by Claude Code automatically).
 ### Execution
 
 ```bash
-./run-mcp.sh
+.claude/hooks/guard.sh "dotnet run --project TimeReportingMcp" "slash"
 ```
 
 ### Expected Output
@@ -16,6 +16,7 @@ Run the MCP Server for testing (normally started by Claude Code automatically).
 - MCP Server starts and listens on stdio
 - Waits for JSON-RPC requests
 - Shows configuration loaded message
+- Acquires Azure AD token from Azure CLI
 
 ### Notes
 
@@ -23,4 +24,5 @@ Run the MCP Server for testing (normally started by Claude Code automatically).
 - Claude Code will automatically start the MCP server via `.mcp.json` configuration
 - Requires API to be running and accessible
 - Requires environment variables to be set: `source env.sh` first
-- Environment variables needed: `GRAPHQL_API_URL`, `Authentication__BearerToken`
+- Environment variable needed: `GRAPHQL_API_URL`
+- **Authentication**: Requires `az login` - MCP server uses Azure CLI credentials

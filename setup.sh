@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Time Reporting System - Setup Script
-# Generates a secure bearer token and creates environment configuration files
+# Creates environment configuration file
 
 set -e  # Exit on any error
 
@@ -15,6 +15,38 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+# Check if Azure CLI is installed
+if ! command -v az &> /dev/null; then
+    echo -e "${RED}❌ Azure CLI not found${NC}"
+    echo ""
+    echo "This project uses Azure Entra ID for authentication."
+    echo "Please install Azure CLI:"
+    echo "  macOS: brew install azure-cli"
+    echo "  Linux: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux"
+    echo "  Windows: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows"
+    echo ""
+    exit 1
+fi
+
+# Check if user is logged in to Azure
+echo -e "${GREEN}✓${NC} Checking Azure CLI authentication..."
+if ! az account show &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Not logged in to Azure${NC}"
+    echo ""
+    echo "Please login to Azure:"
+    echo "  ${GREEN}az login${NC}"
+    echo ""
+    exit 1
+fi
+
+# Get Azure account info
+AZURE_USER=$(az account show --query user.name -o tsv)
+AZURE_TENANT=$(az account show --query tenantId -o tsv)
+
+echo -e "${GREEN}✓${NC} Authenticated as: ${AZURE_USER}"
+echo -e "${GREEN}✓${NC} Tenant ID: ${AZURE_TENANT}"
+echo ""
 
 # Check if env.sh already exists
 if [ -f "env.sh" ]; then
@@ -30,13 +62,9 @@ if [ -f "env.sh" ]; then
     fi
 fi
 
-# Generate secure bearer token
-echo -e "${GREEN}✓${NC} Generating secure bearer token..."
-BEARER_TOKEN=$(openssl rand -base64 32)
-
 # Create env.sh for shell environment variables
 echo -e "${GREEN}✓${NC} Creating env.sh (source this to set environment variables)..."
-cat > env.sh << EOF
+cat > env.sh << 'EOF'
 #!/bin/bash
 # Environment variables for Time Reporting System
 # Source this file to set environment variables in your shell:
@@ -49,19 +77,19 @@ export POSTGRES_USER=postgres
 export POSTGRES_PASSWORD=postgres
 export POSTGRES_DB=time_reporting
 
-# GraphQL API & MCP Server (shared token)
+# GraphQL API
 export ASPNETCORE_ENVIRONMENT=Production
-export Authentication__BearerToken=${BEARER_TOKEN}
 
 # MCP Server
 export GRAPHQL_API_URL=http://localhost:5001/graphql
 
 echo "✅ Environment variables loaded"
-echo "   Authentication__BearerToken: \${Authentication__BearerToken:0:10}..."
 echo "   These variables are now available to:"
-echo "     • MCP Server (run-mcp.sh)"
+echo "     • MCP Server (uses Azure CLI authentication)"
 echo "     • GraphQL API (Docker Compose)"
 echo "     • All slash commands"
+echo ""
+echo "Note: MCP Server requires 'az login' for authentication"
 EOF
 
 chmod +x env.sh
@@ -83,8 +111,9 @@ echo ""
 echo "  2. Deploy the stack:"
 echo "     ${GREEN}/deploy${NC}"
 echo ""
-echo "Docker Compose and all services will read environment variables from your shell."
+echo "Authentication:"
+echo "  ✅ You're already logged in to Azure (${AZURE_USER})"
+echo "  🔑 MCP Server will use Azure CLI credentials automatically"
 echo ""
 echo -e "${YELLOW}⚠️  Remember to run 'source env.sh' in each new shell session!${NC}"
-echo -e "${YELLOW}⚠️  env.sh is in .gitignore (your secret is safe).${NC}"
 echo ""

@@ -35,9 +35,6 @@ services:
       # Database Connection
       # IMPORTANT: Use 'postgres' service name, not 'localhost'
       ConnectionStrings__TimeReportingDb: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-time_reporting};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
-
-      # Authentication
-      Authentication__BearerToken: ${Authentication__BearerToken}
     ports:
       - "5001:5001"
     depends_on:
