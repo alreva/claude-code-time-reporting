@@ -11,7 +11,7 @@ This document specifies the MCP (Model Context Protocol) tools that Claude Code 
 
 **MCP Server Name:** `time-reporting`
 **Communication:** stdio (standard input/output)
-**Authentication:** Bearer token configured in MCP server settings
+**Authentication:** Azure Entra ID via AzureCliCredential (requires `az login`)
 
 ---
 
@@ -619,9 +619,13 @@ const server = new Server({
   version: "1.0.0"
 });
 
+// Azure AD token acquired via AzureCliCredential
+const tokenService = new TokenService();
+const token = await tokenService.GetTokenAsync();
+
 const graphqlClient = new GraphQLClient('http://localhost:5001/graphql', {
   headers: {
-    Authorization: `Bearer ${process.env.TIME_REPORTING_TOKEN}`
+    Authorization: `Bearer ${token}`  // Azure AD JWT token
   }
 });
 

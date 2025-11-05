@@ -17,7 +17,7 @@ Install necessary NuGet packages and configure the GraphQL client for communicat
 
 - [ ] GraphQL.Client NuGet package installed
 - [ ] GraphQL.Client.Serializer.SystemTextJson installed
-- [ ] Configuration class created for API URL and bearer token
+- [ ] Configuration class created for API URL and Azure AD token
 - [ ] GraphQL client wrapper implemented
 - [ ] Project builds successfully
 - [ ] Client can be instantiated with environment variables
@@ -86,7 +86,7 @@ public class McpConfig
     public McpConfig()
     {
         GraphQLApiUrl = GetRequiredEnvVar("GRAPHQL_API_URL");
-        BearerToken = GetRequiredEnvVar("Authentication__BearerToken");
+        BearerToken = GetRequiredEnvVar("Azure AD via AzureCliCredential");
     }
 
     private static string GetRequiredEnvVar(string name)
@@ -115,7 +115,7 @@ public class McpConfig
         if (BearerToken.Length < 16)
         {
             throw new InvalidOperationException(
-                "Authentication__BearerToken appears to be too short. Use a secure token (32+ characters).");
+                "Azure AD via AzureCliCredential appears to be too short. Use a secure token (32+ characters).");
         }
 
         Console.Error.WriteLine($"Configuration loaded:");
@@ -299,7 +299,7 @@ Fatal error: Required environment variable 'GRAPHQL_API_URL' is not set. Please 
 ```bash
 # Set environment variables
 export GRAPHQL_API_URL="http://localhost:5001/graphql"
-export Authentication__BearerToken="test-token-1234567890abcdef"
+export Azure AD via AzureCliCredential="test-token-1234567890abcdef"
 
 # Run with env vars
 dotnet run
@@ -332,7 +332,7 @@ Then test MCP server connection:
 ```bash
 # Run MCP server
 export GRAPHQL_API_URL="http://localhost:5001/graphql"
-export Authentication__BearerToken="your-actual-token-from-.env"
+export Azure AD via AzureCliCredential="your-actual-token-from-.env"
 
 cd TimeReportingMcp
 dotnet run
@@ -349,7 +349,7 @@ Verify logs show successful initialization.
 - [ ] Running without env vars shows clear error message
 - [ ] Running with env vars shows successful initialization
 - [ ] Configuration validates API URL format
-- [ ] Configuration validates bearer token length
+- [ ] Configuration validates Azure AD token length
 - [ ] GraphQL client logs connection to API
 
 ---
@@ -400,7 +400,7 @@ dotnet restore
       "commandName": "Project",
       "environmentVariables": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "your-token-here"
+        "Azure AD via AzureCliCredential": "your-token-here"
       }
     }
   }
@@ -411,7 +411,7 @@ dotnet restore
 
 ## Notes
 
-- **Security:** Never commit bearer tokens to version control
+- **Security:** Never commit Azure AD tokens to version control
 - **Logging:** Use `Console.Error` for logs to avoid interfering with stdio communication
 - **Error Handling:** Fail fast with clear error messages
 - **Validation:** Check configuration at startup, not during requests

@@ -10,7 +10,7 @@
 This document provides the complete GraphQL schema, queries, mutations, and usage examples for the Time Reporting API built with HotChocolate and ASP.NET Core.
 
 **Base URL:** `http://localhost:5001/graphql`
-**Authentication:** Bearer token required in `Authorization` header
+**Authentication:** Azure AD JWT token required in `Authorization` header
 
 ---
 
@@ -821,25 +821,34 @@ mutation {
 
 ### 8.4 Authentication
 
-All requests must include Bearer token:
+All requests must include Azure AD JWT token:
 
 ```http
 POST /graphql HTTP/1.1
 Host: localhost:5001
 Content-Type: application/json
-Authorization: Bearer <your-token-here>
+Authorization: Bearer <azure-ad-jwt-token>
 
 {
   "query": "query { projects { code name } }"
 }
 ```
 
-**Missing token:**
+**Acquiring token:**
+```bash
+# Authenticate with Azure CLI
+az login
+
+# Get access token for the API
+az account get-access-token --resource api://<your-api-app-id> --query accessToken -o tsv
+```
+
+**Missing or invalid token:**
 ```json
 {
   "errors": [
     {
-      "message": "Unauthorized: Missing or invalid Bearer token",
+      "message": "Unauthorized: Missing or invalid Azure AD token",
       "extensions": { "code": "AUTHENTICATION_ERROR" }
     }
   ]

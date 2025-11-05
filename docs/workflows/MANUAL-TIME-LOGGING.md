@@ -14,7 +14,7 @@ This guide demonstrates a complete manual time logging workflow using Claude Cod
 - [ ] GraphQL API running (`/deploy` or `podman compose up -d`)
 - [ ] Claude Code configured with time-reporting MCP server
 - [ ] Projects seeded in database (`/seed-db`)
-- [ ] You have a valid bearer token configured
+- [ ] You have a valid Azure AD token configured
 
 **Verify setup:**
 ```bash
@@ -464,7 +464,7 @@ curl http://localhost:5001/health
 ### Authentication Errors
 
 **Verify Token Matches:**
-1. Check `env.sh` file: `Authentication__BearerToken=...`
+1. Check `env.sh` file: `Azure AD authentication (az login)=...`
 2. Ensure you sourced env.sh: `source env.sh`
 3. Check Claude Code config: `~/.config/claude-code/config.json`
 4. Restart API: `/deploy`

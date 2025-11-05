@@ -32,7 +32,7 @@ Add comprehensive error handling across all MCP tools to provide clear, actionab
 - Project code not found
 
 ### 3. Authentication Errors
-- Missing bearer token
+- Missing Azure AD token
 - Invalid/expired token
 
 ### 4. Network Errors
@@ -226,7 +226,7 @@ public static class ErrorHandler
                 "Ensure dates are in YYYY-MM-DD format and start_date <= completion_date.",
 
             AuthenticationError =>
-                "Check your MCP server configuration and ensure the bearer token is valid.",
+                "Check your MCP server configuration and ensure the Azure AD token is valid.",
 
             _ => null
         };

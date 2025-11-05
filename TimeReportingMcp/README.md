@@ -31,9 +31,9 @@ This MCP server implements the Model Context Protocol (MCP) by:
 The MCP server uses .NET Configuration system to read from environment variables:
 
 - `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
-- `Authentication__BearerToken` - Authentication token (maps to `Authentication:BearerToken` config key)
+- `Azure AD authentication (az login)` - Authentication token (maps to `Authentication:BearerToken` config key)
 
-**Note:** The double-underscore (`__`) in `Authentication__BearerToken` is .NET's convention for representing nested configuration (maps to `Authentication:BearerToken`).
+**Note:** The double-underscore (`__`) in `Azure AD authentication (az login)` is .NET's convention for representing nested configuration (maps to `Authentication:BearerToken`).
 
 ## Usage
 

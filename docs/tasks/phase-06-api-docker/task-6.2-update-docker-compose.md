@@ -75,7 +75,7 @@ services:
       ConnectionStrings__TimeReportingDb: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-time_reporting};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
 
       # Authentication
-      Authentication__BearerToken: ${Authentication__BearerToken}
+      Azure AD via AzureCliCredential: ${Azure AD via AzureCliCredential}
     ports:
       - "5001:5001"
     depends_on:
@@ -153,7 +153,7 @@ POSTGRES_PASSWORD=postgres
 POSTGRES_DB=time_reporting
 
 # API Configuration
-Authentication__BearerToken=YOUR_Authentication__BearerToken_HERE
+Azure AD via AzureCliCredential=YOUR_Azure AD via AzureCliCredential_HERE
 ```
 
 Optionally add:
@@ -236,7 +236,7 @@ podman compose logs api | grep -i "database\|postgres\|connection"
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_Authentication__BearerToken_HERE" \
+  -H "Authorization: Bearer YOUR_Azure AD via AzureCliCredential_HERE" \
   -d '{"query":"{ projects { code name } }"}' | jq
 ```
 **Expected:** Returns GraphQL response with projects data

@@ -13,11 +13,14 @@ This guide covers manual testing of the complete Time Reporting System including
 ### Option 1: Docker (Production-like)
 
 ```bash
+# Login to Azure
+az login
+
 # Start full stack
 /deploy
 
-# Use production token
-Bearer YOUR_Authentication__BearerToken_HERE
+# Get Azure AD token for testing
+TOKEN=$(az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600 --query accessToken -o tsv)
 ```
 
 **GraphQL Playground:** http://localhost:5001/graphql
@@ -25,26 +28,39 @@ Bearer YOUR_Authentication__BearerToken_HERE
 ### Option 2: Local Development
 
 ```bash
+# Login to Azure
+az login
+
 # Start database only
 /db-start
 
 # Start API locally (in another terminal)
 /run-api
 
-# Use development token
-Bearer dev-token-12345-for-local-testing
+# Get Azure AD token for testing
+TOKEN=$(az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600 --query accessToken -o tsv)
 ```
 
 **GraphQL Playground:** http://localhost:5001/graphql
 
 ---
 
-## 📋 Environment Tokens
+## 📋 Authentication Setup
 
-| Environment | Token | Source |
-|-------------|-------|--------|
-| **Development** | `dev-token-12345-for-local-testing` | `appsettings.Development.json` |
-| **Production (Docker)** | `YOUR_Authentication__BearerToken_HERE` | `.env` file |
+**Current Authentication:** Azure Entra ID (JWT tokens)
+
+```bash
+# Ensure you're logged in
+az login
+
+# Get token for API testing
+TOKEN=$(az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600 --query accessToken -o tsv)
+
+# Use in Authorization header
+echo "Authorization: Bearer $TOKEN"
+```
+
+**Note:** All time entries will be associated with your Azure AD user identity (email, name, oid).
 
 ---
 

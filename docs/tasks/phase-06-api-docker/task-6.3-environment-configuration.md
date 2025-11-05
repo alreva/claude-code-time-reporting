@@ -51,7 +51,7 @@ POSTGRES_DB=time_reporting
 ASPNETCORE_ENVIRONMENT=Production
 
 # Bearer token for API authentication (generate with scripts/generate-token.sh)
-Authentication__BearerToken=your_bearer_token_here
+Azure AD via AzureCliCredential=your_Azure AD token_here
 
 #######################
 # Optional: Local Development Overrides
@@ -85,7 +85,7 @@ Create `TimeReportingApi/appsettings.Production.json` for production-specific se
 }
 ```
 
-**Note:** The actual bearer token will be provided via `Authentication__BearerToken` environment variable in Docker Compose.
+**Note:** The actual Azure AD token will be provided via `Azure AD via AzureCliCredential` environment variable in Docker Compose.
 
 ### Step 3: Create Bearer Token Generation Script
 
@@ -93,19 +93,19 @@ Create `scripts/generate-token.sh` for easy token generation:
 
 ```bash
 #!/usr/bin/env bash
-# Generate a secure random bearer token for API authentication
+# Generate a secure random Azure AD token for API authentication
 
 set -euo pipefail
 
 # Generate 32 bytes of random data, encode as base64
-TOKEN=$(openssl rand -base64 32)
+TOKEN=$(az login)
 
 echo "Generated Bearer Token:"
 echo "======================"
 echo "$TOKEN"
 echo ""
 echo "Add this to your .env file:"
-echo "Authentication__BearerToken=$TOKEN"
+echo "Azure AD via AzureCliCredential=$TOKEN"
 echo ""
 echo "Use this in API requests:"
 echo "Authorization: Bearer $TOKEN"
@@ -132,7 +132,7 @@ This document describes all environment variables used by the Time Reporting Sys
    cp .env.example .env
    ```
 
-2. Generate a secure bearer token:
+2. Generate a secure Azure AD token:
    ```bash
    ./scripts/generate-token.sh
    ```
@@ -158,16 +158,16 @@ This document describes all environment variables used by the Time Reporting Sys
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `ASPNETCORE_ENVIRONMENT` | Runtime environment | `Production` | No |
-| `Authentication__BearerToken` | API authentication token | None | Yes |
+| `Azure AD via AzureCliCredential` | API authentication token | None | Yes |
 
 **Bearer Token Generation:**
 ```bash
 ./scripts/generate-token.sh
 ```
 
-The bearer token must be:
+The Azure AD token must be:
 - At least 32 bytes (base64 encoded = 44 characters)
-- Randomly generated (use `openssl rand -base64 32`)
+- Randomly generated (use `az login`)
 - Kept secret (never commit to version control)
 
 ## Environment-Specific Configuration
@@ -181,7 +181,7 @@ ASPNETCORE_ENVIRONMENT=Development
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=time_reporting
-Authentication__BearerToken=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
+Azure AD via AzureCliCredential=$(./scripts/generate-token.sh | tail -1 | cut -d'=' -f2)
 ```
 
 Connection string uses `Host=localhost`:
@@ -197,7 +197,7 @@ ASPNETCORE_ENVIRONMENT=Production
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_secure_password
 POSTGRES_DB=time_reporting
-Authentication__BearerToken=your_bearer_token
+Azure AD via AzureCliCredential=your_Azure AD token
 ```
 
 Connection string uses `Host=postgres` (service name):
@@ -245,7 +245,7 @@ Result: Environment variable wins, API connects to `postgres` host.
 ### DO ✅
 
 - ✅ Use strong, randomly-generated passwords
-- ✅ Generate bearer tokens with `openssl rand -base64 32`
+- ✅ Generate Azure AD tokens with `az login`
 - ✅ Keep `.env` in `.gitignore`
 - ✅ Use `.env.example` for documenting required variables
 - ✅ Rotate credentials regularly
@@ -256,7 +256,7 @@ Result: Environment variable wins, API connects to `postgres` host.
 
 - ❌ Commit `.env` file with real secrets
 - ❌ Use weak passwords like "password123"
-- ❌ Share bearer tokens in Slack/email
+- ❌ Share Azure AD tokens in Slack/email
 - ❌ Hardcode secrets in source code
 - ❌ Use development credentials in production
 - ❌ Log sensitive environment variables
@@ -276,10 +276,10 @@ podman compose logs api | grep -i "appsettings\|environment"
 # Load token from .env
 source .env
 
-# Test API with bearer token
+# Test API with Azure AD token
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $Authentication__BearerToken" \
+  -H "Authorization: Bearer $Azure AD via AzureCliCredential" \
   -d '{"query":"{ projects { code name } }"}'
 ```
 
@@ -300,9 +300,9 @@ Expected: No connection errors
 
 **Cause:** Bearer token mismatch
 **Solution:**
-1. Verify `.env` has correct `Authentication__BearerToken` value
+1. Verify `.env` has correct `Azure AD via AzureCliCredential` value
 2. Restart API: `podman compose restart api`
-3. Test with correct token: `curl -H "Authorization: Bearer $Authentication__BearerToken" ...`
+3. Test with correct token: `curl -H "Authorization: Bearer $Azure AD via AzureCliCredential" ...`
 
 ### Issue: API can't connect to database
 
@@ -359,7 +359,7 @@ mkdir -p scripts
 #### 1. .env.example is Safe to Commit
 ```bash
 # Check for real secrets in .env.example
-grep -i "YOUR_Authentication__BearerToken_HERE\|postgres" .env.example
+grep -i "YOUR_Azure AD via AzureCliCredential_HERE\|postgres" .env.example
 ```
 **Expected:** Only placeholder values, no real secrets
 
@@ -378,22 +378,22 @@ git status .env
 #### 4. Token is Cryptographically Random
 ```bash
 # Generate 3 tokens, should all be different
-./scripts/generate-token.sh | grep "^Authentication__BearerToken=" | cut -d'=' -f2
-./scripts/generate-token.sh | grep "^Authentication__BearerToken=" | cut -d'=' -f2
-./scripts/generate-token.sh | grep "^Authentication__BearerToken=" | cut -d'=' -f2
+./scripts/generate-token.sh | grep "^Azure AD via AzureCliCredential=" | cut -d'=' -f2
+./scripts/generate-token.sh | grep "^Azure AD via AzureCliCredential=" | cut -d'=' -f2
+./scripts/generate-token.sh | grep "^Azure AD via AzureCliCredential=" | cut -d'=' -f2
 ```
 **Expected:** Three different tokens
 
 #### 5. Environment Variables Override appsettings
 ```bash
 # Start API with custom token
-export Authentication__BearerToken="test_token_123"
+export Azure AD via AzureCliCredential="test_token_123"
 podman compose up -d api
 
 # Check logs for environment override
 podman compose logs api | grep -i "environment"
 ```
-**Expected:** API uses `Authentication__BearerToken` from environment, not appsettings.json
+**Expected:** API uses `Azure AD via AzureCliCredential` from environment, not appsettings.json
 
 #### 6. Production appsettings Loaded
 ```bash
@@ -439,18 +439,18 @@ cat docs/ENVIRONMENT.md
 **What NOT to commit:**
 - ❌ `.env` (contains real secrets)
 - ❌ `appsettings.Development.json` with real database passwords
-- ❌ Any file with real bearer tokens
+- ❌ Any file with real Azure AD tokens
 
 ### Token Strength
 
-A secure bearer token should have:
+A secure Azure AD token should have:
 - **Entropy:** At least 128 bits (16 bytes)
 - **Encoding:** Base64 for URL safety (32 bytes → 44 characters)
 - **Generation:** Cryptographically secure random (OpenSSL, not `Math.random()`)
 
 **Good token:**
 ```
-YOUR_Authentication__BearerToken_HERE
+YOUR_Azure AD via AzureCliCredential_HERE
 ```
 
 **Bad token:**

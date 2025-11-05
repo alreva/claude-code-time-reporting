@@ -6,6 +6,8 @@
   }
 }
 
-// Note: The run-mcp.sh wrapper loads environment variables from env.sh
-// Make sure to run './setup.sh' and 'source env.sh' before using Claude Code
-// The wrapper validates that Authentication__BearerToken and GRAPHQL_API_URL are set
+// Note: Authentication uses Azure Entra ID
+// 1. Run 'az login' to authenticate with Azure before using Claude Code
+// 2. The MCP Server uses AzureCliCredential to acquire tokens from your Azure CLI session
+// 3. Tokens are automatically passed to the GraphQL API and validated
+// 4. User identity (oid, email, name) is extracted from validated tokens

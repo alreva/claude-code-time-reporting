@@ -47,22 +47,20 @@ curl http://localhost:5001/health
 # Expected: {"status":"healthy"}
 ```
 
-### 2. Generate Environment Configuration
+### 2. Authenticate with Azure
 
-Run the setup script to generate secure token and environment configuration:
+Authenticate using Azure CLI:
 
 ```bash
-./setup.sh
+az login
 ```
 
-This creates `env.sh` with a secure bearer token and all required environment variables.
+This authenticates you with Azure Entra ID. The MCP Server will use this authentication to acquire tokens for the GraphQL API.
 
-**Load environment variables:**
+**Verify authentication:**
 ```bash
-source env.sh
+az account show
 ```
-
-**Note:** The `env.sh` file is in `.gitignore` and contains your secure token. Never commit it to version control.
 
 ### 3. Deploy the API
 
@@ -72,7 +70,7 @@ Deploy the full stack (database + API):
 /deploy
 ```
 
-The API will automatically read `Authentication__BearerToken` from your shell environment (loaded from `env.sh`).
+The API uses Azure Entra ID for authentication and validates JWT tokens.
 
 ### 4. Configure Claude Code
 
@@ -116,7 +114,7 @@ nano ~/.config/claude-code/config.json
 }
 ```
 
-**Note:** The `run-mcp.sh` wrapper automatically reads environment variables from your shell. Make sure you've run `source env.sh` before starting Claude Code.
+**Note:** Make sure you've run `az login` before starting Claude Code. The MCP Server uses `AzureCliCredential` to acquire tokens.
 
 #### Windows
 
@@ -197,16 +195,13 @@ Available Projects:
 
 | Field | Description | Example Value |
 |-------|-------------|---------------|
-| `command` | Command to run MCP server | `"dotnet"` |
-| `args` | Arguments for the command | `["run", "--project", "path/to/.csproj"]` |
-| `GRAPHQL_API_URL` | GraphQL API endpoint | `"http://localhost:5001/graphql"` |
-| `Authentication__BearerToken` | Authentication token | `"Zq8X9v..."` (32-byte base64) |
+| `command` | Path to run-mcp.sh wrapper script | `"/absolute/path/to/run-mcp.sh"` |
 
 ### Important Notes
 
-- **Use Absolute Paths**: The project path must be absolute, not relative
-- **Token Security**: Never commit the actual `Authentication__BearerToken` to version control
-- **Token Matching**: The token in Claude Code config must match the token in API `.env` file
+- **Use Absolute Paths**: The path must be absolute, not relative
+- **Authentication**: Run `az login` before starting Claude Code
+- **Token Acquisition**: The MCP Server uses `AzureCliCredential` to get tokens from Azure CLI
 - **Path Format**:
   - macOS/Linux: Use forward slashes `/`
   - Windows: Use double backslashes `\\`
@@ -215,31 +210,20 @@ Available Projects:
 
 ## Environment Variables
 
-### GRAPHQL_API_URL
+### Azure AD Authentication
 
-**Purpose:** Specifies the GraphQL API endpoint URL
+**Purpose:** The system uses Azure Entra ID for authentication
 
-**Default:** `http://localhost:5001/graphql`
+**Setup:**
+1. Run `az login` to authenticate with Azure
+2. MCP Server uses `AzureCliCredential` to acquire access tokens
+3. Tokens are automatically passed to the GraphQL API
+4. API validates JWT tokens using Microsoft.Identity.Web
 
-**Production Example:**
-```json
-"GRAPHQL_API_URL": "https://api.yourcompany.com/time-reporting/graphql"
-```
-
-### Authentication__BearerToken
-
-**Purpose:** Authentication token for API access
-
-**Generation:**
-```bash
-openssl rand -base64 32
-```
-
-**Security:**
-- Generate a unique token for each environment (dev, staging, production)
-- Never commit tokens to version control
-- Rotate tokens periodically
-- Use environment variables in CI/CD pipelines
+**Production:**
+- For production deployments, replace `AzureCliCredential` with `ManagedIdentityCredential`
+- Configure Azure AD App Registration (see `docs/AZURE-AD-SETUP.md`)
+- Set up appropriate API permissions and scopes
 
 ---
 
@@ -310,23 +294,31 @@ cat ~/.config/claude-code/config.json | jq .
 
 **Possible Causes & Solutions:**
 
-**1. Bearer token mismatch**
+**1. Azure CLI not authenticated**
 
 ```bash
-# Check API .env file
-cat .env | grep Authentication__BearerToken
+# Check if authenticated
+az account show
 
-# Check Claude Code config
-cat ~/.config/claude-code/config.json | jq '.mcpServers."time-reporting".env.Authentication__BearerToken'
+# If not authenticated, login
+az login
 
-# Tokens MUST match exactly
+# Verify you can get a token
+az account get-access-token --resource api://<your-api-app-id>
 ```
 
-**2. API not running or not restarted after token change**
+**2. API not running or misconfigured**
 
 ```bash
 # Check API health
 curl http://localhost:5001/health
+
+# Check Azure AD configuration
+cat .env | grep AzureAd
+
+# Should see:
+# AzureAd__TenantId=<your-tenant-id>
+# AzureAd__ClientId=<your-api-app-id>
 
 # If not responding, restart API
 /deploy
@@ -336,17 +328,18 @@ curl http://localhost:5001/health
 
 ```bash
 # Check API logs
-podman compose logs graphql-api
+podman compose logs time-reporting-api
 
 # Look for authentication-related errors
-podman compose logs graphql-api | grep -i "auth\|401\|unauthorized"
+podman compose logs time-reporting-api | grep -i "auth\|401\|unauthorized"
 ```
 
 **Solution:**
-1. Verify tokens match in both `.env` and Claude Code config
-2. Restart API: `/deploy`
-3. Restart Claude Code
-4. Test again
+1. Run `az login` to authenticate
+2. Verify Azure AD configuration in API `.env`
+3. Restart API: `/deploy`
+4. Restart Claude Code
+5. Test again
 
 ---
 
@@ -473,68 +466,42 @@ cat .env | grep DATABASE_URL
 
 ### Custom API Port
 
-If your API runs on a different port (e.g., 8080):
+If your API runs on a different port (e.g., 8080), update the API URL in the MCP server configuration (`TimeReportingMcp/appsettings.json`):
 
 ```json
 {
-  "mcpServers": {
-    "time-reporting": {
-      "command": "dotnet",
-      "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:8080/graphql",
-        "Authentication__BearerToken": "your-token-here"
-      }
-    }
+  "GraphQL": {
+    "ApiUrl": "http://localhost:8080/graphql"
   }
 }
 ```
 
 ### Remote API (Production)
 
-For connecting to a remote production API:
+For connecting to a remote production API, update `appsettings.Production.json`:
 
 ```json
 {
-  "mcpServers": {
-    "time-reporting": {
-      "command": "dotnet",
-      "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
-      "env": {
-        "GRAPHQL_API_URL": "https://api.yourcompany.com/time-reporting/graphql",
-        "Authentication__BearerToken": "production-token-here",
-        "SSL_VERIFY": "true"
-      }
-    }
+  "GraphQL": {
+    "ApiUrl": "https://api.yourcompany.com/time-reporting/graphql"
+  },
+  "AzureAd": {
+    "TenantId": "<your-tenant-id>",
+    "ClientId": "<your-api-app-id>"
   }
 }
 ```
 
 ### Multiple Environments
 
-You can configure multiple MCP servers for different environments:
+You can configure multiple MCP servers pointing to different environments by using different configuration files:
 
-```json
-{
-  "mcpServers": {
-    "time-reporting-dev": {
-      "command": "dotnet",
-      "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "dev-token"
-      }
-    },
-    "time-reporting-prod": {
-      "command": "dotnet",
-      "args": ["run", "--project", "path/to/TimeReportingMcp.csproj"],
-      "env": {
-        "GRAPHQL_API_URL": "https://api.yourcompany.com/graphql",
-        "Authentication__BearerToken": "prod-token"
-      }
-    }
-  }
-}
+```bash
+# Development (uses appsettings.json)
+dotnet run --project TimeReportingMcp
+
+# Production (uses appsettings.Production.json)
+dotnet run --project TimeReportingMcp --configuration Production
 ```
 
 ---
@@ -544,14 +511,14 @@ You can configure multiple MCP servers for different environments:
 Use this checklist to verify your setup:
 
 - [ ] .NET 10 SDK installed and in PATH
+- [ ] Azure CLI installed and authenticated (`az login`)
 - [ ] GraphQL API running and healthy
 - [ ] Database seeded with projects
-- [ ] Bearer token generated (32-byte base64)
-- [ ] Bearer token configured in API `.env` file
-- [ ] API restarted after token configuration
+- [ ] Azure AD configured in API `.env` file (TenantId, ClientId)
+- [ ] API restarted after Azure AD configuration
 - [ ] Claude Code configuration file created
-- [ ] Project path in config is absolute (not relative)
-- [ ] Bearer token in Claude Code config matches API token
+- [ ] MCP server path in config is absolute (not relative)
+- [ ] Can acquire Azure AD token (`az account get-access-token`)
 - [ ] Claude Code restarted after configuration
 - [ ] MCP tools appear in Claude Code
 - [ ] Test command works (e.g., "Get available projects")

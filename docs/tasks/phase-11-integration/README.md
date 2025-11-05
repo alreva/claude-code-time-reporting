@@ -1,5 +1,7 @@
 # Phase 11: Integration & Testing
 
+> **Note:** This phase documentation contains historical references to Azure AD token authentication. The current implementation uses Azure Entra ID authentication via `az login`. See updated setup guides in `docs/integration/CLAUDE-CODE-SETUP.md`.
+
 **Total Tasks:** 5
 **Estimated Time:** 5.5 hours
 **Status:** Ready for Implementation
@@ -63,7 +65,7 @@ curl http://localhost:5001/health
 1. **Task 11.1:** Set up Claude Code configuration
    - Create example config file
    - Document platform-specific setup
-   - Generate bearer token
+   - Generate Azure AD token
    - Configure MCP server in Claude Code
 
 2. **Task 11.2:** Create E2E test infrastructure
@@ -227,7 +229,7 @@ curl http://localhost:5001/health
 - Tools fail with authentication errors
 
 **Solutions:**
-1. Verify `Authentication__BearerToken` matches in both API and Claude Code config
+1. Verify `Azure AD via AzureCliCredential` matches in both API and Claude Code config
 2. Check API is running: `curl http://localhost:5001/health`
 3. Restart API after token changes: `/deploy`
 4. Check API logs: `docker-compose logs graphql-api`

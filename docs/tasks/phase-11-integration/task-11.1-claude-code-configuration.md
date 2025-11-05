@@ -17,7 +17,7 @@ Create MCP server configuration for Claude Code, enabling users to connect Claud
 
 - [ ] Example `claude_desktop_config.json` file created with all required settings
 - [ ] Configuration includes correct paths for .NET 10 and MCP Server project
-- [ ] Environment variables documented for `GRAPHQL_API_URL` and `Authentication__BearerToken`
+- [ ] Environment variables documented for `GRAPHQL_API_URL` and `Azure AD via AzureCliCredential`
 - [ ] Instructions provided for different operating systems (macOS, Windows, Linux)
 - [ ] Configuration tested with Claude Code (MCP server appears in tools list)
 - [ ] Troubleshooting section added for common configuration issues
@@ -42,7 +42,7 @@ Create `docs/integration/claude_desktop_config.json.example`:
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "your-bearer-token-here"
+        "Azure AD via AzureCliCredential": "your-Azure AD token-here"
       }
     }
   }
@@ -51,7 +51,7 @@ Create `docs/integration/claude_desktop_config.json.example`:
 
 **Key Points:**
 - Use absolute paths (not relative) for project path
-- `Authentication__BearerToken` must match the token configured in the GraphQL API
+- `Azure AD via AzureCliCredential` must match the token configured in the GraphQL API
 - `GRAPHQL_API_URL` should point to the running GraphQL API (default: `http://localhost:5001/graphql`)
 
 ### Step 2: Document Platform-Specific Paths
@@ -85,13 +85,13 @@ Create `docs/integration/CLAUDE-CODE-SETUP.md`:
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
 | `GRAPHQL_API_URL` | GraphQL API endpoint URL | `http://localhost:5001/graphql` |
-| `Authentication__BearerToken` | Authentication token for API | `your-generated-token-here` |
+| `Azure AD via AzureCliCredential` | Authentication token for API | `your-generated-token-here` |
 
 **Generating a Bearer Token:**
 
 ```bash
 # Generate a secure random token (32 bytes base64 encoded)
-openssl rand -base64 32
+az login
 ```
 
 **Example output:**
@@ -99,7 +99,7 @@ openssl rand -base64 32
 Zq8X9vKpL2mN4wR7tY5uI3oP1aS6dF8hG0jK9lM2nB4=
 ```
 
-**⚠️ Security Note:** Never commit the actual `Authentication__BearerToken` to version control. Use this token in:
+**⚠️ Security Note:** Never commit the actual `Azure AD via AzureCliCredential` to version control. Use this token in:
 1. Claude Code config file (`.config/claude-code/config.json`)
 2. GraphQL API configuration (`.env` file or `appsettings.json`)
 
@@ -126,14 +126,14 @@ curl http://localhost:5001/health
 **3. Generate Bearer Token:**
 
 ```bash
-openssl rand -base64 32
+az login
 ```
 
 **4. Update API Configuration:**
 
 Edit `.env` file:
 ```env
-Authentication__BearerToken=<your-generated-token>
+Azure AD via AzureCliCredential=<your-generated-token>
 ```
 
 Restart API:
@@ -157,7 +157,7 @@ Edit `~/.config/claude-code/config.json` (macOS/Linux) or `%APPDATA%\claude-code
       ],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "<same-token-from-step-3>"
+        "Azure AD via AzureCliCredential": "<same-token-from-step-3>"
       }
     }
   }
@@ -217,7 +217,7 @@ Add troubleshooting section to `docs/integration/CLAUDE-CODE-SETUP.md`:
 **Problem:** MCP tools return authentication errors
 
 **Solutions:**
-1. Verify `Authentication__BearerToken` in Claude Code config matches the token in API `.env` file
+1. Verify `Azure AD via AzureCliCredential` in Claude Code config matches the token in API `.env` file
 2. Verify GraphQL API is running:
    ```bash
    curl http://localhost:5001/health
@@ -363,13 +363,13 @@ else
 fi
 echo
 
-# Step 5: Check bearer token is set
-echo "5. Checking bearer token..."
-if grep -q "Authentication__BearerToken" .env 2>/dev/null; then
-    echo "✅ PASS: Authentication__BearerToken found in .env file"
+# Step 5: Check Azure AD token is set
+echo "5. Checking Azure AD token..."
+if grep -q "Azure AD via AzureCliCredential" .env 2>/dev/null; then
+    echo "✅ PASS: Azure AD via AzureCliCredential found in .env file"
 else
-    echo "⚠️  WARN: Authentication__BearerToken not found in .env file"
-    echo "         Generate one with: openssl rand -base64 32"
+    echo "⚠️  WARN: Azure AD via AzureCliCredential not found in .env file"
+    echo "         Generate one with: az login"
 fi
 echo
 
@@ -397,7 +397,7 @@ chmod +x tests/integration/verify-mcp-connection.sh
 
 **Referenced:**
 - `TimeReportingMcp/TimeReportingMcp.csproj` - MCP Server project
-- `.env` - API configuration (Authentication__BearerToken)
+- `.env` - API configuration (Azure AD via AzureCliCredential)
 - `~/.config/claude-code/config.json` - Claude Code config (user's machine)
 
 ---

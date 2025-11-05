@@ -64,7 +64,7 @@ Create file: `.env`
 DB_PASSWORD=your_secure_password_here
 
 # API Configuration (for future tasks)
-Authentication__BearerToken=
+Azure AD via AzureCliCredential=
 ```
 
 Create file: `.env.example`
@@ -74,7 +74,7 @@ Create file: `.env.example`
 DB_PASSWORD=postgres
 
 # API Configuration
-Authentication__BearerToken=your_bearer_token_here
+Azure AD via AzureCliCredential=your_Azure AD token_here
 ```
 
 ---

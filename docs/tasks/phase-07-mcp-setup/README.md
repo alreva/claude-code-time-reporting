@@ -1,5 +1,7 @@
 # Phase 7: MCP Server - Setup
 
+> **Note:** This phase documentation contains historical references to Azure AD token authentication. The current implementation uses Azure Entra ID authentication. See `TokenService.cs` and `Program.cs` for the current authentication implementation.
+
 **Status:** Pending
 **Estimated Time:** 3 hours
 **Dependencies:** Phase 6 complete (GraphQL API running in Docker)
@@ -61,7 +63,7 @@ PostgreSQL Database
 
 **What you'll do:**
 - Install `GraphQL.Client` and `GraphQL.Client.Serializer.SystemTextJson`
-- Create `McpConfig.cs` (reads env vars: GRAPHQL_API_URL, Authentication__BearerToken)
+- Create `McpConfig.cs` (reads env vars: GRAPHQL_API_URL, Azure AD via AzureCliCredential)
 - Create `GraphQLClientWrapper.cs` (wraps GraphQL client with auth)
 - Test configuration loading
 
@@ -214,7 +216,7 @@ Set these environment variables before running:
 
 ```bash
 export GRAPHQL_API_URL="http://localhost:5001/graphql"
-export Authentication__BearerToken="your-token-from-.env-file"
+export Azure AD via AzureCliCredential="your-token-from-.env-file"
 ```
 
 **For Claude Code integration (later):**
@@ -226,7 +228,7 @@ export Authentication__BearerToken="your-token-from-.env-file"
       "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
       "env": {
         "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "your-token-here"
+        "Azure AD via AzureCliCredential": "your-token-here"
       }
     }
   }

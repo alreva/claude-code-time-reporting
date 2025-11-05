@@ -6,7 +6,19 @@ Your Time Reporting System is now running and ready for testing!
 
 - **GraphQL Playground:** http://localhost:5001/graphql
 - **Health Check:** http://localhost:5001/health
-- **Bearer Token:** `YOUR_Authentication__BearerToken_HERE`
+- **Authentication:** Azure Entra ID (run `az login` first)
+
+## 🔑 Getting an Azure AD Token
+
+To test the API, you'll need an Azure AD token:
+
+```bash
+# Get token for testing
+TOKEN=$(az account get-access-token --resource api://8b3f87d7-bc23-4932-88b5-f24056999600 --query accessToken -o tsv)
+
+# Use in Authorization header
+echo "Authorization: Bearer $TOKEN"
+```
 
 ## 📋 Pre-Seeded Test Data
 
@@ -49,7 +61,7 @@ Each project has:
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_Authentication__BearerToken_HERE' \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{"query":"{ projects { code name isActive } }"}'
 ```
 
@@ -84,7 +96,7 @@ curl -X POST http://localhost:5001/graphql \
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_Authentication__BearerToken_HERE' \
+  -H 'Authorization: Bearer $TOKEN' \
   -d '{"query":"{ project(code: \"INTERNAL\") { code name tasks { name } tagConfigurations { name isRequired allowedValues { value } } } }"}'
 ```
 
@@ -128,7 +140,7 @@ mutation {
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_Authentication__BearerToken_HERE' \
+  -H 'Authorization: Bearer $TOKEN' \
   -d '{"query":"mutation { logTime(input: { projectCode: \"INTERNAL\", task: \"Development\", standardHours: 8, startDate: \"2024-01-15\", completionDate: \"2024-01-15\", tags: [{ name: \"priority\", value: \"High\" }] }) { id projectCode task standardHours status } }"}'
 ```
 
@@ -163,7 +175,7 @@ curl -X POST http://localhost:5001/graphql \
 ```bash
 curl -X POST http://localhost:5001/graphql \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_Authentication__BearerToken_HERE' \
+  -H 'Authorization: Bearer $TOKEN' \
   -d '{"query":"{ timeEntries(projectCode: \"INTERNAL\", limit: 10) { id projectCode task standardHours status } }"}'
 ```
 
@@ -284,7 +296,7 @@ mutation {
 3. Add authentication header:
    ```json
    {
-     "Authorization": "Bearer YOUR_Authentication__BearerToken_HERE"
+     "Authorization": "Bearer $TOKEN"
    }
    ```
 4. Use the left panel to write queries/mutations

@@ -1,5 +1,7 @@
 # ADR 0009: StrawberryShake Typed GraphQL Client
 
+> **Note:** This ADR references bearer token authentication which has been superseded by Azure Entra ID authentication. See current authentication implementation in `Program.cs`, `appsettings.json`, and `TokenService.cs`.
+
 ## Status
 
 **Accepted**

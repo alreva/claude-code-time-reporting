@@ -51,7 +51,7 @@ This document provides detailed architectural diagrams and component specificati
 └───────────────────────────┼─────────────────────────────────────┘
                             │ HTTP/HTTPS
                             │ GraphQL over POST
-                            │ Bearer Token Auth
+                            │ Azure AD JWT Auth
 ┌───────────────────────────▼─────────────────────────────────────┐
 │                      Docker Host                                │
 │                                                                 │
@@ -112,16 +112,16 @@ This document provides detailed architectural diagrams and component specificati
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "dotnet",
-      "args": ["run", "--project", "/path/to/TimeReportingMcp/TimeReportingMcp.csproj"],
-      "env": {
-        "GRAPHQL_API_URL": "http://localhost:5001/graphql",
-        "Authentication__BearerToken": "your-token-here"
-      }
+      "command": "/path/to/time-reporting-system/run-mcp.sh"
     }
   }
 }
 ```
+
+**Authentication:**
+- Run `az login` before starting Claude Code
+- MCP Server uses `AzureCliCredential` to acquire tokens
+- Tokens are automatically passed to GraphQL API
 
 ---
 
@@ -189,15 +189,12 @@ class McpServer
 {
     private readonly GraphQLHttpClient _graphqlClient;
 
-    public McpServer(IConfiguration configuration)
+    public McpServer(
+        ITimeReportingClient graphqlClient,
+        TokenService tokenService)
     {
-        var apiUrl = configuration["GRAPHQL_API_URL"];
-        var bearerToken = configuration["Authentication:BearerToken"];
-
-        _graphqlClient = new GraphQLHttpClient(apiUrl, new SystemTextJsonSerializer());
-        _graphqlClient.HttpClient.DefaultRequestHeaders.Add(
-            "Authorization",
-            $"Bearer {bearerToken}");
+        _graphqlClient = graphqlClient;
+        _tokenService = tokenService;
     }
 
     public async Task RunAsync()
@@ -268,8 +265,13 @@ private async Task<JsonRpcResponse> LogTime(Dictionary<string, JsonElement> args
 ```
 
 **Configuration:**
-- `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
-- `Authentication__BearerToken` - Authentication token
+- `GraphQL:ApiUrl` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
+- `AzureAd:ApiScope` - Azure AD API scope (e.g., api://<app-id>/.default)
+
+**Authentication:**
+- Uses `AzureCliCredential` to acquire tokens from Azure CLI
+- Tokens automatically refreshed when expired
+- User identity tracked in all operations
 
 **That's it!** ~200 lines of C# for the entire MCP server.
 
@@ -384,8 +386,11 @@ public interface IWorkflowService
   "ConnectionStrings": {
     "DefaultConnection": "Host=postgres;Database=time_reporting;Username=postgres;Password=<password>"
   },
-  "Authentication": {
-    "BearerToken": "<your-token>"
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "TenantId": "<your-tenant-id>",
+    "ClientId": "<your-api-app-id>",
+    "Audience": "api://<your-api-app-id>"
   },
   "GraphQL": {
     "EnableIntrospection": true,
@@ -488,7 +493,7 @@ time_reporting (database)
 │     mutation    │
 └────┬────────────┘
      │ POST /graphql
-     │ Authorization: Bearer <token>
+     │ Authorization: Bearer <azure-ad-jwt-token>
      │ {
      │   "query": "mutation LogTime($input: LogTimeInput!) { ... }",
      │   "variables": { "input": {...} }
@@ -496,8 +501,11 @@ time_reporting (database)
      ▼
 ┌─────────────────┐
 │  GraphQL API    │
-│  1. Auth check  │
-│  2. Validate    │
+│  1. Validate JWT│
+│  2. Extract user│
+│     claims (oid,│
+│     email, name)│
+│  3. Validate    │
 │     business    │
 │     rules       │
 └────┬────────────┘
@@ -636,7 +644,8 @@ services:
       dockerfile: Dockerfile
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres;Database=time_reporting;Username=postgres;Password=${DB_PASSWORD}"
-      Authentication__BearerToken: ${Authentication__BearerToken}
+      AzureAd__TenantId: ${AZURE_AD_TENANT_ID}
+      AzureAd__ClientId: ${AZURE_AD_CLIENT_ID}
     ports:
       - "5000:8080"
     depends_on:
@@ -726,25 +735,27 @@ volumes:
 └──────────────────────────────────────────┘
 ```
 
-### 5.2 Token Management
+### 5.2 Azure AD Token Management
 
-**Generation:**
+**Acquisition:**
 ```bash
-# Generate secure random token
-openssl rand -base64 32
+# Authenticate with Azure CLI
+az login
+
+# MCP Server uses AzureCliCredential to acquire tokens
+# Tokens are automatically passed to GraphQL API
 ```
 
-**Storage:**
-- MCP Server: Environment variable `Authentication__BearerToken`
-- API: Configuration file or environment variable
-- **Never** commit tokens to version control
+**Token Lifecycle:**
+- Tokens issued by Microsoft Entra ID
+- Automatically refreshed when expired by Azure.Identity library
+- User identity (oid, email, name) included in token claims
+- API validates token signature, issuer, audience, expiration
 
-**Rotation:**
-1. Generate new token
-2. Update API configuration
-3. Update MCP server configuration
-4. Restart services
-5. Invalidate old token
+**Production:**
+- Replace `AzureCliCredential` with `ManagedIdentityCredential`
+- Configure Azure AD App Registration
+- Set up API permissions and scopes
 
 ### 5.3 Data Protection
 
