@@ -152,6 +152,12 @@ public class QueryEntriesTool
 
                 message.AppendLine();
 
+                // Display decline comment if present
+                if (!string.IsNullOrEmpty(entry.DeclineComment))
+                {
+                    message.AppendLine($"    ⚠️  Decline reason: {entry.DeclineComment}");
+                }
+
                 if (!string.IsNullOrEmpty(entry.Description))
                 {
                     var shortDesc = entry.Description.Length > 60
