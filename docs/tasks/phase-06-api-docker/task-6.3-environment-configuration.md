@@ -80,7 +80,7 @@ Create `TimeReportingApi/appsettings.Production.json` for production-specific se
     "TimeReportingDb": "Host=postgres;Port=5432;Database=time_reporting;Username=postgres;Password=postgres"
   },
   "Authentication": {
-    "BearerToken": "will-be-overridden-by-env-var"
+    "// No bearer token - uses Azure AD authentication"
   }
 }
 ```

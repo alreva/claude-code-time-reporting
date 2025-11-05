@@ -316,7 +316,7 @@ public class QueryEntriesToolTests
         var config = new McpConfig
         {
             GraphQLApiUrl = "http://localhost:5001/graphql",
-            BearerToken = "test-token"
+            // Authentication via AzureCliCredential (see TokenService.cs)
         };
         var client = new GraphQLClientWrapper(config);
         var tool = new QueryEntriesTool(client);
@@ -337,7 +337,7 @@ public class QueryEntriesToolTests
         var config = new McpConfig
         {
             GraphQLApiUrl = "http://localhost:5001/graphql",
-            BearerToken = "test-token"
+            // Authentication via AzureCliCredential (see TokenService.cs)
         };
         var client = new GraphQLClientWrapper(config);
         var tool = new QueryEntriesTool(client);
@@ -361,7 +361,7 @@ public class QueryEntriesToolTests
         var config = new McpConfig
         {
             GraphQLApiUrl = "http://localhost:5001/graphql",
-            BearerToken = "test-token"
+            // Authentication via AzureCliCredential (see TokenService.cs)
         };
         var client = new GraphQLClientWrapper(config);
         var tool = new QueryEntriesTool(client);

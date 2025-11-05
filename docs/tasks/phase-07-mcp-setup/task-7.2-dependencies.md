@@ -81,12 +81,12 @@ public class McpConfig
     /// <summary>
     /// Bearer token for authentication
     /// </summary>
-    public string BearerToken { get; }
+    // Removed: public string BearerToken (now uses TokenService) { get; }
 
     public McpConfig()
     {
         GraphQLApiUrl = GetRequiredEnvVar("GRAPHQL_API_URL");
-        BearerToken = GetRequiredEnvVar("Azure AD via AzureCliCredential");
+        // Removed: BearerToken (now uses TokenService) = GetRequiredEnvVar("Azure AD via AzureCliCredential");
     }
 
     private static string GetRequiredEnvVar(string name)
@@ -156,7 +156,7 @@ public class GraphQLClientWrapper : IDisposable
 
         // Add Bearer token authentication
         _client.HttpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", config.BearerToken);
+            new AuthenticationHeaderValue("Bearer", await tokenService.GetTokenAsync());
 
         Console.Error.WriteLine($"GraphQL client initialized for {config.GraphQLApiUrl}");
     }
