@@ -31,38 +31,45 @@ This MCP server implements the Model Context Protocol (MCP) by:
 The MCP server uses .NET Configuration system to read from environment variables:
 
 - `GRAPHQL_API_URL` - GraphQL endpoint (e.g., http://localhost:5001/graphql)
-- `Azure AD authentication (az login)` - Authentication token (maps to `Authentication:BearerToken` config key)
+- `AzureAd:ApiScope` - Azure AD API scope (default: `api://8b3f87d7-bc23-4932-88b5-f24056999600/.default`)
 
-**Note:** The double-underscore (`__`) in `Azure AD authentication (az login)` is .NET's convention for representing nested configuration (maps to `Authentication:BearerToken`).
+**Authentication:** The server uses `AzureCliCredential` to automatically acquire Azure AD tokens from `az login`. No manual token configuration needed.
 
 ## Usage
 
 ### Via Shell (Recommended)
 
 ```bash
-# 1. Generate token and load environment
+# 1. Authenticate with Azure
+az login
+
+# 2. Setup environment
 ./setup.sh
 source env.sh
 
-# 2. Run MCP server (wrapper script loads environment)
+# 3. Run MCP server
 ./run-mcp.sh
 ```
 
 ### Via Claude Code
 
-The repository includes `.mcp.json` which calls the `run-mcp.sh` wrapper:
+The repository includes `.mcp.json` which starts the MCP server via `dotnet run`:
 
 ```json
 {
   "mcpServers": {
     "time-reporting": {
-      "command": "./run-mcp.sh"
+      "command": "dotnet",
+      "args": ["run", "--project", "TimeReportingMcp"],
+      "env": {
+        "GRAPHQL_API_URL": "http://localhost:5001/graphql"
+      }
     }
   }
 }
 ```
 
-The wrapper script validates that environment variables are set before starting the server.
+Claude Code will automatically start the MCP server when it launches. The server acquires Azure AD tokens via `AzureCliCredential` (requires `az login`).
 
 ## Development
 
