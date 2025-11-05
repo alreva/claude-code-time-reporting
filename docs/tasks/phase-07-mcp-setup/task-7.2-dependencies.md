@@ -112,15 +112,11 @@ public class McpConfig
                 $"GRAPHQL_API_URL '{GraphQLApiUrl}' is not a valid URL");
         }
 
-        if (BearerToken.Length < 16)
-        {
-            throw new InvalidOperationException(
-                "Azure AD via AzureCliCredential appears to be too short. Use a secure token (32+ characters).");
-        }
+        // Removed: Bearer token validation (now uses TokenService with AzureCliCredential)
 
         Console.Error.WriteLine($"Configuration loaded:");
         Console.Error.WriteLine($"  GraphQL API: {GraphQLApiUrl}");
-        Console.Error.WriteLine($"  Bearer Token: {BearerToken.Substring(0, 8)}...");
+        Console.Error.WriteLine($"  Authentication: Azure AD (via az login)");
     }
 }
 ```
