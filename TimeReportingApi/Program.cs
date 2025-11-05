@@ -10,7 +10,7 @@ using TimeReportingApi.Services;
 // Check for schema export command (used by MSBuild to export schema for MCP sync validation)
 if (args.Length > 0 && args[0] == "export-schema")
 {
-    await ExportSchemaAsync(args[1]);
+    await ExportSchemaAsync();
     return;
 }
 
@@ -65,8 +65,8 @@ app.MapGraphQL();
 
 app.Run();
 
-// Export GraphQL schema to file (used by MSBuild for MCP sync validation)
-static async Task ExportSchemaAsync(string outputPath)
+// Export GraphQL schema to stdout (used by MSBuild for MCP sync validation)
+static async Task ExportSchemaAsync()
 {
     var builder = WebApplication.CreateBuilder();
     ConfigureServices(builder);
@@ -74,9 +74,8 @@ static async Task ExportSchemaAsync(string outputPath)
 
     var schema = await app.Services.GetRequiredService<IRequestExecutorResolver>()
         .GetRequestExecutorAsync();
-    await File.WriteAllTextAsync(outputPath, schema.Schema.Print());
 
-    Console.WriteLine($"✅ Schema exported to {outputPath}");
+    Console.Write(schema.Schema.Print());
 }
 
 // Shared service configuration used by both schema export and normal API startup
