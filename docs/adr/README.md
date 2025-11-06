@@ -97,6 +97,7 @@ What other options did we evaluate and why did we reject them?
 | [0008](0008-direct-mutation-implementation.md) | Direct Mutation Implementation Pattern | Accepted | 2025-10-28 |
 | [0009](0009-strawberryshake-typed-graphql-client.md) | StrawberryShake Typed GraphQL Client | Accepted | 2025-10-29 |
 | [0010](0010-stdio-mcp-transport.md) | stdio/JSON-RPC Transport for MCP Server | Accepted | 2025-01-06 |
+| [0011](0011-acl-authorization-azure-entra-id.md) | ACL-Based Authorization with Azure Entra ID | Accepted | 2025-01-06 |
 
 ## Process for Claude Code
 
