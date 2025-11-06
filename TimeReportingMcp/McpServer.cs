@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using TimeReportingMcp.Models;
@@ -10,6 +11,43 @@ public static class McpServerDi
 {
     public static IServiceCollection RegisterMcpServer(this IServiceCollection services) =>
         services.AddSingleton<McpServer>();
+}
+
+public static class McpServerHelpers
+{
+    public static async Task<string?> ReadLineCancellableAsync(CancellationToken token)
+    {
+        // If input is redirected (not an interactive console),
+        // use normal async read — works for MCP stdin pipes.
+        if (Console.IsInputRedirected)
+        {
+            return await Console.In.ReadLineAsync();
+        }
+
+        // Otherwise (interactive terminal), use polling approach.
+        var sb = new StringBuilder();
+
+        while (!token.IsCancellationRequested)
+        {
+            await Task.Delay(50, token).ContinueWith(_ => { });
+
+            while (Console.KeyAvailable)
+            {
+                var key = Console.ReadKey(intercept: true);
+
+                if (key.Key == ConsoleKey.Enter)
+                    return sb.ToString();
+
+                if (key.Key == ConsoleKey.Backspace && sb.Length > 0)
+                    sb.Length--;
+                else if (key.Key != ConsoleKey.Backspace)
+                    sb.Append(key.KeyChar);
+            }
+        }
+
+        token.ThrowIfCancellationRequested();
+        return null;
+    }
 }
 
 /// <summary>
@@ -29,18 +67,10 @@ public class McpServer(McpToolList availableTools)
             while (!cancellationToken.IsCancellationRequested)
             {
                 // Read one line from stdin (JSON-RPC request)
-                var line = await Console.In.ReadLineAsync(cancellationToken);
-
-                // stdin closed by client (graceful shutdown signal per MCP spec)
-                if (line == null)
-                {
-                    await Console.Error.WriteLineAsync("stdin closed, shutting down gracefully...");
-                    break;
-                }
-
+                var line = await McpServerHelpers.ReadLineCancellableAsync(cancellationToken);
+                
                 if (string.IsNullOrWhiteSpace(line))
                 {
-                    await Console.Error.WriteLineAsync("Received empty line, continuing...");
                     continue;
                 }
 

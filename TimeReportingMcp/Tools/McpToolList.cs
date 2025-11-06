@@ -8,15 +8,16 @@ public static class McpToolListDi
 {
     public static IServiceCollection RegisterToolDefinitions(this IServiceCollection services) =>
         services
+            .AddSingleton<LogTimeTool>()
             .AddSingleton<QueryEntriesTool>()
             .AddSingleton<UpdateEntryTool>()
             .AddSingleton<MoveTaskTool>()
             .AddSingleton<DeleteEntryTool>()
             .AddSingleton<GetProjectsTool>()
-            .AddSingleton<GetProjectsTool>()
             .AddSingleton<SubmitEntryTool>()
             .AddSingleton<ApproveEntryTool>()
-            .AddSingleton<DeclineEntryTool>();
+            .AddSingleton<DeclineEntryTool>()
+            .AddSingleton<McpToolList>();
 }
 
 public class McpToolList

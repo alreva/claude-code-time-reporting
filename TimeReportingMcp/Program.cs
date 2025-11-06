@@ -84,8 +84,14 @@ try
     Console.CancelKeyPress += (s, e) =>
     {
         Console.Error.WriteLine("\nShutting down MCP server...");
-        cts.Cancel();
         e.Cancel = true;
+        cts.Cancel();
+    };
+    
+    AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+    {
+        Console.Error.WriteLine("ProcessExit triggered...");
+        cts.Cancel();
     };
 
     await server.RunAsync(cts.Token);
@@ -95,13 +101,14 @@ try
 }
 catch (OperationCanceledException)
 {
-    // Expected cancellation - exit cleanly
-    await Console.Error.WriteLineAsync("MCP Server cancelled - exiting cleanly");
-    Environment.Exit(0);
 }
 catch (Exception ex)
 {
     await Console.Error.WriteLineAsync($"Fatal error: {ex.Message}");
     await Console.Error.WriteLineAsync($"Stack trace: {ex.StackTrace}");
     Environment.Exit(1);
+}
+finally
+{
+    Console.Error.WriteLine("Server stopped.");
 }
