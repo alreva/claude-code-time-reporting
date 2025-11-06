@@ -14,7 +14,7 @@ public class Query
     /// Get time entries with filtering, sorting, and pagination.
     /// HotChocolate automatically generates filtering and sorting capabilities.
     /// Order matters: UsePaging -> UseProjection -> UseFiltering -> UseSorting
-    /// Phase 14: Requires authentication and automatically filters by authenticated user.
+    /// Requires authentication and automatically filters by authenticated user.
     /// Security: Users can only see their own time entries.
     /// </summary>
     [Authorize]
@@ -41,7 +41,7 @@ public class Query
     /// <summary>
     /// Get a single time entry by ID.
     /// Returns null if entry not found or doesn't belong to authenticated user.
-    /// Phase 14: Requires authentication and filters by authenticated user.
+    /// Requires authentication and filters by authenticated user.
     /// Security: Users can only access their own time entries.
     /// </summary>
     [Authorize]

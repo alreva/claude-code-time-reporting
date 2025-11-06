@@ -223,7 +223,7 @@ public class TimeEntry
     /// <para><strong>Database Index:</strong> idx_time_entries_user (user_id, start_date)</para>
     /// <para><strong>Security:</strong> Automatically populated from authenticated token claims
     /// to prevent users from creating entries for others.</para>
-    /// <para><strong>Nullable:</strong> Allows for system-generated or imported entries (pre-Phase 14)</para>
+    /// <para><strong>Nullable:</strong> Allows for system-generated or imported entries</para>
     /// </remarks>
     [MaxLength(100)]
     public string? UserId { get; set; }
@@ -238,7 +238,7 @@ public class TimeEntry
     /// <para><strong>Database Column:</strong> user_email (varchar(255), nullable)</para>
     /// <para><strong>Purpose:</strong> Human-readable identifier for reports and UI displays</para>
     /// <para><strong>Security:</strong> Automatically populated from authenticated token claims</para>
-    /// <para><strong>Note:</strong> May be null for entries created before Phase 14 or by system</para>
+    /// <para><strong>Note:</strong> May be null for entries created by system or imported from external sources</para>
     /// </remarks>
     [MaxLength(255)]
     public string? UserEmail { get; set; }
@@ -254,7 +254,7 @@ public class TimeEntry
     /// <para><strong>Purpose:</strong> Human-readable name for reports, audit logs, and UI displays</para>
     /// <para><strong>Format:</strong> Typically "FirstName LastName" or preferred username from Entra ID</para>
     /// <para><strong>Security:</strong> Automatically populated from authenticated token claims</para>
-    /// <para><strong>Note:</strong> May be null for entries created before Phase 14 or by system</para>
+    /// <para><strong>Note:</strong> May be null for entries created by system or imported from external sources</para>
     /// </remarks>
     [MaxLength(255)]
     public string? UserName { get; set; }

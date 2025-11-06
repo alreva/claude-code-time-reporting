@@ -208,8 +208,6 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
         tasks.GetArrayLength().Should().Be(2);
     }
 
-    #region Single Project Lookup (Task 3.4)
-
     [Fact]
     public async Task Project_WithValidCode_ReturnsProjectWithDetails()
     {
@@ -251,6 +249,4 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
         var project = result.RootElement.GetProperty("data").GetProperty("project");
         project.ValueKind.Should().Be(JsonValueKind.Null);
     }
-
-    #endregion
 }

@@ -4,7 +4,6 @@ namespace TimeReportingApi.Tests.Models;
 
 /// <summary>
 /// Tests for entity models to verify structure, properties, and relationships.
-/// Following TDD approach: RED phase - these tests should fail until models are implemented.
 /// </summary>
 public class EntityModelTests
 {

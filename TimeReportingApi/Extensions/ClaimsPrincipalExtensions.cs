@@ -14,7 +14,6 @@ namespace TimeReportingApi.Extensions;
 /// which user created or modified time entries.
 ///
 /// See ADR 0010: WebSocket MCP Transport with Azure Entra ID Authentication
-/// See Phase 14 - User tracking for time entries
 /// </remarks>
 public static class ClaimsPrincipalExtensions
 {
