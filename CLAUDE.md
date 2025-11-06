@@ -200,56 +200,11 @@ When the conversation involves:
 4. ✅ **Update the index** in `docs/adr/README.md`
 5. ✅ **Commit the ADR** separately from implementation code
 
-#### Example Dialogue Flow - CORRECT ✅
+#### Example Flow
 
-```
-User: "I think we should use shadow properties for FKs to prevent conflicts"
-Claude: "This feels like an ADR - we're making an architectural decision about
-         foreign key property management. Let me explore this design decision..."
+When user proposes alternatives → Announce ADR → Discuss → Document in `docs/adr/` → Update index → Commit ADR → Then implement.
 
-[Discussion continues, decision is made]
-
-Claude: "I'm going to document this as ADR 0001: Shadow Foreign Keys"
-        [Creates docs/adr/0001-shadow-foreign-keys.md]
-        [Updates docs/adr/README.md index]
-        [Commits ADR]
-```
-
-#### Real Example - What NOT to Do ❌
-
-**What happened (WRONG):**
-```
-User: "isn't this overkill: there is a possibility to expose DbContext via
-       HotChocolate register context feature"
-
-Claude: [WRONG - Immediately updated task files without announcing ADR]
-        "You're right! Let me update the task files to use HotChocolate conventions..."
-        [Updates all 5 task files]
-        [User has to point out: "isn't this an ADR?"]
-```
-
-**What SHOULD have happened (CORRECT):**
-```
-User: "isn't this overkill: there is a possibility to expose DbContext via
-       HotChocolate register context feature"
-
-Claude: "This feels like an ADR - we're making an architectural decision about
-         GraphQL query implementation: custom resolvers vs HotChocolate conventions.
-         Let me explore this before updating task files."
-
-[Discussion about trade-offs: code volume, flexibility, control]
-
-Claude: "I'm going to document this as ADR 0006: HotChocolate Conventions Over Custom Resolvers"
-        [Creates docs/adr/0006-hotchocolate-conventions-over-resolvers.md]
-        [Updates docs/adr/README.md index]
-        [Commits ADR separately]
-
-        "Now let me update the task files to reflect this decision..."
-        [Updates task files]
-        [Commits implementation changes separately]
-```
-
-**Key lesson:** The phrase "isn't this overkill?" is a TRIGGER. Stop immediately and announce the ADR moment.
+**Key lesson:** Phrases like "isn't this overkill?" are TRIGGERS. Stop immediately, announce the ADR moment, discuss trade-offs, then document as ADR before implementation.
 
 #### What NOT to Document as ADRs
 
@@ -537,79 +492,20 @@ All other operations should use slash commands.
 
 ## Code Architecture
 
-### Database Schema (docs/prd/data-model.md)
+### Database Schema
 
-**TimeEntry** - Core entity for time log entries
-- Project, Task, Hours (standard/overtime)
-- Start/Completion dates
-- Status workflow: NOT_REPORTED → SUBMITTED → APPROVED/DECLINED
-- JSONB tags for metadata
-- Validation: project must exist, task must be in project's available tasks, tags must match project configuration
+**Entities:** TimeEntry, Project, ProjectTask, ProjectTag, TagValue. Status workflow: NOT_REPORTED → SUBMITTED → APPROVED/DECLINED. EF Core with snake_case, DateOnly for dates, normalized relational design. See `docs/prd/data-model.md`.
 
-**Project** - Available projects with tasks and tag configurations
-- Code (PK, VARCHAR 10), Name, IsActive
-- One-to-many: ProjectTask, ProjectTag
+### GraphQL API Layer
 
-**ProjectTask** - Allowed tasks per project (e.g., "Development", "Bug Fixing")
+**Queries:** timeEntries, timeEntry, projects, project
+**Mutations:** logTime, updateTimeEntry, moveTaskToProject, updateTags, deleteTimeEntry, submitTimeEntry, approveTimeEntry, declineTimeEntry
+**Validation:** 3 layers (GraphQL schema, business logic, DB constraints)
+See `docs/prd/api-specification.md` for details.
 
-**ProjectTag** - Metadata tags per project (renamed from TagConfiguration for naming consistency)
-- One-to-many: TagValue
+### MCP Server Architecture
 
-**TagValue** - Allowed values for each tag (normalized from JSONB)
-
-### GraphQL API Layer (docs/prd/api-specification.md)
-
-**Queries:**
-- `timeEntries(filters)` - Filter by project, date range, status, user
-- `timeEntry(id)` - Single entry by ID
-- `projects(activeOnly)` - List all projects
-- `project(code)` - Single project with tasks and tags
-
-**Mutations:**
-- `logTime(input)` - Create time entry with validation
-- `updateTimeEntry(id, input)` - Update editable entry
-- `moveTaskToProject(entryId, newProjectCode, newTask)` - Move entry between projects with revalidation
-- `updateTags(entryId, tags)` - Update metadata tags
-- `deleteTimeEntry(id)` - Delete if NOT_REPORTED status
-- `submitTimeEntry(id)` - Submit for approval workflow
-- `approveTimeEntry(id)` - Approve submitted entry
-- `declineTimeEntry(id, comment)` - Decline with comment
-
-**Authentication:** Bearer token middleware validates Authorization header
-
-**Validation Layers:**
-1. GraphQL schema (input types, non-null enforcement)
-2. Business logic service (project exists, task valid, tags valid, status transitions)
-3. Database constraints (foreign keys, check constraints)
-
-### MCP Server Architecture (docs/prd/architecture.md)
-
-The MCP server is intentionally simple (~200 lines total):
-
-**Structure:**
-- `Program.cs` - Main entry point
-- `McpServer.cs` - JSON-RPC stdio handler that routes to tool handlers
-- `Tools/` - 7 tool handlers (log_time, query_time_entries, update_time_entry, move_task_to_project, delete_time_entry, get_available_projects, submit_time_entry)
-- Each tool: reads stdin → calls GraphQL → writes stdout
-
-**Implementation Pattern (10-20 lines per tool):**
-```csharp
-private async Task<JsonRpcResponse> LogTime(Dictionary<string, JsonElement> args)
-{
-    var mutation = new GraphQLRequest
-    {
-        Query = @"mutation LogTime($input: LogTimeInput!) { ... }",
-        Variables = new { input = args }
-    };
-
-    var response = await _graphqlClient.SendMutationAsync<LogTimeResponse>(mutation);
-
-    return new JsonRpcResponse
-    {
-        Result = new { content = new[] { new { type = "text", text = $"Created entry {response.Data.LogTime.Id}" } } }
-    };
-}
-```
+**Simple design (~200 lines):** `Program.cs` (entry), `McpServer.cs` (JSON-RPC stdio), `Tools/` (7 tool handlers). Each tool: reads stdin → calls GraphQL → writes stdout. See `docs/prd/architecture.md` for implementation patterns.
 
 ## Task-Based Development Workflow
 
@@ -664,284 +560,38 @@ This project follows a task-based implementation approach documented in `docs/TA
 - `docs/tasks/` - Phase-specific implementation tasks
 - `docs/PODMAN-SETUP.md` - Podman alternative to Docker Desktop
 
-## Important Implementation Guidelines
+## Implementation Guidelines
 
-### Status Workflow
+**Status Workflow:** NOT_REPORTED → SUBMITTED → APPROVED/DECLINED. Only NOT_REPORTED/DECLINED entries can be edited/deleted.
 
-Time entries follow a strict state machine:
-- **NOT_REPORTED** → SUBMITTED (only this transition allowed from initial state)
-- **SUBMITTED** → APPROVED or DECLINED (read-only until approval)
-- **DECLINED** → SUBMITTED (can resubmit after decline)
-- **APPROVED** → terminal state (immutable)
+**Validation:** Project exists & active, task valid, tags valid, dates logical, hours ≥ 0, status transitions valid.
 
-Only entries in NOT_REPORTED or DECLINED status can be edited or deleted.
+**EF Config:** DateOnly for dates, normalized relational (no JSONB), snake_case, cascade deletes, Precision(10,2) for hours.
 
-### Validation Requirements
+**MCP Principles:** Simple (~200 lines), stateless tools, stdio + GraphQL, AzureCliCredential auth, structured error responses.
 
-Multi-layer validation ensures data integrity:
+**Security:** Azure Entra ID (JWT validation), user identity tracking (oid/email/name), multi-layer validation, no secrets in config.
 
-1. **Project validation:** Must exist and be active
-2. **Task validation:** Must be in project's available tasks and active
-3. **Tag validation:** Tag name must exist in project's tag configurations, tag value must be in allowed values
-4. **Date validation:** start_date <= completion_date
-5. **Hours validation:** standard_hours >= 0, overtime_hours >= 0
-6. **Status transition validation:** Only allowed transitions per workflow
+## Test-Driven Development (TDD) - MANDATORY
 
-### Entity Framework Configuration
+**⚠️ CRITICAL: Write tests BEFORE implementation. Follow Red-Green-Refactor cycle.**
 
-- Use `DateOnly` for dates (not DateTime)
-- Normalized relational tables (no JSONB): ProjectTag, TagValue, TimeEntryTag
-- Snake_case table/column names via mapping
-- Cascade delete for ProjectTask and ProjectTag when Project deleted
-- Precision(10,2) for decimal hours
+**TDD Cycle:**
+1. **RED** - Write failing test, run `/test` (FAIL ❌)
+2. **GREEN** - Write minimal code to pass, run `/test` (PASS ✅)
+3. **REFACTOR** - Improve code (optional), run `/test` after each change
 
-### MCP Server Principles
+**Test Coverage Required:**
+- Happy path, edge cases, error cases, validation rules
+- Test naming: `MethodName_Scenario_ExpectedBehavior`
+- Tools: xUnit, FluentAssertions (optional), Moq, WebApplicationFactory
 
-- **Keep it simple:** ~200 lines total, just stdio + GraphQL calls
-- No session management, no auto-tracking (v2 feature)
-- Each tool is stateless: read params → call GraphQL → return result
-- Configuration via .NET Configuration system (GRAPHQL_API_URL, AzureAd:ApiScope)
-- Authentication via AzureCliCredential (acquires tokens from `az login`)
-- Error handling returns structured MCP error responses
+**Execution Requirements:**
+- Run `/test` before committing - ALL tests must pass ✅
+- Zero failing tests, zero warnings (treated as errors)
+- Task NOT complete until all tests pass
 
-## Security Notes
-
-- Azure Entra ID authentication for API access (JWT token validation)
-- MCP Server uses AzureCliCredential to acquire tokens from `az login`
-- API validates tokens with Microsoft.Identity.Web
-- User identity tracked: all time entries include Azure AD user info (oid, email, name)
-- Input validation at GraphQL schema, business logic, and database constraint levels
-- No secrets in configuration files - authentication via Azure CLI
-
-## Test-Driven Development (TDD) Workflow - MANDATORY
-
-**⚠️ CRITICAL: Always write tests BEFORE implementing features. This is non-negotiable.**
-
-This project follows strict Test-Driven Development (TDD) practices. When implementing any new feature or fixing a bug, you MUST follow the Red-Green-Refactor cycle:
-
-### The Red-Green-Refactor Cycle
-
-#### 1. RED - Write a Failing Test First
-**Before writing ANY feature code:**
-1. Create or update the test file for the component you're about to implement
-2. Write a test that describes the desired behavior
-3. Run `/test` (or `/test-api`, `/test-mcp`) to verify the test FAILS
-4. The test should fail for the right reason (e.g., method doesn't exist, returns wrong value)
-
-**Example:**
-```csharp
-[Fact]
-public async Task LogTime_WithValidInput_CreatesTimeEntry()
-{
-    // Arrange
-    var input = new LogTimeInput
-    {
-        ProjectCode = "INTERNAL",
-        Task = "Development",
-        StandardHours = 8.0m,
-        StartDate = DateOnly.FromDateTime(DateTime.Today),
-        CompletionDate = DateOnly.FromDateTime(DateTime.Today)
-    };
-
-    // Act
-    var result = await _mutation.LogTime(input);
-
-    // Assert
-    Assert.NotNull(result);
-    Assert.Equal("INTERNAL", result.ProjectCode);
-    Assert.Equal(TimeEntryStatus.NotReported, result.Status);
-}
-```
-
-Run `/test-api` → Test should FAIL ❌ (method doesn't exist yet)
-
-#### 2. GREEN - Write Minimal Code to Pass
-**After the test fails:**
-1. Implement the MINIMUM code necessary to make the test pass
-2. Don't add extra features or "nice-to-haves"
-3. Focus only on satisfying the test requirements
-4. Run `/test` again to verify the test now PASSES
-
-**Example:**
-```csharp
-public async Task<TimeEntry> LogTime(LogTimeInput input)
-{
-    var entry = new TimeEntry
-    {
-        Id = Guid.NewGuid(),
-        ProjectCode = input.ProjectCode,
-        Task = input.Task,
-        StandardHours = input.StandardHours,
-        StartDate = input.StartDate,
-        CompletionDate = input.CompletionDate,
-        Status = TimeEntryStatus.NotReported,
-        CreatedAt = DateTime.UtcNow,
-        UpdatedAt = DateTime.UtcNow
-    };
-
-    await _dbContext.TimeEntries.AddAsync(entry);
-    await _dbContext.SaveChangesAsync();
-
-    return entry;
-}
-```
-
-Run `/test-api` → Test should PASS ✅
-
-#### 3. REFACTOR - Improve Code Quality (Optional)
-**After tests pass:**
-1. Refactor code to improve design, readability, or performance
-2. Run `/test` after each refactoring step to ensure tests still pass
-3. Never refactor without passing tests
-
-### TDD Workflow for Feature Implementation
-
-When implementing a new feature from the TASK-INDEX:
-
-```
-Step 1: READ the task requirements thoroughly
-    ↓
-Step 2: WRITE test(s) that verify acceptance criteria
-    ↓
-Step 3: RUN /test → Verify tests FAIL ❌
-    ↓
-Step 4: IMPLEMENT minimum code to pass tests
-    ↓
-Step 5: RUN /test → Verify tests PASS ✅
-    ↓
-Step 6: REFACTOR if needed (run /test after each change)
-    ↓
-Step 7: COMMIT with message describing feature + "All tests passing"
-```
-
-### Mandatory Test Coverage
-
-**Every feature MUST have tests for:**
-
-1. **Happy Path:** Normal, expected usage
-2. **Edge Cases:** Boundary conditions, empty inputs, null values
-3. **Error Cases:** Invalid inputs, business rule violations
-4. **Validation:** All validation rules are enforced
-
-**Example test suite for LogTime mutation:**
-```csharp
-// Happy path
-[Fact] LogTime_WithValidInput_CreatesTimeEntry()
-
-// Edge cases
-[Fact] LogTime_WithZeroHours_CreatesTimeEntry()
-[Fact] LogTime_WithSameDateRange_CreatesTimeEntry()
-
-// Error cases
-[Fact] LogTime_WithInvalidProject_ThrowsValidationException()
-[Fact] LogTime_WithInvalidTask_ThrowsValidationException()
-[Fact] LogTime_WithNegativeHours_ThrowsValidationException()
-[Fact] LogTime_WithEndDateBeforeStartDate_ThrowsValidationException()
-
-// Validation
-[Fact] LogTime_WithInactivProject_ThrowsValidationException()
-[Fact] LogTime_WithInvalidTags_ThrowsValidationException()
-```
-
-### Test Execution Requirements
-
-**BEFORE committing ANY code:**
-1. Run `/test` to execute all tests
-2. ALL tests MUST pass ✅
-3. Zero failing tests is mandatory
-4. Zero warnings is mandatory (warnings treated as errors)
-
-**If any test fails:**
-- DO NOT commit the code
-- Fix the implementation or test
-- Re-run `/test` until all pass
-
-### Test Organization
-
-```
-TimeReportingApi.Tests/
-├── GraphQL/
-│   ├── Mutations/
-│   │   ├── LogTimeMutationTests.cs
-│   │   ├── UpdateTimeEntryMutationTests.cs
-│   │   └── ...
-│   └── Queries/
-│       ├── TimeEntriesQueryTests.cs
-│       └── ...
-├── Services/
-│   ├── ValidationServiceTests.cs
-│   ├── WorkflowServiceTests.cs
-│   └── ...
-└── Integration/
-    ├── TimeEntryWorkflowTests.cs
-    └── ...
-```
-
-### Test Naming Convention
-
-Use the pattern: `MethodName_Scenario_ExpectedBehavior`
-
-**Good examples:**
-- `LogTime_WithValidInput_CreatesTimeEntry`
-- `UpdateTimeEntry_WhenApproved_ThrowsInvalidOperationException`
-- `SubmitTimeEntry_WithNotReportedStatus_ChangesStatusToSubmitted`
-
-**Bad examples:**
-- `TestLogTime` (not descriptive)
-- `Test1` (meaningless)
-- `ItWorks` (not specific)
-
-### Testing Tools and Frameworks
-
-- **xUnit** - Test framework
-- **FluentAssertions** - Assertion library (optional but recommended)
-- **Moq** - Mocking framework for dependencies
-- **WebApplicationFactory** - Integration testing for API
-
-### Example TDD Session
-
-```
-User: "Implement the UpdateTimeEntry mutation"
-
-Claude Code:
-1. ✅ Reading task requirements from docs/tasks/...
-2. ✅ Creating TimeReportingApi.Tests/GraphQL/Mutations/UpdateTimeEntryMutationTests.cs
-3. ✅ Writing test: UpdateTimeEntry_WithValidInput_UpdatesEntry
-4. ✅ Running /test-api → Test FAILS (expected - mutation doesn't exist)
-5. ✅ Implementing UpdateTimeEntry mutation in TimeReportingApi/GraphQL/Mutation.cs
-6. ✅ Running /test-api → Test PASSES
-7. ✅ Writing test: UpdateTimeEntry_WhenApproved_ThrowsException
-8. ✅ Running /test-api → Test FAILS (not handling approved status)
-9. ✅ Adding status check to UpdateTimeEntry
-10. ✅ Running /test-api → Test PASSES
-11. ✅ Running /test → ALL tests PASS
-12. ✅ Committing: "Implement UpdateTimeEntry mutation - All tests passing"
-```
-
-### Accountability
-
-- Every task completion MUST include passing tests
-- Task is NOT complete until `/test` shows all green ✅
-- Pull requests without tests will be rejected
-- Broken tests in main branch are unacceptable
-
-### TDD Benefits for This Project
-
-1. **Confidence:** Know that your code works before deployment
-2. **Documentation:** Tests serve as living documentation
-3. **Regression Prevention:** Catch bugs before they reach production
-4. **Design Improvement:** Writing tests first leads to better API design
-5. **Faster Debugging:** Tests pinpoint exactly where failures occur
-
-## Testing Approach
-
-**Test Types:**
-- **Unit Tests:** GraphQL resolvers, business logic services (ValidationService, WorkflowService)
-- **Integration Tests:** Docker stack (PostgreSQL + API), database operations
-- **End-to-End Tests:** MCP server tools via Claude Code
-- **Test Scenarios:** Documented in `tests/scenarios/`
-
-**All tests must follow TDD workflow described above.**
+See `docs/prd/` for detailed testing approach and scenarios.
 
 ## Project Structure
 
@@ -1050,75 +700,8 @@ The `guard.sh` script checks:
 
 This ensures dotnet commands can ONLY be executed through approved slash commands.
 
-### Guardrails Flow Diagram
+### Benefits & Extensibility
 
-```
-User attempts: Bash("dotnet build")
-    ↓
-Layer 1: pre_bash.sh intercepts
-    - Pattern match: "^dotnet "
-    - BLOCK ✅ (exit code 1)
-    ↓
-Layer 2: Permission check (if hook bypassed)
-    - "Bash(dotnet:*)" NOT in allow list
-    - DENY ✅
-    ↓
-Layer 3: PreToolUse hook (final check)
-    - Regex: "^dotnet[[:space:]]+(build|test|run|watch|ef)"
-    - JSON deny response with helpful message ✅
-    ↓
-Result: Command blocked, user sees helpful error
-```
+**Benefits:** Safety, consistency, automation without confirmation, helpful errors, easy to extend.
 
-```
-User invokes: /build
-    ↓
-Slash command executes: guard.sh "dotnet build" "slash"
-    ↓
-guard.sh checks:
-    - Command is "dotnet build" ✓
-    - Context is "slash" ✓
-    - ALLOW execution ✅
-    ↓
-Command runs successfully
-```
-
-### Benefits of Guardrails System
-
-1. **Safety:** Prevents accidental execution of destructive commands
-2. **Consistency:** Enforces standard command patterns across development
-3. **Automation:** Allows safe automatic execution without user confirmation
-4. **Learning:** Provides helpful error messages with correct alternatives
-5. **Flexibility:** Easy to extend with new slash commands and rules
-
-### Adding New Slash Commands
-
-To add a new slash command:
-
-1. Create `.claude/commands/your-command.md`:
-```markdown
----
-description: Your command description
-allowed-tools: Bash(.claude/hooks/guard.sh:*)
----
-
-Your command documentation.
-
-### Execution
-```bash
-.claude/hooks/guard.sh "dotnet your-command" "slash"
-```
-```
-
-2. Add to `.claude/settings.local.json`:
-```json
-{
-  "permissions": {
-    "allow": [
-      "SlashCommand(/your-command)"
-    ]
-  }
-}
-```
-
-3. Test the command and verify guardrails work correctly
+**Adding Slash Commands:** Create `.claude/commands/your-command.md`, add to `.claude/settings.local.json` allow list, test guardrails.
