@@ -1,9 +1,9 @@
 # Task Index - Time Reporting System
 
-**Total Tasks:** 71
+**Total Tasks:** 78
 **Completed:** 61 ✅
 **In Progress:** 0
-**Pending:** 10
+**Pending:** 17
 
 ---
 
@@ -286,6 +286,47 @@
 
 ---
 
+## Phase 15: ACL-Based Authorization (7 tasks)
+
+| # | Task | Description | Est. Time | Status | Details |
+|---|------|-------------|-----------|--------|---------|
+| 15.1 | Azure Entra ID Setup | Create schema extension and configure token claims | 30 min | ☐ Pending | [View](./tasks/phase-15-acl-authorization/task-15.1-azure-entra-id-setup.md) |
+| 15.2 | ACL Extensions Helper | Create ClaimsPrincipal extension library with hierarchical permission checking | 1 hr | ☐ Pending | [View](./tasks/phase-15-acl-authorization/task-15.2-acl-extensions-helper.md) |
+| 15.3 | Token Configuration | Configure JWT token mapping and add debug middleware | 15 min | ☐ Pending | [View](./tasks/phase-15-acl-authorization/task-15.3-token-configuration.md) |
+| 15.4 | Update Mutations Authorization | Add ACL checks to approve/decline mutations | 45 min | ☐ Pending | [View](./tasks/phase-15-acl-authorization/task-15.4-update-mutations-authorization.md) |
+| 15.5 | ACL Management Commands | Create slash commands for managing ACL values | 1 hr | ☐ Pending | [View](./tasks/phase-15-acl-authorization/task-15.5-acl-management-commands.md) |
+| 15.6 | Authorization Testing | Comprehensive unit, integration, and manual testing | 1.5 hrs | ☐ Pending | [View](./tasks/phase-15-acl-authorization/task-15.6-authorization-testing.md) |
+| 15.7 | ACL Documentation | Create ADR, setup guide, and troubleshooting documentation | 30 min | ☐ Pending | [View](./tasks/phase-15-acl-authorization/task-15.7-acl-documentation.md) |
+
+**Phase 15 Total:** 5.5 hours
+
+**Key Deliverables:**
+- `TimeReportingApi/Extensions/AclExtensions.cs` - Hierarchical permission checking
+- `TimeReportingApi/Extensions/Permissions.cs` - Permission constants
+- `TimeReportingApi/GraphQL/Mutation.cs` - Updated with ACL authorization
+- `.claude/commands/user-add-acl.md` - ACL management command
+- `.claude/commands/user-list-acl.md` - ACL management command
+- `.claude/commands/user-remove-acl.md` - ACL management command
+- `TimeReportingApi.Tests/Extensions/AclExtensionsTests.cs` - 13 unit tests
+- `TimeReportingApi.Tests/GraphQL/AuthorizationTests.cs` - 10 integration tests
+- `docs/adr/0010-acl-authorization-azure-entra-id.md` - Architecture Decision Record
+- `docs/ACL-SETUP-GUIDE.md` - Complete setup guide
+- `docs/ACL-TROUBLESHOOTING.md` - Troubleshooting guide
+
+**Benefits:**
+- ✅ Token-based authorization (no database lookups)
+- ✅ Hierarchical permissions (parent → child inheritance)
+- ✅ Project-level access control for approve/decline operations
+- ✅ Fully managed via Azure Entra ID
+- ✅ 5-minute token lifetime for near-real-time updates
+- ✅ Extensible to other resource types (Tasks, Reports, etc.)
+
+**Related:**
+- [ADR 0010 - ACL Authorization with Azure Entra ID](./adr/0010-acl-authorization-azure-entra-id.md)
+- [Time Reporting GraphQL Authorization PRD](/Users/oleksandrreva/Downloads/TimeReportingGraphQL_PRD.md)
+
+---
+
 ## Summary
 
 ### Total Time Estimate
@@ -305,12 +346,13 @@
 | Phase 11 | 5 | 5.5 |
 | Phase 12 | 5 | 5-6 |
 | Phase 13 | 4 | 4.5-5.5 |
-| **TOTAL** | **65** | **58-72.5 hours** |
+| Phase 15 | 7 | 5.5 |
+| **TOTAL** | **72** | **63.5-78 hours** |
 
 **Estimated Project Duration:**
-- **Full-time (8 hrs/day):** 7-9 working days
-- **Part-time (4 hrs/day):** 14.5-18 working days
-- **Side project (2 hrs/day):** 29-36 days
+- **Full-time (8 hrs/day):** 8-10 working days
+- **Part-time (4 hrs/day):** 16-19.5 working days
+- **Side project (2 hrs/day):** 32-39 days
 
 ---
 
