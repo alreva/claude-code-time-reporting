@@ -65,7 +65,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.10" />
   </ItemGroup>
-  <ItemGroup Label="Phase 14 - SSE MCP and Azure Entra ID">
+  <ItemGroup Label="MCP and Azure Entra ID Authentication">
     <!-- MCP SDK for SSE transport -->
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.6" />
     <!-- Azure Identity for AzureCliCredential token pass-through -->
@@ -78,9 +78,5 @@
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <!-- Polly for resilience and transient fault handling -->
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.10.0" />
-  </ItemGroup>
-  <ItemGroup Label="Future Dependencies - Commented Out">
-    <!-- These will be needed in Phase 4-5 when implementing business logic -->
-    <!-- Moq moved to Test Dependencies -->
   </ItemGroup>
 </Project>
