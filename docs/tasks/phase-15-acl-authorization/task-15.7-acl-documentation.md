@@ -39,10 +39,10 @@ Good documentation is critical for:
 
 ### Document 1: Architecture Decision Record
 
-**File:** `docs/adr/0010-acl-authorization-azure-entra-id.md`
+**File:** `docs/adr/0011-acl-authorization-azure-entra-id.md`
 
 ```markdown
-# ADR 0010: ACL-Based Authorization with Azure Entra ID Extension Attributes
+# ADR 0011: ACL-Based Authorization with Azure Entra ID Extension Attributes
 
 **Status:** Accepted
 **Date:** 2025-01-06
@@ -553,7 +553,7 @@ echo $TOKEN | cut -d'.' -f2 | base64 -d | jq .
 
 If issues persist:
 1. Check [ACL-SETUP-GUIDE.md](./ACL-SETUP-GUIDE.md)
-2. Review [ADR 0010](./adr/0010-acl-authorization-azure-entra-id.md)
+2. Review [ADR 0011](./adr/0011-acl-authorization-azure-entra-id.md)
 3. Contact DevOps team
 ```
 
@@ -573,14 +573,14 @@ This documentation ties together:
 ## Related Files
 
 **Created:**
-- `docs/adr/0010-acl-authorization-azure-entra-id.md`
+- `docs/adr/0011-acl-authorization-azure-entra-id.md`
 - `docs/ACL-SETUP-GUIDE.md`
 - `docs/ACL-TROUBLESHOOTING.md`
 
 **Modified:**
 - `README.md` - Add Phase 15 overview
 - `CLAUDE.md` - Add authorization guidelines
-- `docs/adr/README.md` - Add ADR 0010 to index
+- `docs/adr/README.md` - Add ADR 0011 to index
 
 ---
 
@@ -588,7 +588,7 @@ This documentation ties together:
 
 After completing this task:
 
-1. ✅ ADR 0010 created and indexed
+1. ✅ ADR 0011 created and indexed
 2. ✅ Setup guide complete with step-by-step instructions
 3. ✅ Troubleshooting guide covers common issues
 4. ✅ README.md updated

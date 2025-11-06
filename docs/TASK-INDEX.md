@@ -309,7 +309,7 @@
 - `.claude/commands/user-remove-acl.md` - ACL management command
 - `TimeReportingApi.Tests/Extensions/AclExtensionsTests.cs` - 13 unit tests
 - `TimeReportingApi.Tests/GraphQL/AuthorizationTests.cs` - 10 integration tests
-- `docs/adr/0010-acl-authorization-azure-entra-id.md` - Architecture Decision Record
+- `docs/adr/0011-acl-authorization-azure-entra-id.md` - Architecture Decision Record
 - `docs/ACL-SETUP-GUIDE.md` - Complete setup guide
 - `docs/ACL-TROUBLESHOOTING.md` - Troubleshooting guide
 
@@ -322,7 +322,7 @@
 - ✅ Extensible to other resource types (Tasks, Reports, etc.)
 
 **Related:**
-- [ADR 0010 - ACL Authorization with Azure Entra ID](./adr/0010-acl-authorization-azure-entra-id.md)
+- [ADR 0011 - ACL Authorization with Azure Entra ID](./adr/0011-acl-authorization-azure-entra-id.md)
 - [Time Reporting GraphQL Authorization PRD](/Users/oleksandrreva/Downloads/TimeReportingGraphQL_PRD.md)
 
 ---
