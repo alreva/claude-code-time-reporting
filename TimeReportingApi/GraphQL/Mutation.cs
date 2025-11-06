@@ -221,6 +221,14 @@ public class Mutation
             }
         }
 
+        // If the entry was DECLINED, reset it to NOT_REPORTED
+        // This allows the user to resubmit after making corrections
+        if (entry.Status == TimeEntryStatus.Declined)
+        {
+            entry.Status = TimeEntryStatus.NotReported;
+            entry.DeclineComment = null; // Clear the decline comment since it's being corrected
+        }
+
         // Update timestamp
         entry.UpdatedAt = DateTime.UtcNow;
 
@@ -342,6 +350,14 @@ public class Mutation
         // Update the project and task - ADR 0001: Set navigation properties, EF fills shadow FKs
         entry.Project = newProject;
         entry.ProjectTask = newProjectTask;
+
+        // If the entry was DECLINED, reset it to NOT_REPORTED
+        // This allows the user to resubmit after making corrections
+        if (entry.Status == TimeEntryStatus.Declined)
+        {
+            entry.Status = TimeEntryStatus.NotReported;
+            entry.DeclineComment = null; // Clear the decline comment since it's being corrected
+        }
 
         // Update timestamp
         entry.UpdatedAt = DateTime.UtcNow;

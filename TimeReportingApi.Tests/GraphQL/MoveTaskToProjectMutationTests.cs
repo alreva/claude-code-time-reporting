@@ -383,6 +383,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         Assert.NotNull(result);
         var projectCode = _context.Entry(result).Property<string>("ProjectCode").CurrentValue;
         Assert.Equal("CLIENT-A", projectCode);
+        // DECLINED entries should reset to NOT_REPORTED when moved
+        Assert.Equal(TimeEntryStatus.NotReported, result.Status);
+        Assert.Null(result.DeclineComment);
     }
 
     [Fact]

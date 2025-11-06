@@ -472,7 +472,14 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         Assert.False(result.RootElement.TryGetProperty("errors", out _));
         var data = result.RootElement.GetProperty("data").GetProperty("updateTimeEntry");
         Assert.Equal("Revised per feedback", data.GetProperty("description").GetString());
-        Assert.Equal("DECLINED", data.GetProperty("status").GetString());
+        // DECLINED entries should reset to NOT_REPORTED when updated
+        Assert.Equal("NOT_REPORTED", data.GetProperty("status").GetString());
+
+        // Verify decline comment is also cleared - reload from database
+        _context.ChangeTracker.Clear();
+        var updatedEntry = await _context.TimeEntries.FindAsync(declinedEntry.Id);
+        Assert.Null(updatedEntry!.DeclineComment);
+        Assert.Equal(TimeEntryStatus.NotReported, updatedEntry.Status);
     }
 
     #endregion
