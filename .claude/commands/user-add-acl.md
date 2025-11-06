@@ -68,8 +68,8 @@ echo "✅ Found user ID: $USER_ID"
 # Get current ACL values
 echo "📋 Fetching current ACL entries..."
 CURRENT_ACL=$(az rest --method get \
-    --uri "https://graph.microsoft.com/v1.0/users/$USER_ID?\$select=extension_extcz1lst0i_TimeReporting_acl" \
-    --query "extension_extcz1lst0i_TimeReporting_acl" -o json 2>/dev/null || echo "[]")
+    --uri "https://graph.microsoft.com/v1.0/users/$USER_ID?\$select=extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL" \
+    --query "extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL" -o json 2>/dev/null || echo "[]")
 
 # Parse new entries (semicolon-separated)
 IFS=';' read -ra NEW_ENTRIES <<< "$ENTRIES"
@@ -91,7 +91,7 @@ ACL_JSON=$(echo "$MERGED_ACL" | grep -v '^$' | jq -R . | jq -s .)
 echo "💾 Updating ACL entries..."
 az rest --method patch \
     --uri "https://graph.microsoft.com/v1.0/users/$USER_ID" \
-    --body "{\"extension_extcz1lst0i_TimeReporting_acl\": $ACL_JSON}" \
+    --body "{\"extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL\": $ACL_JSON}" \
     --headers "Content-Type=application/json" > /dev/null
 
 echo "✅ Successfully added ACL entries to $USER_EMAIL"

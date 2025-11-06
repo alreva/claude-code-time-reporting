@@ -54,8 +54,8 @@ echo ""
 # Get ACL entries
 echo "📋 ACL entries for $USER_EMAIL:"
 ACL_ENTRIES=$(az rest --method get \
-    --uri "https://graph.microsoft.com/v1.0/users/$USER_ID?\$select=extension_extcz1lst0i_TimeReporting_acl" \
-    --query "extension_extcz1lst0i_TimeReporting_acl" -o json 2>/dev/null || echo "[]")
+    --uri "https://graph.microsoft.com/v1.0/users/$USER_ID?\$select=extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL" \
+    --query "extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL" -o json 2>/dev/null || echo "[]")
 
 # Display entries
 if [[ "$ACL_ENTRIES" == "[]" ]] || [[ "$ACL_ENTRIES" == "null" ]]; then

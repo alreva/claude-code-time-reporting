@@ -32,7 +32,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
             new Claim("name", name),
             new Claim("oid", oid),
             // Add default ACL permissions for testing (all permissions on all projects)
-            new Claim("extension_extcz1lst0i_TimeReporting_acl", "Project=V,E,A,M,T")
+            new Claim("extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL", "Project=V,E,A,M,T")
         };
         var identity = new ClaimsIdentity(claims, "Test");
         return new ClaimsPrincipal(identity);

@@ -10,11 +10,11 @@ public static class AclExtensions
 {
     /// <summary>
     /// Name of the extension attribute claim in the JWT token.
-    /// This must match the schema extension created in Azure Entra ID.
-    /// Full extension ID: extcz1lst0i_TimeReporting
-    /// Claim name in token: extension_extcz1lst0i_TimeReporting_acl
+    /// This must match the directory extension created in Azure Entra ID.
+    /// Extension property: extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL
+    /// Claim name in token: extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL
     /// </summary>
-    private const string AclClaimType = "extension_extcz1lst0i_TimeReporting_acl";
+    private const string AclClaimType = "extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL";
 
     /// <summary>
     /// Parse all ACL entries from the user's JWT token claims.
