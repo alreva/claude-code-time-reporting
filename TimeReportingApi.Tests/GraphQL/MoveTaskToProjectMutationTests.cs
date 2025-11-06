@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
-using TimeReportingApi.GraphQL.Inputs;
 using TimeReportingApi.Models;
 using TimeReportingApi.Services;
 using TimeReportingApi.Tests.Fixtures;

@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <!-- Package versions managed in Directory.Packages.props -->
-    <PackageReference Include="coverlet.collector" />
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />

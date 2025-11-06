@@ -7,7 +7,7 @@ namespace TimeReportingMcp.Tools;
 /// <summary>
 /// Tool for moving time entries between projects
 /// </summary>
-public class MoveTaskTool
+public class MoveTaskTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
 

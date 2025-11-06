@@ -2,7 +2,6 @@ using System.Security.Claims;
 using TimeReportingApi.Data;
 using TimeReportingApi.GraphQL;
 using TimeReportingApi.Models;
-using TimeReportingApi.Services;
 using TimeReportingApi.Tests.Fixtures;
 
 namespace TimeReportingApi.Tests.GraphQL;

@@ -7,7 +7,7 @@ namespace TimeReportingMcp.Tools;
 /// <summary>
 /// Tool for submitting time entries for approval
 /// </summary>
-public class SubmitEntryTool
+public class SubmitEntryTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
 

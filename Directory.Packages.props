@@ -13,6 +13,7 @@
     <PackageVersion Include="HotChocolate.Data" Version="15.1.11" />
     <PackageVersion Include="HotChocolate.Data.EntityFramework" Version="15.1.11" />
     <!-- StrawberryShake GraphQL Client (typed client code generation) -->
+    <PackageVersion Include="Polly" Version="8.6.4" />
     <PackageVersion Include="StrawberryShake" Version="15.1.11" />
     <PackageVersion Include="StrawberryShake.Server" Version="15.1.10" />
     <PackageVersion Include="StrawberryShake.Transport.Http" Version="15.1.11" />
@@ -23,7 +24,6 @@
     <PackageVersion Include="xunit" Version="2.5.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
     <!-- Test Utilities -->
-    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="FluentAssertions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.21" />
     <!-- Testcontainers for Integration Testing -->

@@ -1,20 +1,35 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Registry;
+using StrawberryShake;
 using TimeReportingMcp.Generated;
 using TimeReportingMcp.Models;
+using TimeReportingMcp.Services;
 
 namespace TimeReportingMcp.Tools;
 
 /// <summary>
 /// Tool for querying time entries with optional filters
 /// </summary>
-public class QueryEntriesTool
+public class QueryEntriesTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
+    private readonly ResiliencePipelineProvider<string> _pipelineProvider;
+    private readonly TokenService _tokenService;
+    private readonly ILogger<QueryEntriesTool> _logger;
 
-    public QueryEntriesTool(ITimeReportingClient client)
+    public QueryEntriesTool(
+        ITimeReportingClient client,
+        ResiliencePipelineProvider<string> pipelineProvider,
+        TokenService tokenService,
+        ILogger<QueryEntriesTool> logger)
     {
         _client = client;
+        _pipelineProvider = pipelineProvider;
+        _tokenService = tokenService;
+        _logger = logger;
     }
 
     public async Task<ToolResult> ExecuteAsync(JsonElement arguments)
@@ -59,9 +74,24 @@ public class QueryEntriesTool
                 }
             }
 
-            // 2. Execute query (fetch all entries, filter client-side)
-            // Note: StrawberryShake input type generation would allow server-side filtering
-            var result = await _client.QueryTimeEntries.ExecuteAsync(null);
+            // 2. Execute query with resilience pipeline for auth retry
+            var pipeline = _pipelineProvider.GetPipeline<IOperationResult>("graphql-auth");
+
+            var context = ResilienceContextPool.Shared.Get();
+            context.Properties.Set(new ResiliencePropertyKey<Func<Task>>("RefreshToken"), async () =>
+            {
+                _logger.LogInformation("AUTH_NOT_AUTHENTICATED detected - refreshing token");
+                _tokenService.ClearCache();
+                await _tokenService.GetTokenAsync();
+                _logger.LogInformation("Token refreshed successfully");
+            });
+
+            var result = await pipeline.ExecuteAsync(async ctx =>
+            {
+                return await _client.QueryTimeEntries.ExecuteAsync(null);
+            }, context);
+
+            ResilienceContextPool.Shared.Return(context);
 
             // 3. Handle errors
             if (result.Errors is { Count: > 0 })

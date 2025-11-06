@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="GraphQL.Client" />
     <PackageReference Include="GraphQL.Client.Serializer.SystemTextJson" />
+    <PackageReference Include="Polly" />
 
     <!-- StrawberryShake packages for typed GraphQL client -->
     <PackageReference Include="StrawberryShake" />

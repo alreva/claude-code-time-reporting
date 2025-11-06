@@ -7,7 +7,7 @@ namespace TimeReportingMcp.Tools;
 /// <summary>
 /// Tool for declining time entries with a comment
 /// </summary>
-public class DeclineEntryTool
+public class DeclineEntryTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
 

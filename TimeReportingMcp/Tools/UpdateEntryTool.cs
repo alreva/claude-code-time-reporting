@@ -8,7 +8,7 @@ namespace TimeReportingMcp.Tools;
 /// <summary>
 /// Tool for updating existing time entries
 /// </summary>
-public class UpdateEntryTool
+public class UpdateEntryTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
 

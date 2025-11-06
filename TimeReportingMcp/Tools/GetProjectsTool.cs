@@ -8,7 +8,7 @@ namespace TimeReportingMcp.Tools;
 /// <summary>
 /// Tool to get list of available projects with their tasks and tag configurations
 /// </summary>
-public class GetProjectsTool
+public class GetProjectsTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
 

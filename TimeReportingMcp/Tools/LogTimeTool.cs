@@ -8,7 +8,7 @@ namespace TimeReportingMcp.Tools;
 /// <summary>
 /// Tool for creating new time entries
 /// </summary>
-public class LogTimeTool
+public class LogTimeTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
 

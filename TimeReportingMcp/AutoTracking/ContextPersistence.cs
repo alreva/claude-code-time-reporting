@@ -55,7 +55,7 @@ public class ContextPersistence
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[Persistence] Failed to save context: {ex.Message}");
+            await Console.Error.WriteLineAsync($"[Persistence] Failed to save context: {ex.Message}");
             // Don't throw - persistence failures shouldn't break the app
         }
     }
@@ -85,7 +85,7 @@ public class ContextPersistence
             var ageMinutes = (DateTime.UtcNow - persistedData.LastActivityAt).TotalMinutes;
             if (ageMinutes > _maxStaleMinutes)
             {
-                Console.Error.WriteLine($"[Persistence] Context is stale ({ageMinutes:F0} min old), ignoring");
+                await Console.Error.WriteLineAsync($"[Persistence] Context is stale ({ageMinutes:F0} min old), ignoring");
                 return null;
             }
 
@@ -102,12 +102,12 @@ public class ContextPersistence
                 SuggestionShownForCurrentSession = false // Reset
             };
 
-            Console.Error.WriteLine($"[Persistence] Loaded context: {persistedData.LastProjectCode}/{persistedData.LastTask}");
+            await Console.Error.WriteLineAsync($"[Persistence] Loaded context: {persistedData.LastProjectCode}/{persistedData.LastTask}");
             return context;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[Persistence] Failed to load context: {ex.Message}");
+            await Console.Error.WriteLineAsync($"[Persistence] Failed to load context: {ex.Message}");
             return null; // Don't throw - just start fresh
         }
     }

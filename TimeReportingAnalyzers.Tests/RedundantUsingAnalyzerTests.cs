@@ -1,8 +1,5 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 namespace TimeReportingAnalyzers.Tests;
 

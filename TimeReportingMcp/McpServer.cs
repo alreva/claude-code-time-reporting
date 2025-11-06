@@ -1,32 +1,28 @@
-using System;
 using System.Text.Json;
-using TimeReportingMcp.Generated;
+using Microsoft.Extensions.DependencyInjection;
 using TimeReportingMcp.Models;
 using TimeReportingMcp.Tools;
 using TimeReportingMcp.Utils;
 
 namespace TimeReportingMcp;
 
+public static class McpServerDi
+{
+    public static IServiceCollection RegisterMcpServer(this IServiceCollection services) =>
+        services.AddSingleton<McpServer>();
+}
+
 /// <summary>
 /// MCP server that handles JSON-RPC communication via stdio
 /// </summary>
-public class McpServer
+public class McpServer(McpToolList availableTools)
 {
-    private readonly ITimeReportingClient _graphqlClient;
-    private readonly List<ToolDefinition> _availableTools;
-
-    public McpServer(ITimeReportingClient graphqlClient)
-    {
-        _graphqlClient = graphqlClient;
-        _availableTools = InitializeToolDefinitions();
-    }
-
     /// <summary>
     /// Start the MCP server and process requests from stdin
     /// </summary>
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
-        Console.Error.WriteLine("MCP Server ready - listening on stdin");
+        await Console.Error.WriteLineAsync("MCP Server ready - listening on stdin");
 
         try
         {
@@ -38,13 +34,13 @@ public class McpServer
                 // stdin closed by client (graceful shutdown signal per MCP spec)
                 if (line == null)
                 {
-                    Console.Error.WriteLine("stdin closed, shutting down gracefully...");
+                    await Console.Error.WriteLineAsync("stdin closed, shutting down gracefully...");
                     break;
                 }
 
                 if (string.IsNullOrWhiteSpace(line))
                 {
-                    Console.Error.WriteLine("Received empty line, continuing...");
+                    await Console.Error.WriteLineAsync("Received empty line, continuing...");
                     continue;
                 }
 
@@ -54,19 +50,19 @@ public class McpServer
 
             if (cancellationToken.IsCancellationRequested)
             {
-                Console.Error.WriteLine("Cancellation requested, shutting down...");
+                await Console.Error.WriteLineAsync("Cancellation requested, shutting down...");
             }
 
-            Console.Error.WriteLine("MCP Server shutdown complete");
+            await Console.Error.WriteLineAsync("MCP Server shutdown complete");
         }
         catch (OperationCanceledException)
         {
             // Expected when cancellation token is triggered
-            Console.Error.WriteLine("MCP Server cancelled gracefully");
+            await Console.Error.WriteLineAsync("MCP Server cancelled gracefully");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fatal error in MCP server: {ex.Message}");
+            await Console.Error.WriteLineAsync($"Fatal error in MCP server: {ex.Message}");
             throw;
         }
     }
@@ -81,7 +77,7 @@ public class McpServer
 
         try
         {
-            Console.Error.WriteLine($"Received request: {requestJson.Substring(0, Math.Min(100, requestJson.Length))}...");
+            await Console.Error.WriteLineAsync($"Received request: {requestJson.Substring(0, Math.Min(100, requestJson.Length))}...");
 
             // Deserialize request
             var request = JsonHelper.DeserializeRequest(requestJson);
@@ -100,7 +96,7 @@ public class McpServer
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error handling request: {ex.Message}");
+            await Console.Error.WriteLineAsync($"Error handling request: {ex.Message}");
             response = JsonHelper.ErrorResponse(
                 requestId,
                 JsonRpcError.InternalError(ex.Message)
@@ -167,7 +163,7 @@ public class McpServer
 
         var result = new ToolsListResult
         {
-            Tools = _availableTools
+            Tools = availableTools.GetToolDescriptions()
         };
 
         return new JsonRpcResponse
@@ -178,7 +174,7 @@ public class McpServer
     }
 
     /// <summary>
-    /// Handle tools/call - route to specific tool handler
+    /// Handle tools/call - route to a specific tool handler
     /// </summary>
     private async Task<JsonRpcResponse> HandleToolCallAsync(JsonRpcRequest request)
     {
@@ -192,7 +188,7 @@ public class McpServer
             );
         }
 
-        Console.Error.WriteLine($"Handling tool call: {toolParams.Name}");
+        await Console.Error.WriteLineAsync($"Handling tool call: {toolParams.Name}");
 
         try
         {
@@ -205,7 +201,7 @@ public class McpServer
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Tool execution failed: {ex.Message}");
+            await Console.Error.WriteLineAsync($"Tool execution failed: {ex.Message}");
             return JsonHelper.ErrorResponse(
                 request.Id,
                 JsonRpcError.InternalError($"Tool execution failed: {ex.Message}")
@@ -216,194 +212,12 @@ public class McpServer
     /// <summary>
     /// Execute a specific tool by name
     /// </summary>
-    private async Task<ToolResult> ExecuteToolAsync(ToolCallParams toolParams)
+    private Task<ToolResult> ExecuteToolAsync(ToolCallParams toolParams)
     {
         // Convert arguments dictionary to JsonElement for tool handlers
-        var argumentsJson = JsonSerializer.Serialize(toolParams.Arguments ?? new Dictionary<string, object?>());
+        var argumentsJson = JsonSerializer.Serialize(toolParams.Arguments ?? []);
         var argumentsElement = JsonSerializer.Deserialize<JsonElement>(argumentsJson);
 
-        return toolParams.Name switch
-        {
-            "log_time" => await new LogTimeTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "query_time_entries" => await new QueryEntriesTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "update_time_entry" => await new UpdateEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "move_task_to_project" => await new MoveTaskTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "delete_time_entry" => await new DeleteEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "get_available_projects" => await new GetProjectsTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "submit_time_entry" => await new SubmitEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "approve_time_entry" => await new ApproveEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            "decline_time_entry" => await new DeclineEntryTool(_graphqlClient).ExecuteAsync(argumentsElement),
-            _ => throw new InvalidOperationException($"Unknown tool: {toolParams.Name}")
-        };
-    }
-
-    /// <summary>
-    /// Placeholder tool result (will be replaced in Phase 8)
-    /// </summary>
-    private ToolResult PlaceholderToolResult(string toolName)
-    {
-        return new ToolResult
-        {
-            Content = new List<ContentItem>
-            {
-                ContentItem.CreateText($"Tool '{toolName}' not yet implemented (placeholder)")
-            }
-        };
-    }
-
-    /// <summary>
-    /// Initialize tool definitions for tools/list
-    /// </summary>
-    private List<ToolDefinition> InitializeToolDefinitions()
-    {
-        return new List<ToolDefinition>
-        {
-            new()
-            {
-                Name = "log_time",
-                Description = "Create a new time entry for tracking work hours",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        projectCode = new { type = "string", description = "Project code (e.g., INTERNAL)" },
-                        task = new { type = "string", description = "Task name (e.g., Development)" },
-                        standardHours = new { type = "number", description = "Standard hours worked" },
-                        overtimeHours = new { type = "number", description = "Overtime hours (optional)" },
-                        startDate = new { type = "string", description = "Start date (YYYY-MM-DD)" },
-                        completionDate = new { type = "string", description = "Completion date (YYYY-MM-DD)" },
-                        description = new { type = "string", description = "Work description (optional)" },
-                        issueId = new { type = "string", description = "Issue/ticket ID (optional)" },
-                        tags = new { type = "object", description = "Metadata tags (optional)" }
-                    },
-                    required = new[] { "projectCode", "task", "standardHours", "startDate", "completionDate" }
-                }
-            },
-            new()
-            {
-                Name = "query_time_entries",
-                Description = "Query time entries with filters",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        projectCode = new { type = "string", description = "Filter by project code (optional)" },
-                        status = new { type = "string", description = "Filter by status (optional)" },
-                        startDate = new { type = "string", description = "Filter from date (optional)" },
-                        endDate = new { type = "string", description = "Filter to date (optional)" }
-                    }
-                }
-            },
-            new()
-            {
-                Name = "update_time_entry",
-                Description = "Update an existing time entry",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        id = new { type = "string", description = "Time entry ID (UUID)" },
-                        task = new { type = "string", description = "Task name (optional)" },
-                        issueId = new { type = "string", description = "Issue/ticket ID (optional)" },
-                        standardHours = new { type = "number", description = "Standard hours (optional)" },
-                        overtimeHours = new { type = "number", description = "Overtime hours (optional)" },
-                        description = new { type = "string", description = "Description (optional)" },
-                        startDate = new { type = "string", description = "Start date (YYYY-MM-DD) (optional)" },
-                        completionDate = new { type = "string", description = "Completion date (YYYY-MM-DD) (optional)" },
-                        tags = new { type = "object", description = "Metadata tags (optional)" }
-                    },
-                    required = new[] { "id" }
-                }
-            },
-            new()
-            {
-                Name = "move_task_to_project",
-                Description = "Move a time entry to a different project",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        entryId = new { type = "string", description = "Time entry ID (UUID)" },
-                        newProjectCode = new { type = "string", description = "New project code" },
-                        newTask = new { type = "string", description = "New task name" }
-                    },
-                    required = new[] { "entryId", "newProjectCode", "newTask" }
-                }
-            },
-            new()
-            {
-                Name = "delete_time_entry",
-                Description = "Delete a time entry (only if not submitted)",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        id = new { type = "string", description = "Time entry ID (UUID)" }
-                    },
-                    required = new[] { "id" }
-                }
-            },
-            new()
-            {
-                Name = "get_available_projects",
-                Description = "List all available projects with their tasks and tags",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        activeOnly = new { type = "boolean", description = "Only return active projects (default: true)" }
-                    }
-                }
-            },
-            new()
-            {
-                Name = "submit_time_entry",
-                Description = "Submit a time entry for approval",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        id = new { type = "string", description = "Time entry ID (UUID)" }
-                    },
-                    required = new[] { "id" }
-                }
-            },
-            new()
-            {
-                Name = "approve_time_entry",
-                Description = "Approve a submitted time entry",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        id = new { type = "string", description = "Time entry ID (UUID)" }
-                    },
-                    required = new[] { "id" }
-                }
-            },
-            new()
-            {
-                Name = "decline_time_entry",
-                Description = "Decline a submitted time entry with a reason",
-                InputSchema = new
-                {
-                    type = "object",
-                    properties = new
-                    {
-                        id = new { type = "string", description = "Time entry ID (UUID)" },
-                        comment = new { type = "string", description = "Reason for declining" }
-                    },
-                    required = new[] { "id", "comment" }
-                }
-            }
-        };
+        return availableTools.CallTool(toolParams.Name, argumentsElement);
     }
 }

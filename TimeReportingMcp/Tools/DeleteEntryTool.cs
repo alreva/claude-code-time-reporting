@@ -7,7 +7,7 @@ namespace TimeReportingMcp.Tools;
 /// <summary>
 /// Tool for deleting time entries
 /// </summary>
-public class DeleteEntryTool
+public class DeleteEntryTool : IMcpTool
 {
     private readonly ITimeReportingClient _client;
 

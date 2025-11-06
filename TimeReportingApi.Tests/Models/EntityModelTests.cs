@@ -1,4 +1,3 @@
-using TimeReportingApi.Data;
 using TimeReportingApi.Models;
 
 namespace TimeReportingApi.Tests.Models;
