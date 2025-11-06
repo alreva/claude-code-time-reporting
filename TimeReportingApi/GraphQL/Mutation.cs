@@ -497,7 +497,7 @@ public class Mutation
     /// Approve a submitted time entry.
     /// Transitions from SUBMITTED to APPROVED status.
     /// Once approved, entries become immutable.
-    /// Requires authentication (manager role).
+    /// Requires authentication and "Approve" permission for the project.
     /// </summary>
     [Authorize]
     public async Task<TimeEntry> ApproveTimeEntry(
@@ -505,32 +505,42 @@ public class Mutation
         ClaimsPrincipal user,
         [Service] TimeReportingDbContext context)
     {
-        // Load the existing entry
+        // Load entry with tags for full data
         var entry = await context.TimeEntries
-            .Include(e => e.Project)
-            .Include(e => e.ProjectTask)
+            .Include(e => e.Tags)
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (entry == null)
         {
-            throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
+            throw new GraphQLException($"Time entry {id} not found");
         }
 
-        // Special check for already approved
-        if (entry.Status == TimeEntryStatus.Approved)
+        // Get project code from shadow property
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue;
+        if (string.IsNullOrEmpty(projectCode))
         {
-            throw new Exceptions.BusinessRuleException(
-                $"Time entry is already APPROVED.");
+            throw new GraphQLException("Time entry has no associated project");
         }
 
-        // Check current status - only SUBMITTED can be approved
+        // Check ACL permission: User must have "Approve" permission for this project
+        var resourcePath = $"Project/{projectCode}";
+        if (!user.HasPermission(resourcePath, Permissions.Approve))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to approve time entries for project '{projectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .SetExtension("requiredPermission", "Approve")
+                .Build());
+        }
+
+        // Existing business logic validation
         if (entry.Status != TimeEntryStatus.Submitted)
         {
-            throw new Exceptions.BusinessRuleException(
-                $"Time entry must be in SUBMITTED status to be approved. Current status: {entry.Status}");
+            throw new GraphQLException($"Cannot approve entry in status {entry.Status}. Only SUBMITTED entries can be approved.");
         }
 
-        // Transition to APPROVED status
+        // Approve the entry
         entry.Status = TimeEntryStatus.Approved;
         entry.UpdatedAt = DateTime.UtcNow;
 
@@ -543,7 +553,7 @@ public class Mutation
     /// Decline a submitted time entry with a comment.
     /// Transitions from SUBMITTED to DECLINED status.
     /// Declined entries can be edited and resubmitted.
-    /// Requires authentication (manager role).
+    /// Requires authentication and "Approve" permission for the project.
     /// </summary>
     [Authorize]
     public async Task<TimeEntry> DeclineTimeEntry(
@@ -552,38 +562,48 @@ public class Mutation
         ClaimsPrincipal user,
         [Service] TimeReportingDbContext context)
     {
-        // Validate comment is provided
+        // Validate comment
         if (string.IsNullOrWhiteSpace(comment))
         {
-            throw new Exceptions.ValidationException("Decline comment is required", "comment");
+            throw new GraphQLException("A comment is required when declining a time entry");
         }
 
-        // Load the existing entry
+        // Load entry with tags for full data
         var entry = await context.TimeEntries
-            .Include(e => e.Project)
-            .Include(e => e.ProjectTask)
+            .Include(e => e.Tags)
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (entry == null)
         {
-            throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
+            throw new GraphQLException($"Time entry {id} not found");
         }
 
-        // Special check for already approved
-        if (entry.Status == TimeEntryStatus.Approved)
+        // Get project code from shadow property
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue;
+        if (string.IsNullOrEmpty(projectCode))
         {
-            throw new Exceptions.BusinessRuleException(
-                $"Time entry is already APPROVED. Approved entries cannot be declined.");
+            throw new GraphQLException("Time entry has no associated project");
         }
 
-        // Check current status - only SUBMITTED can be declined
+        // Check ACL permission: User must have "Approve" permission for this project
+        var resourcePath = $"Project/{projectCode}";
+        if (!user.HasPermission(resourcePath, Permissions.Approve))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to decline time entries for project '{projectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .SetExtension("requiredPermission", "Approve")
+                .Build());
+        }
+
+        // Existing business logic validation
         if (entry.Status != TimeEntryStatus.Submitted)
         {
-            throw new Exceptions.BusinessRuleException(
-                $"Time entry must be in SUBMITTED status to be declined. Current status: {entry.Status}");
+            throw new GraphQLException($"Cannot decline entry in status {entry.Status}. Only SUBMITTED entries can be declined.");
         }
 
-        // Transition to DECLINED status with comment
+        // Decline the entry
         entry.Status = TimeEntryStatus.Declined;
         entry.DeclineComment = comment;
         entry.UpdatedAt = DateTime.UtcNow;
