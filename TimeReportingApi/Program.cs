@@ -66,7 +66,8 @@ app.Use(async (context, next) =>
     if (context.User.Identity?.IsAuthenticated == true)
     {
         var userId = context.User.FindFirst("oid")?.Value ?? "unknown";
-        var aclClaims = context.User.FindAll("extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL")
+        // Azure AD shortens long extension claim names to "extn.{PropertyName}"
+        var aclClaims = context.User.FindAll("extn.TimeReportingACL")
             .Select(c => c.Value)
             .ToList();
 

@@ -53,7 +53,8 @@
       "mcp__time-reporting__approve_time_entry",
       "mcp__time-reporting__decline_time_entry",
       "SlashCommand(/ef-migration:*)",
-      "SlashCommand(/user-add-acl:*)"
+      "SlashCommand(/user-add-acl:*)",
+      "SlashCommand(/user-list-acl:*)"
     ],
     "deny": [],
     "ask": []

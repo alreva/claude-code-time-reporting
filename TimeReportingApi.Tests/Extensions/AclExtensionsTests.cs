@@ -7,8 +7,9 @@ public class AclExtensionsTests
 {
     private ClaimsPrincipal CreateUserWithAcl(params string[] aclEntries)
     {
+        // Azure AD shortens long extension claim names to "extn.{PropertyName}"
         var claims = aclEntries.Select(acl =>
-            new Claim("extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL", acl)).ToList();
+            new Claim("extn.TimeReportingACL", acl)).ToList();
 
         var identity = new ClaimsIdentity(claims, "TestAuth");
         return new ClaimsPrincipal(identity);

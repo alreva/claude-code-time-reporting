@@ -10,11 +10,11 @@ public static class AclExtensions
 {
     /// <summary>
     /// Name of the extension attribute claim in the JWT token.
-    /// This must match the directory extension created in Azure Entra ID.
+    /// Azure AD automatically shortens long extension claim names to "extn.{PropertyName}".
     /// Extension property: extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL
-    /// Claim name in token: extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL
+    /// Claim name in token: extn.TimeReportingACL (shortened by Azure AD)
     /// </summary>
-    private const string AclClaimType = "extension_8b3f87d7bc23493288b5f24056999600_TimeReportingACL";
+    private const string AclClaimType = "extn.TimeReportingACL";
 
     /// <summary>
     /// Parse all ACL entries from the user's JWT token claims.

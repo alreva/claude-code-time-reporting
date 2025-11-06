@@ -3,6 +3,12 @@ schema {
   mutation: Mutation
 }
 
+type DebugAclResponse {
+  userId: String
+  email: String
+  aclEntries: [String!]!
+}
+
 type Mutation {
   logTime(input: LogTimeInput!): TimeEntry! @authorize
   updateTimeEntry(id: UUID! input: UpdateTimeEntryInput!): TimeEntry! @authorize
@@ -59,6 +65,7 @@ type Query {
   timeEntry(id: UUID!): TimeEntry @authorize
   projects(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
   project(code: String!): Project
+  debugAcl: DebugAclResponse! @authorize
 }
 
 type TagValue {
