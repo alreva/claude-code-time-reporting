@@ -48,7 +48,8 @@
       "SlashCommand(/ef-migration:*)",
       "mcp__time-reporting__QueryTimeEntries",
       "mcp__time-reporting__decline_time_entry",
-      "mcp__time-reporting__approve_time_entry"
+      "mcp__time-reporting__approve_time_entry",
+      "mcp__time-reporting__hello"
     ],
     "deny": [],
     "ask": []

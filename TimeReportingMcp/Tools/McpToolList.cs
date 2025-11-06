@@ -8,6 +8,7 @@ public static class McpToolListDi
 {
     public static IServiceCollection RegisterToolDefinitions(this IServiceCollection services) =>
         services
+            .AddSingleton<HelloTool>()
             .AddSingleton<LogTimeTool>()
             .AddSingleton<QueryEntriesTool>()
             .AddSingleton<UpdateEntryTool>()
@@ -28,6 +29,7 @@ public class McpToolList
         private readonly Dictionary<string, IMcpTool> _toolsByName;
 
         public McpToolList(
+            HelloTool helloTool,
             LogTimeTool  logTimeTool,
             QueryEntriesTool  queryEntriesTool,
             UpdateEntryTool  updateEntryTool,
@@ -39,6 +41,17 @@ public class McpToolList
             DeclineEntryTool declineEntryTool)
         {
             _toolsRepo = [
+                (helloTool, new()
+                {
+                    Name = "hello",
+                    Description = "Test connectivity to the GraphQL API. Calls the { hello } query and returns its response.",
+                    InputSchema = new
+                    {
+                        type = "object",
+                        properties = new { },
+                        additionalProperties = false
+                    }
+                }),
                 (logTimeTool, new()
                 {
                     Name = "log_time",
