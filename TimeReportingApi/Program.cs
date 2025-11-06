@@ -66,7 +66,7 @@ app.Use(async (context, next) =>
     if (context.User.Identity?.IsAuthenticated == true)
     {
         var userId = context.User.FindFirst("oid")?.Value ?? "unknown";
-        var aclClaims = context.User.FindAll("extension_TimeReporting_acl")
+        var aclClaims = context.User.FindAll("extension_extcz1lst0i_TimeReporting_acl")
             .Select(c => c.Value)
             .ToList();
 

@@ -8,7 +8,7 @@ public class AclExtensionsTests
     private ClaimsPrincipal CreateUserWithAcl(params string[] aclEntries)
     {
         var claims = aclEntries.Select(acl =>
-            new Claim("extension_TimeReporting_acl", acl)).ToList();
+            new Claim("extension_extcz1lst0i_TimeReporting_acl", acl)).ToList();
 
         var identity = new ClaimsIdentity(claims, "TestAuth");
         return new ClaimsPrincipal(identity);
