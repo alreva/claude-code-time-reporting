@@ -39,17 +39,8 @@
       "WebFetch(domain:postgresql.org)",
       "WebFetch(domain:stackoverflow.com)",
       "Read(**)",
-      "mcp__time-reporting__get_available_projects",
-      "mcp__time-reporting__log_time",
-      "mcp__time-reporting__query_time_entries",
-      "mcp__time-reporting__submit_time_entry",
-      "mcp__time-reporting__update_time_entry",
-      "mcp__time-reporting__move_task_to_project",
-      "SlashCommand(/ef-migration:*)",
-      "mcp__time-reporting__QueryTimeEntries",
-      "mcp__time-reporting__decline_time_entry",
-      "mcp__time-reporting__approve_time_entry",
-      "mcp__time-reporting__hello"
+      "mcp__time-reporting__*",
+      "SlashCommand(/ef-migration:*)"
     ],
     "deny": [],
     "ask": []
