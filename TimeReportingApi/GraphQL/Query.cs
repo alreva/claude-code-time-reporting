@@ -93,4 +93,30 @@ public class Query
                 .ThenInclude(t => t.AllowedValues)
             .FirstOrDefaultAsync(p => p.Code == code);
     }
+
+    /// <summary>
+    /// Debug query to test ACL claims (REMOVE IN PRODUCTION)
+    /// TODO: Remove after Phase 15 complete
+    /// </summary>
+    [Authorize]
+    public DebugAclResponse DebugAcl(ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst("oid")?.Value;
+        var email = user.FindFirst("email")?.Value;
+        var acl = user.GetUserAcl(); // Uses AclExtensions from Task 15.2
+
+        return new DebugAclResponse
+        {
+            UserId = userId,
+            Email = email,
+            AclEntries = acl.Select(e => $"{e.Path}={string.Join(",", e.Permissions)}").ToList()
+        };
+    }
+}
+
+public class DebugAclResponse
+{
+    public string? UserId { get; set; }
+    public string? Email { get; set; }
+    public List<string> AclEntries { get; set; } = new();
 }

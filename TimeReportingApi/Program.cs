@@ -57,6 +57,37 @@ if (app.Environment.IsDevelopment())
 // Add authentication and authorization middleware
 // Order matters: Authentication must come before Authorization
 app.UseAuthentication();
+
+// --- TEMPORARY DEBUG MIDDLEWARE ---
+// TODO: Remove this after Phase 15 complete
+// Remove this after verifying ACL claims are working
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var userId = context.User.FindFirst("oid")?.Value ?? "unknown";
+        var aclClaims = context.User.FindAll("extension_TimeReporting_acl")
+            .Select(c => c.Value)
+            .ToList();
+
+        if (aclClaims.Any())
+        {
+            Console.WriteLine($"[ACL Debug] User {userId} has {aclClaims.Count} ACL entries:");
+            foreach (var acl in aclClaims)
+            {
+                Console.WriteLine($"  - {acl}");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"[ACL Debug] User {userId} has NO ACL entries");
+        }
+    }
+
+    await next();
+});
+// --- END TEMPORARY DEBUG MIDDLEWARE ---
+
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
