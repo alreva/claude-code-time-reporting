@@ -83,9 +83,10 @@ try
     var cts = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>
     {
-        Console.Error.WriteLine("\nShutting down MCP server...");
-        e.Cancel = true;
-        cts.Cancel();
+        Console.Error.WriteLine("\nShutting down immediately...");
+        // Console.Error.WriteLine("\nShutting down MCP server...");
+        // e.Cancel = true;
+        // cts.Cancel();
     };
     
     AppDomain.CurrentDomain.ProcessExit += (s, e) =>

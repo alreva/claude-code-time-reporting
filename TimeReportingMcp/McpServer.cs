@@ -71,7 +71,8 @@ public class McpServer(McpToolList availableTools)
                 
                 if (string.IsNullOrWhiteSpace(line))
                 {
-                    continue;
+                    await Console.Error.WriteLineAsync("stdin closed by client, shutting down gracefully...");
+                    break;
                 }
 
                 // Process request and write response to stdout
