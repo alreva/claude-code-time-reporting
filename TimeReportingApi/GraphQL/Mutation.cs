@@ -505,9 +505,12 @@ public class Mutation
         ClaimsPrincipal user,
         [Service] TimeReportingDbContext context)
     {
-        // Load entry with tags for full data
+        // Load entry with all navigation properties for full data
         var entry = await context.TimeEntries
+            .Include(e => e.Project)
+            .Include(e => e.ProjectTask)
             .Include(e => e.Tags)
+                .ThenInclude(t => t.TagValue)
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (entry == null)
@@ -568,9 +571,12 @@ public class Mutation
             throw new GraphQLException("A comment is required when declining a time entry");
         }
 
-        // Load entry with tags for full data
+        // Load entry with all navigation properties for full data
         var entry = await context.TimeEntries
+            .Include(e => e.Project)
+            .Include(e => e.ProjectTask)
             .Include(e => e.Tags)
+                .ThenInclude(t => t.TagValue)
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (entry == null)
