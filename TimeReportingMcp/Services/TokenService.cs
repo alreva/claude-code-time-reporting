@@ -11,9 +11,13 @@ namespace TimeReportingMcp.Services;
 /// and this service reads tokens from the Azure CLI cache.
 /// </summary>
 /// <remarks>
-/// Uses AzureCliCredential to read tokens that were acquired when the developer
-/// ran 'az login'. Tokens are cached with a 5-minute expiry buffer to minimize
-/// repeated token acquisition calls.
+/// Uses AzureCliCredential which reads tokens from Azure CLI's own disk cache.
+/// No application-level caching is performed since Azure CLI already caches tokens
+/// efficiently and handles token refresh automatically.
+///
+/// This approach provides immediate user switch detection when 'az login' is called
+/// with a different account, as each call to GetTokenAsync() gets the current user's
+/// token from Azure CLI's cache.
 ///
 /// For production deployments, switch to ManagedIdentityCredential or use
 /// ChainedTokenCredential for automatic fallback.
@@ -21,8 +25,6 @@ namespace TimeReportingMcp.Services;
 public class TokenService
 {
     private static readonly AzureCliCredential _credential = new();
-    private AccessToken? _cachedToken;
-    private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly string[] _scopes;
     private readonly ILogger<TokenService> _logger;
 
@@ -44,46 +46,29 @@ public class TokenService
 
     /// <summary>
     /// Get an access token for the configured API scope.
-    /// Tokens are cached and automatically refreshed when they expire.
+    /// Returns the current Azure CLI user's token from Azure CLI's cache.
+    /// Azure CLI handles token refresh automatically when tokens expire.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Access token string</returns>
+    /// <returns>Access token string for the current Azure CLI user</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when Azure CLI authentication is not available.
     /// User must run 'az login' first.
     /// </exception>
     public async Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
     {
-        // Check cache based on actual token expiry (no buffer)
-        // When token expires, AzureCliCredential will fetch a fresh token
-        // which will be for the current Azure CLI user
-        if (_cachedToken.HasValue &&
-            _cachedToken.Value.ExpiresOn > DateTimeOffset.UtcNow)
-        {
-            _logger.LogDebug("Returning cached token (expires: {Expiry})", _cachedToken.Value.ExpiresOn);
-            return _cachedToken.Value.Token;
-        }
-
-        await _lock.WaitAsync(cancellationToken);
         try
         {
-            // Double-check after acquiring lock
-            if (_cachedToken.HasValue &&
-                _cachedToken.Value.ExpiresOn > DateTimeOffset.UtcNow)
-            {
-                _logger.LogDebug("Returning cached token after lock (expires: {Expiry})", _cachedToken.Value.ExpiresOn);
-                return _cachedToken.Value.Token;
-            }
+            _logger.LogDebug("Acquiring token from Azure CLI for scope: {Scope}", _scopes[0]);
 
-            _logger.LogInformation("Acquiring new token from Azure CLI for scope: {Scope}", _scopes[0]);
-
-            // Acquire new token from Azure CLI
+            // Get token from Azure CLI cache (no application-level caching)
+            // This ensures we always get the current Azure CLI user's token
             var tokenRequest = new TokenRequestContext(_scopes);
-            _cachedToken = await _credential.GetTokenAsync(tokenRequest, cancellationToken);
+            var token = await _credential.GetTokenAsync(tokenRequest, cancellationToken);
 
-            _logger.LogInformation("Token acquired successfully (expires: {Expiry})", _cachedToken.Value.ExpiresOn);
+            _logger.LogDebug("Token acquired successfully (expires: {Expiry})", token.ExpiresOn);
 
-            return _cachedToken.Value.Token;
+            return token.Token;
         }
         catch (AuthenticationFailedException ex)
         {
@@ -91,27 +76,6 @@ public class TokenService
             throw new InvalidOperationException(
                 "Azure CLI authentication required. Please run 'az login' and authenticate with your Azure account.",
                 ex);
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    /// <summary>
-    /// Clear the cached token. Useful for testing or forcing token refresh.
-    /// </summary>
-    public void ClearCache()
-    {
-        _lock.Wait();
-        try
-        {
-            _cachedToken = null;
-            _logger.LogInformation("Token cache cleared");
-        }
-        finally
-        {
-            _lock.Release();
         }
     }
 }
