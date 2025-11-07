@@ -80,10 +80,10 @@ public class QueryEntriesTool : IMcpTool
             var context = ResilienceContextPool.Shared.Get();
             context.Properties.Set(new ResiliencePropertyKey<Func<Task>>("RefreshToken"), async () =>
             {
-                _logger.LogInformation("AUTH_NOT_AUTHENTICATED detected - refreshing token");
-                _tokenService.ClearCache();
+                _logger.LogInformation("AUTH_NOT_AUTHENTICATED detected - fetching fresh token");
+                // No need to clear cache - TokenService now always gets current token from Azure CLI
                 await _tokenService.GetTokenAsync();
-                _logger.LogInformation("Token refreshed successfully");
+                _logger.LogInformation("Fresh token acquired successfully");
             });
 
             var result = await pipeline.ExecuteAsync(async ctx =>
