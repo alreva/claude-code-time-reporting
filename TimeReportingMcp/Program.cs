@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using TimeReportingMcp;
 using TimeReportingMcp.Extensions;
@@ -53,20 +54,30 @@ try
     // Add GraphQL resilience pipeline for auth retry
     services.AddGraphQLResilience();
 
-    // Add StrawberryShake GraphQL client
+    // Register handlers
+    services.AddTransient<TimeReportingMcp.Handlers.LoggingHandler>();
+    services.AddTransient<TimeReportingMcp.Handlers.AuthTokenHandler>();
+
+    // Add StrawberryShake GraphQL client with handlers
     services
         .AddTimeReportingClient()
-        .ConfigureHttpClient(async (sp, client) =>
+        .ConfigureHttpClient((sp, client) =>
         {
             client.BaseAddress = new Uri(graphqlApiUrl);
-
-            // Acquire initial token from Azure CLI
-            var tokenService = sp.GetRequiredService<TokenService>();
-            var token = await tokenService.GetTokenAsync();
-
-            client.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         });
+
+    // Configure handlers for the StrawberryShake named client
+    // StrawberryShake creates a named HttpClient with the pattern: "{ClientName}_{OperationName}"
+    // We'll configure all StrawberryShake clients using ConfigureHttpClientDefaults
+    services.ConfigureAll<HttpClientFactoryOptions>(options =>
+    {
+        options.HttpMessageHandlerBuilderActions.Add(builder =>
+        {
+            builder.AdditionalHandlers.Insert(0, builder.Services.GetRequiredService<TimeReportingMcp.Handlers.AuthTokenHandler>());
+            builder.AdditionalHandlers.Add(builder.Services.GetRequiredService<TimeReportingMcp.Handlers.LoggingHandler>());
+        });
+    });
+
     services
         .RegisterMcpServer()
         .RegisterToolDefinitions();
