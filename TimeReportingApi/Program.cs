@@ -66,17 +66,19 @@ app.Use(async (context, next) =>
     if (context.User.Identity?.IsAuthenticated == true)
     {
         // Try multiple claim type variations
-        // Note: ASP.NET Core JWT middleware doesn't always preserve all claims
-        // sub = Subject ID (unique identifier), unique_name = email
+        // Note: Even though we clear DefaultInboundClaimTypeMap, Microsoft.Identity.Web may still map some claims
         var userId = context.User.FindFirst("oid")?.Value
                    ?? context.User.FindFirst("sub")?.Value
                    ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                    ?? "unknown";
-        var email = context.User.FindFirst("unique_name")?.Value
-                  ?? context.User.FindFirst("email")?.Value
+        var email = context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value  // Mapped version
+                  ?? context.User.FindFirst("email")?.Value  // Original
+                  ?? context.User.FindFirst("unique_name")?.Value
                   ?? context.User.FindFirst("preferred_username")?.Value
                   ?? "unknown";
-        var name = context.User.FindFirst("name")?.Value ?? "unknown";
+        var name = context.User.FindFirst("name")?.Value
+                 ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                 ?? "unknown";
 
         // Azure AD shortens long extension claim names to "extn.{PropertyName}"
         var aclClaims = context.User.FindAll("extn.TimeReportingACLv2")
@@ -138,7 +140,59 @@ static void ConfigureServices(WebApplicationBuilder builder)
     // Add Microsoft.Identity.Web authentication
     // This validates Azure Entra ID JWT tokens and extracts user claims
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+        .AddMicrosoftIdentityWebApi(options =>
+        {
+            builder.Configuration.Bind("AzureAd", options);
+
+            // Configure token validation to preserve all claims
+            options.TokenValidationParameters.NameClaimType = "name";
+            options.TokenValidationParameters.RoleClaimType = "roles";
+
+            // Add event handler to manually add email claim from token to principal
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = context =>
+                {
+                    var claimsIdentity = context.Principal?.Identity as System.Security.Claims.ClaimsIdentity;
+                    if (claimsIdentity != null)
+                    {
+                        Console.WriteLine($"[JWT Debug] ClaimsIdentity has {claimsIdentity.Claims.Count()} claims:");
+                        foreach (var claim in claimsIdentity.Claims.Take(15))  // Limit to 15 for readability
+                        {
+                            var value = claim.Value.Length > 50 ? claim.Value.Substring(0, 50) + "..." : claim.Value;
+                            Console.WriteLine($"  - {claim.Type} = {value}");
+                        }
+
+                        // Add email claim if missing
+                        if (!claimsIdentity.HasClaim(c => c.Type == "email"))
+                        {
+                            var emailClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "unique_name" || c.Type == "preferred_username");
+                            if (emailClaim != null)
+                            {
+                                Console.WriteLine($"[JWT Debug] Adding email claim from {emailClaim.Type}: {emailClaim.Value}");
+                                claimsIdentity.AddClaim(new System.Security.Claims.Claim("email", emailClaim.Value));
+                            }
+                        }
+
+                        // Add oid claim if missing
+                        if (!claimsIdentity.HasClaim(c => c.Type == "oid"))
+                        {
+                            var oidClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "sub");
+                            if (oidClaim != null)
+                            {
+                                Console.WriteLine($"[JWT Debug] Adding oid claim from sub: {oidClaim.Value}");
+                                claimsIdentity.AddClaim(new System.Security.Claims.Claim("oid", oidClaim.Value));
+                            }
+                        }
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+        },
+        options =>
+        {
+            builder.Configuration.Bind("AzureAd", options);
+        });
 
     // Add authorization services
     builder.Services.AddAuthorization();
