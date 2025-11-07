@@ -65,7 +65,19 @@ app.Use(async (context, next) =>
 {
     if (context.User.Identity?.IsAuthenticated == true)
     {
-        var userId = context.User.FindFirst("oid")?.Value ?? "unknown";
+        // Try multiple claim type variations
+        // Note: ASP.NET Core JWT middleware doesn't always preserve all claims
+        // sub = Subject ID (unique identifier), unique_name = email
+        var userId = context.User.FindFirst("oid")?.Value
+                   ?? context.User.FindFirst("sub")?.Value
+                   ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                   ?? "unknown";
+        var email = context.User.FindFirst("unique_name")?.Value
+                  ?? context.User.FindFirst("email")?.Value
+                  ?? context.User.FindFirst("preferred_username")?.Value
+                  ?? "unknown";
+        var name = context.User.FindFirst("name")?.Value ?? "unknown";
+
         // Azure AD shortens long extension claim names to "extn.{PropertyName}"
         var aclClaims = context.User.FindAll("extn.TimeReportingACLv2")
             .Select(c => c.Value)
@@ -73,7 +85,7 @@ app.Use(async (context, next) =>
 
         if (aclClaims.Any())
         {
-            Console.WriteLine($"[ACL Debug] User {userId} has {aclClaims.Count} ACL entries:");
+            Console.WriteLine($"[ACL Debug] User {email} (oid: {userId}, name: {name}) has {aclClaims.Count} ACL entries:");
             foreach (var acl in aclClaims)
             {
                 Console.WriteLine($"  - {acl}");
@@ -81,7 +93,7 @@ app.Use(async (context, next) =>
         }
         else
         {
-            Console.WriteLine($"[ACL Debug] User {userId} has NO ACL entries");
+            Console.WriteLine($"[ACL Debug] User {email} (oid: {userId}) has NO ACL entries");
         }
     }
 
