@@ -2,6 +2,7 @@ using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace TimeReportingMcp.Services;
 
@@ -58,17 +59,22 @@ public class TokenService
     {
         try
         {
-            _logger.LogDebug("Acquiring token from Azure CLI for scope: {Scope}", _scopes[0]);
+            _logger.LogInformation("Acquiring token from Azure CLI for scope: {Scope}", _scopes[0]);
 
             // Create new AzureCliCredential instance for each request
             // This ensures we always get the current Azure CLI user's token
-            // AzureCliCredential has internal caching, and creating a new instance
-            // forces it to re-read from Azure CLI's disk cache
             var credential = new AzureCliCredential();
             var tokenRequest = new TokenRequestContext(_scopes);
             var token = await credential.GetTokenAsync(tokenRequest, cancellationToken);
 
             _logger.LogDebug("Token acquired successfully (expires: {Expiry})", token.ExpiresOn);
+
+            // DEBUG: Decode token to verify which user's token we got
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token.Token);
+            var email = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == "unique_name" || c.Type == "preferred_username")?.Value ?? "unknown";
+            var oid = jwtToken.Claims.FirstOrDefault(c => c.Type == "oid")?.Value ?? "unknown";
+            _logger.LogInformation("[TokenService] Retrieved token for user: {Email} (oid: {Oid})", email, oid);
 
             return token.Token;
         }

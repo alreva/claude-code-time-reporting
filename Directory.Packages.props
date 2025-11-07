@@ -78,5 +78,7 @@
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <!-- Polly for resilience and transient fault handling -->
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.10.0" />
+    <!-- CliWrap for better process management of az CLI calls -->
+    <PackageVersion Include="CliWrap" Version="3.6.6" />
   </ItemGroup>
 </Project>
