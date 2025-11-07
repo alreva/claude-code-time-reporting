@@ -54,9 +54,11 @@ public class TokenService
     /// </exception>
     public async Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
     {
-        // Check cache with 5-minute expiry buffer
+        // Check cache based on actual token expiry (no buffer)
+        // When token expires, AzureCliCredential will fetch a fresh token
+        // which will be for the current Azure CLI user
         if (_cachedToken.HasValue &&
-            _cachedToken.Value.ExpiresOn > DateTimeOffset.UtcNow.AddMinutes(5))
+            _cachedToken.Value.ExpiresOn > DateTimeOffset.UtcNow)
         {
             _logger.LogDebug("Returning cached token (expires: {Expiry})", _cachedToken.Value.ExpiresOn);
             return _cachedToken.Value.Token;
@@ -67,7 +69,7 @@ public class TokenService
         {
             // Double-check after acquiring lock
             if (_cachedToken.HasValue &&
-                _cachedToken.Value.ExpiresOn > DateTimeOffset.UtcNow.AddMinutes(5))
+                _cachedToken.Value.ExpiresOn > DateTimeOffset.UtcNow)
             {
                 _logger.LogDebug("Returning cached token after lock (expires: {Expiry})", _cachedToken.Value.ExpiresOn);
                 return _cachedToken.Value.Token;
