@@ -86,7 +86,8 @@ public class McpToolList
                             projectCode = new { type = "string", description = "Filter by project code (optional)" },
                             status = new { type = "string", description = "Filter by status (optional)" },
                             startDate = new { type = "string", description = "Filter from date (optional)" },
-                            endDate = new { type = "string", description = "Filter to date (optional)" }
+                            endDate = new { type = "string", description = "Filter to date (optional)" },
+                            userEmail = new { type = "string", description = "Filter by user email (optional)" }
                         }
                     }
                 }),

@@ -19,6 +19,9 @@ query QueryTimeEntries(
       declineComment
       description
       issueId
+      userId
+      userEmail
+      userName
       tags {
         id
         tagValue {

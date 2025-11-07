@@ -41,6 +41,7 @@ public class QueryEntriesTool : IMcpTool
             DateOnly? startDate = null;
             DateOnly? endDate = null;
             TimeEntryStatus? status = null;
+            string? userEmail = null;
 
             if (arguments.TryGetProperty("projectCode", out var proj) && proj.ValueKind == JsonValueKind.String)
             {
@@ -72,6 +73,11 @@ public class QueryEntriesTool : IMcpTool
                 {
                     status = Enum.Parse<TimeEntryStatus>(statusStr, true);
                 }
+            }
+
+            if (arguments.TryGetProperty("userEmail", out var email) && email.ValueKind == JsonValueKind.String)
+            {
+                userEmail = email.GetString();
             }
 
             // 2. Execute query with resilience pipeline for auth retry
@@ -123,6 +129,13 @@ public class QueryEntriesTool : IMcpTool
             if (status.HasValue)
             {
                 filteredEntries = filteredEntries.Where(e => e.Status == status.Value);
+            }
+
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                filteredEntries = filteredEntries.Where(e =>
+                    e.UserEmail != null &&
+                    e.UserEmail.Equals(userEmail, StringComparison.OrdinalIgnoreCase));
             }
 
             // 6. Return formatted results
