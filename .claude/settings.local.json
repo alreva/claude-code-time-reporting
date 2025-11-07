@@ -23,6 +23,8 @@
       "SlashCommand(/user-add-acl)",
       "SlashCommand(/user-list-acl)",
       "SlashCommand(/user-remove-acl)",
+      "SlashCommand(/az-whoami)",
+      "SlashCommand(/az-relogin)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git status:*)",
