@@ -47,7 +47,7 @@ public class Query
         // 2. Belong to a project where user has Approve or Manage permission
         return context.TimeEntries.Where(e =>
             e.UserId == userId ||
-            projectsWithViewAllPermission.Contains(context.Entry(e).Property<string>("ProjectCode").CurrentValue));
+            projectsWithViewAllPermission.Contains(EF.Property<string>(e, "ProjectCode")));
     }
 
     /// <summary>

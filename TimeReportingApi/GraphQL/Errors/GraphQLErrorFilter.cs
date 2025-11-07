@@ -56,6 +56,11 @@ public class GraphQLErrorFilter : IErrorFilter
         // Handle generic exceptions (don't expose internal details)
         if (error.Exception != null)
         {
+            // Log the full exception details to console
+            Console.WriteLine($"[GraphQL Error] Exception: {error.Exception.GetType().Name}");
+            Console.WriteLine($"[GraphQL Error] Message: {error.Exception.Message}");
+            Console.WriteLine($"[GraphQL Error] StackTrace: {error.Exception.StackTrace}");
+
             var builder = ErrorBuilder.New()
                 .SetMessage("An unexpected error occurred")
                 .SetCode("INTERNAL_ERROR")
