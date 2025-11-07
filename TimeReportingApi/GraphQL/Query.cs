@@ -15,7 +15,7 @@ public class Query
     /// HotChocolate automatically generates filtering and sorting capabilities.
     /// Order matters: UsePaging -> UseProjection -> UseFiltering -> UseSorting
     /// Requires authentication and automatically filters by authenticated user.
-    /// Security: Users can only see their own time entries.
+    /// Security: Users can see their own entries + all entries from projects where they have Approve (A) or Manage (M) permission.
     /// </summary>
     [Authorize]
     [UsePaging(DefaultPageSize = 50, MaxPageSize = 200)]
@@ -34,15 +34,27 @@ public class Query
             throw new GraphQLException("User ID not found in authentication token");
         }
 
-        // Security: Filter to only return entries belonging to the authenticated user
-        return context.TimeEntries.Where(e => e.UserId == userId);
+        // Get user's ACL entries to find projects they can view all entries for
+        var userAcl = user.GetUserAcl();
+        var projectsWithViewAllPermission = userAcl
+            .Where(acl => acl.Path.StartsWith("Project/") &&
+                         (acl.Permissions.Contains(Permissions.Approve) || acl.Permissions.Contains(Permissions.Manage)))
+            .Select(acl => acl.Path.Replace("Project/", ""))
+            .ToList();
+
+        // Security: Filter to entries that either:
+        // 1. Belong to the authenticated user, OR
+        // 2. Belong to a project where user has Approve or Manage permission
+        return context.TimeEntries.Where(e =>
+            e.UserId == userId ||
+            projectsWithViewAllPermission.Contains(context.Entry(e).Property<string>("ProjectCode").CurrentValue));
     }
 
     /// <summary>
     /// Get a single time entry by ID.
-    /// Returns null if entry not found or doesn't belong to authenticated user.
+    /// Returns null if entry not found or user doesn't have permission to view it.
     /// Requires authentication and filters by authenticated user.
-    /// Security: Users can only access their own time entries.
+    /// Security: Users can access their own entries + entries from projects where they have Approve (A) or Manage (M) permission.
     /// </summary>
     [Authorize]
     [UseProjection]
@@ -59,12 +71,35 @@ public class Query
             throw new GraphQLException("User ID not found in authentication token");
         }
 
-        // Security: Only return entry if it belongs to the authenticated user
-        return await context.TimeEntries
+        // Load the entry
+        var entry = await context.TimeEntries
             .Include(e => e.Tags)
                 .ThenInclude(t => t.TagValue)
                     .ThenInclude(tv => tv.ProjectTag)
-            .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (entry == null)
+        {
+            return null;
+        }
+
+        // Get the project code
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue;
+
+        // Security: Allow access if either:
+        // 1. Entry belongs to the authenticated user, OR
+        // 2. User has Approve or Manage permission for the project
+        var isOwner = entry.UserId == userId;
+        var hasApprovePermission = user.HasPermission($"Project/{projectCode}", Permissions.Approve);
+        var hasManagePermission = user.HasPermission($"Project/{projectCode}", Permissions.Manage);
+
+        if (isOwner || hasApprovePermission || hasManagePermission)
+        {
+            return entry;
+        }
+
+        // User doesn't have permission to view this entry
+        return null;
     }
 
     /// <summary>

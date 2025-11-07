@@ -11,10 +11,37 @@ namespace TimeReportingApi.GraphQL;
 public class Mutation
 {
     /// <summary>
+    /// Validates that the user owns the entry or has Manage (M) permission for the project.
+    /// Throws GraphQLException if validation fails.
+    /// </summary>
+    private void ValidateOwnership(
+        TimeEntry entry,
+        string projectCode,
+        ClaimsPrincipal user,
+        string operation)
+    {
+        var userId = user.GetUserId();
+        var isOwner = entry.UserId == userId;
+        var hasManagePermission = user.HasPermission($"Project/{projectCode}", Permissions.Manage);
+
+        if (!isOwner && !hasManagePermission)
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to {operation} this time entry. You can only {operation} your own entries unless you have Manage permission.")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .SetExtension("requiredPermission", "Manage (for others' entries)")
+                .Build());
+        }
+    }
+
+
+    /// <summary>
     /// Create a new time entry with validation.
     /// Validates project, task, tags, date range, and hours before creating the entry.
     /// ADR 0001: Uses navigation properties only, never sets FK properties directly.
     /// Requires authentication and automatically captures user identity from token.
+    /// Requires Track (T) permission for the project.
     /// </summary>
     [Authorize]
     public async Task<TimeEntry> LogTime(
@@ -23,6 +50,18 @@ public class Mutation
         [Service] ValidationService validator,
         [Service] TimeReportingDbContext context)
     {
+        // Check ACL permission: User must have "Track" permission for this project
+        var resourcePath = $"Project/{input.ProjectCode}";
+        if (!user.HasPermission(resourcePath, Permissions.Track))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to log time for project '{input.ProjectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", input.ProjectCode)
+                .SetExtension("requiredPermission", "Track")
+                .Build());
+        }
+
         // Validate all inputs
         await validator.ValidateProjectAsync(input.ProjectCode);
         await validator.ValidateTaskAsync(input.ProjectCode, input.Task);
@@ -96,7 +135,8 @@ public class Mutation
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
     /// All fields are optional - only provided fields will be updated.
     /// ADR 0001: Uses navigation properties only for ProjectTask updates.
-    /// Requires authentication.
+    /// Requires authentication and Edit (E) permission for the project.
+    /// Users can only update their own entries unless they have Manage (M) permission.
     /// </summary>
     [Authorize]
     public async Task<TimeEntry> UpdateTimeEntry(
@@ -120,6 +160,24 @@ public class Mutation
             throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
         }
 
+        // Get the project code from the existing entry (via shadow property)
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
+
+        // Check ACL permission: User must have "Edit" permission for this project
+        var resourcePath = $"Project/{projectCode}";
+        if (!user.HasPermission(resourcePath, Permissions.Edit))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to edit time entries for project '{projectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .SetExtension("requiredPermission", "Edit")
+                .Build());
+        }
+
+        // Validate ownership: User must own the entry or have Manage permission
+        ValidateOwnership(entry, projectCode, user, "update");
+
         // Check status - only NOT_REPORTED and DECLINED can be updated
         if (entry.Status == TimeEntryStatus.Submitted)
         {
@@ -132,9 +190,6 @@ public class Mutation
             throw new Exceptions.BusinessRuleException(
                 $"Cannot update time entry in APPROVED status. Approved entries are immutable.");
         }
-
-        // Get the project code from the existing entry (via shadow property)
-        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
 
         // Validate task if provided
         if (input.Task != null)
@@ -240,7 +295,8 @@ public class Mutation
     /// <summary>
     /// Delete a time entry.
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
-    /// Requires authentication.
+    /// Requires authentication and Edit (E) permission for the project.
+    /// Users can only delete their own entries unless they have Manage (M) permission.
     /// </summary>
     [Authorize]
     public async Task<bool> DeleteTimeEntry(
@@ -256,6 +312,24 @@ public class Mutation
         {
             throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
         }
+
+        // Get the project code from the existing entry (via shadow property)
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
+
+        // Check ACL permission: User must have "Edit" permission for this project
+        var resourcePath = $"Project/{projectCode}";
+        if (!user.HasPermission(resourcePath, Permissions.Edit))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to delete time entries for project '{projectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .SetExtension("requiredPermission", "Edit")
+                .Build());
+        }
+
+        // Validate ownership: User must own the entry or have Manage permission
+        ValidateOwnership(entry, projectCode, user, "delete");
 
         // Check status - only NOT_REPORTED and DECLINED can be deleted
         if (entry.Status == TimeEntryStatus.Submitted)
@@ -283,7 +357,8 @@ public class Mutation
     /// since tag configurations are project-specific.
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
     /// ADR 0001: Uses navigation properties only for Project and ProjectTask updates.
-    /// Requires authentication.
+    /// Requires authentication and Edit (E) permission for both old and new projects.
+    /// Users can only move their own entries unless they have Manage (M) permission.
     /// </summary>
     [Authorize]
     public async Task<TimeEntry> MoveTaskToProject(
@@ -307,6 +382,36 @@ public class Mutation
         {
             throw new Exceptions.ValidationException($"Time entry with ID '{entryId}' not found", "id");
         }
+
+        // Get the current project code from the existing entry (via shadow property)
+        var currentProjectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
+
+        // Check ACL permission: User must have "Edit" permission for the current project
+        var currentResourcePath = $"Project/{currentProjectCode}";
+        if (!user.HasPermission(currentResourcePath, Permissions.Edit))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to edit time entries for project '{currentProjectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", currentProjectCode)
+                .SetExtension("requiredPermission", "Edit")
+                .Build());
+        }
+
+        // Check ACL permission: User must have "Edit" permission for the new project
+        var newResourcePath = $"Project/{newProjectCode}";
+        if (!user.HasPermission(newResourcePath, Permissions.Edit))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to edit time entries for project '{newProjectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", newProjectCode)
+                .SetExtension("requiredPermission", "Edit")
+                .Build());
+        }
+
+        // Validate ownership: User must own the entry or have Manage permission for the current project
+        ValidateOwnership(entry, currentProjectCode, user, "move");
 
         // Check status - only NOT_REPORTED and DECLINED can be moved
         if (entry.Status == TimeEntryStatus.Submitted)
@@ -336,9 +441,6 @@ public class Mutation
         var newProjectTask = await context.ProjectTasks
             .FirstAsync(t => EF.Property<string>(t, "ProjectCode") == newProjectCode
                           && t.TaskName == newTask);
-
-        // Get the current project code to check if project is changing
-        var currentProjectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue;
 
         // If moving to a different project, clear all tags
         // Tags are project-specific and won't be valid in the new project
@@ -373,7 +475,8 @@ public class Mutation
     /// Tags are validated against the entry's project tag configurations.
     /// Only allowed for entries in NOT_REPORTED or DECLINED status.
     /// ADR 0001: Uses navigation properties for TagValue relationships.
-    /// Requires authentication.
+    /// Requires authentication and Edit (E) permission for the project.
+    /// Users can only update tags on their own entries unless they have Manage (M) permission.
     /// </summary>
     [Authorize]
     public async Task<TimeEntry> UpdateTags(
@@ -397,6 +500,24 @@ public class Mutation
             throw new Exceptions.ValidationException($"Time entry with ID '{entryId}' not found", "id");
         }
 
+        // Get the project code from the existing entry (via shadow property)
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
+
+        // Check ACL permission: User must have "Edit" permission for this project
+        var resourcePath = $"Project/{projectCode}";
+        if (!user.HasPermission(resourcePath, Permissions.Edit))
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to edit time entries for project '{projectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .SetExtension("requiredPermission", "Edit")
+                .Build());
+        }
+
+        // Validate ownership: User must own the entry or have Manage permission
+        ValidateOwnership(entry, projectCode, user, "update tags for");
+
         // Check status - only NOT_REPORTED and DECLINED can be updated
         if (entry.Status == TimeEntryStatus.Submitted)
         {
@@ -409,9 +530,6 @@ public class Mutation
             throw new Exceptions.BusinessRuleException(
                 $"Cannot update tags for time entry in APPROVED status. Approved entries are immutable.");
         }
-
-        // Get the project code from the existing entry (via shadow property)
-        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
 
         // Validate tags if provided
         if (tags != null && tags.Count > 0)
@@ -452,7 +570,8 @@ public class Mutation
     /// <summary>
     /// Submit a time entry for approval.
     /// Transitions from NOT_REPORTED or DECLINED to SUBMITTED status.
-    /// Requires authentication.
+    /// Requires authentication and Track (T) or Edit (E) permission for the project.
+    /// Users can only submit their own entries.
     /// </summary>
     [Authorize]
     public async Task<TimeEntry> SubmitTimeEntry(
@@ -469,6 +588,35 @@ public class Mutation
         if (entry == null)
         {
             throw new Exceptions.ValidationException($"Time entry with ID '{id}' not found", "id");
+        }
+
+        // Get the project code from the existing entry (via shadow property)
+        var projectCode = context.Entry(entry).Property<string>("ProjectCode").CurrentValue!;
+
+        // Check ACL permission: User must have "Track" or "Edit" permission for this project
+        var resourcePath = $"Project/{projectCode}";
+        var hasTrackPermission = user.HasPermission(resourcePath, Permissions.Track);
+        var hasEditPermission = user.HasPermission(resourcePath, Permissions.Edit);
+
+        if (!hasTrackPermission && !hasEditPermission)
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage($"You are not authorized to submit time entries for project '{projectCode}'")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .SetExtension("requiredPermission", "Track or Edit")
+                .Build());
+        }
+
+        // Validate ownership: User must own the entry (no Manage override for submit)
+        var userId = user.GetUserId();
+        if (entry.UserId != userId)
+        {
+            throw new GraphQLException(new ErrorBuilder()
+                .SetMessage("You can only submit your own time entries")
+                .SetCode("AUTH_FORBIDDEN")
+                .SetExtension("projectCode", projectCode)
+                .Build());
         }
 
         // Check current status - only NOT_REPORTED and DECLINED can be submitted

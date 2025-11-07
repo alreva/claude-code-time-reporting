@@ -29,11 +29,16 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         }
 
         // Accept any bearer token and create a test user with claims
+        // Include ACL claims for all test projects with full permissions (V, E, T, A, M)
         var claims = new[]
         {
             new Claim("email", "test@example.com"),
             new Claim("name", "Test User"),
-            new Claim("oid", "test-oid-123")
+            new Claim("oid", "test-oid-123"),
+            // Add ACL permissions for all test projects
+            new Claim("extn.TimeReportingACLv2", "Project/INTERNAL=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/CLIENT-A=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/MAINT=V,E,T,A,M")
         };
 
         var identity = new ClaimsIdentity(claims, "Test");
