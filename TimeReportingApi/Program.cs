@@ -67,7 +67,7 @@ app.Use(async (context, next) =>
     {
         var userId = context.User.FindFirst("oid")?.Value ?? "unknown";
         // Azure AD shortens long extension claim names to "extn.{PropertyName}"
-        var aclClaims = context.User.FindAll("extn.TimeReportingACL")
+        var aclClaims = context.User.FindAll("extn.TimeReportingACLv2")
             .Select(c => c.Value)
             .ToList();
 

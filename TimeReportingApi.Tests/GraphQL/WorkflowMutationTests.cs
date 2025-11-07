@@ -33,7 +33,7 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
             new Claim("oid", oid),
             // Add default ACL permissions for testing (all permissions on all projects)
             // Azure AD shortens long extension claim names to "extn.{PropertyName}"
-            new Claim("extn.TimeReportingACL", "Project=V,E,A,M,T")
+            new Claim("extn.TimeReportingACLv2", "Project=V,E,A,M,T")
         };
         var identity = new ClaimsIdentity(claims, "Test");
         return new ClaimsPrincipal(identity);
