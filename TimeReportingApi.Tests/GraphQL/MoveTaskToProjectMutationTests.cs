@@ -30,7 +30,10 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         {
             new Claim("email", email),
             new Claim("name", name),
-            new Claim("oid", oid)
+            new Claim("oid", oid),
+            // Add default ACL permissions for testing (all permissions on all projects)
+            // Azure AD shortens long extension claim names to "extn.{PropertyName}"
+            new Claim("extn.TimeReportingACLv2", "Project=V,E,A,M,T")
         };
         var identity = new ClaimsIdentity(claims, "Test");
         return new ClaimsPrincipal(identity);
@@ -151,6 +154,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -197,6 +203,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -227,6 +236,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -266,6 +278,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -296,6 +311,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -325,6 +343,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -355,6 +376,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -409,6 +433,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -461,6 +488,9 @@ public class MoveTaskToProjectMutationTests : IClassFixture<PostgresContainerFix
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("INTERNAL project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),

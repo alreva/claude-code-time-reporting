@@ -101,6 +101,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -132,6 +135,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -165,6 +171,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -194,6 +203,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -240,6 +252,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -271,6 +286,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -300,6 +318,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -346,6 +367,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -379,6 +403,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -408,6 +435,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),
@@ -450,6 +480,9 @@ public class WorkflowMutationTests : IClassFixture<PostgresContainerFixture>, IA
         var entry = new TimeEntry
         {
             Id = Guid.NewGuid(),
+            UserId = "test-oid-123",
+            UserEmail = "test@example.com",
+            UserName = "Test User",
             Project = await _context.Projects.FindAsync("INTERNAL") ?? throw new Exception("Project not found"),
             ProjectTask = await _context.ProjectTasks.FirstAsync(t =>
                 EF.Property<string>(t, "ProjectCode") == "INTERNAL" && t.TaskName == "Development"),

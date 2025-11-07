@@ -35,10 +35,16 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
             new Claim("email", "test@example.com"),
             new Claim("name", "Test User"),
             new Claim("oid", "test-oid-123"),
-            // Add ACL permissions for all test projects
+            // Add ACL permissions for all test projects used across all test files
             new Claim("extn.TimeReportingACLv2", "Project/INTERNAL=V,E,T,A,M"),
             new Claim("extn.TimeReportingACLv2", "Project/CLIENT-A=V,E,T,A,M"),
-            new Claim("extn.TimeReportingACLv2", "Project/MAINT=V,E,T,A,M")
+            new Claim("extn.TimeReportingACLv2", "Project/MAINT=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/UPD-TEST=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/DEL-TEST=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/INACTIVE=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/ACTIVE=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/TEST=V,E,T,A,M"),
+            new Claim("extn.TimeReportingACLv2", "Project/INVALID=V,E,T,A,M")
         };
 
         var identity = new ClaimsIdentity(claims, "Test");
