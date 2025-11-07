@@ -24,7 +24,6 @@ namespace TimeReportingMcp.Services;
 /// </remarks>
 public class TokenService
 {
-    private static readonly AzureCliCredential _credential = new();
     private readonly string[] _scopes;
     private readonly ILogger<TokenService> _logger;
 
@@ -61,10 +60,13 @@ public class TokenService
         {
             _logger.LogDebug("Acquiring token from Azure CLI for scope: {Scope}", _scopes[0]);
 
-            // Get token from Azure CLI cache (no application-level caching)
+            // Create new AzureCliCredential instance for each request
             // This ensures we always get the current Azure CLI user's token
+            // AzureCliCredential has internal caching, and creating a new instance
+            // forces it to re-read from Azure CLI's disk cache
+            var credential = new AzureCliCredential();
             var tokenRequest = new TokenRequestContext(_scopes);
-            var token = await _credential.GetTokenAsync(tokenRequest, cancellationToken);
+            var token = await credential.GetTokenAsync(tokenRequest, cancellationToken);
 
             _logger.LogDebug("Token acquired successfully (expires: {Expiry})", token.ExpiresOn);
 
