@@ -1,0 +1,134 @@
+using System.ComponentModel;
+using System.Text;
+using ModelContextProtocol.Server;
+using TimeReportingMcpSdk.Generated;
+
+namespace TimeReportingMcpSdk.Tools;
+
+[McpServerToolType]
+public class QueryEntriesTool
+{
+    private readonly ITimeReportingClient _client;
+
+    public QueryEntriesTool(ITimeReportingClient client)
+    {
+        _client = client;
+    }
+
+    [McpServerTool, Description("Query time entries with optional filters")]
+    public async Task<string> QueryTimeEntries(
+        [Description("Filter by project code (optional)")] string? projectCode = null,
+        [Description("Filter by start date YYYY-MM-DD (optional)")] string? startDate = null,
+        [Description("Filter by end date YYYY-MM-DD (optional)")] string? endDate = null,
+        [Description("Filter by status: NOT_REPORTED, SUBMITTED, APPROVED, DECLINED (optional)")] string? status = null,
+        [Description("Filter by user email (optional)")] string? userEmail = null)
+    {
+        try
+        {
+            DateOnly? startDateParsed = !string.IsNullOrEmpty(startDate) ? DateOnly.Parse(startDate) : null;
+            DateOnly? endDateParsed = !string.IsNullOrEmpty(endDate) ? DateOnly.Parse(endDate) : null;
+            TimeEntryStatus? statusParsed = !string.IsNullOrEmpty(status) ? Enum.Parse<TimeEntryStatus>(status) : null;
+
+            // Build a list of filter conditions
+            var filters = new List<TimeEntryFilterInput>();
+
+            // Add date filters
+            if (startDateParsed.HasValue)
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    StartDate = new LocalDateOperationFilterInput { Gte = startDateParsed.Value }
+                });
+            }
+
+            if (endDateParsed.HasValue)
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    CompletionDate = new LocalDateOperationFilterInput { Lte = endDateParsed.Value }
+                });
+            }
+
+            // Add project code filter
+            if (!string.IsNullOrEmpty(projectCode))
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    Project = new ProjectFilterInput
+                    {
+                        Code = new StringOperationFilterInput { Eq = projectCode }
+                    }
+                });
+            }
+
+            // Add status filter
+            if (statusParsed.HasValue)
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    Status = new TimeEntryStatusOperationFilterInput { Eq = statusParsed.Value }
+                });
+            }
+
+            // Add user email filter
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    UserEmail = new StringOperationFilterInput { Eq = userEmail }
+                });
+            }
+
+            // Build the final filter input with AND logic
+            TimeEntryFilterInput? whereClause = null;
+            if (filters.Count > 0)
+            {
+                whereClause = new TimeEntryFilterInput
+                {
+                    And = filters
+                };
+            }
+
+            // Execute query with filters (pass null if no filters applied)
+            var result = await _client.QueryTimeEntries.ExecuteAsync(whereClause);
+
+            if (result.Errors is { Count: > 0 })
+            {
+                return "❌ Failed to query time entries:\n\n" +
+                       string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+            }
+
+            var entries = result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>();
+            if (entries.Count == 0)
+            {
+                return "No time entries found matching the criteria.";
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Time Entries ({entries.Count}):\n");
+
+            foreach (var entry in entries)
+            {
+                sb.AppendLine($"📝 ID: {entry.Id}");
+                sb.AppendLine($"   Project: {entry.Project.Code} - {entry.Project.Name}");
+                sb.AppendLine($"   Task: {entry.ProjectTask.TaskName}");
+                sb.AppendLine($"   Hours: {entry.StandardHours} standard" +
+                              (entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : ""));
+                sb.AppendLine($"   Period: {entry.StartDate} to {entry.CompletionDate}");
+                sb.AppendLine($"   Status: {entry.Status}");
+                sb.AppendLine($"   User: {entry.UserEmail}");
+                if (!string.IsNullOrEmpty(entry.Description))
+                {
+                    sb.AppendLine($"   Description: {entry.Description}");
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+        catch (Exception ex)
+        {
+            return $"❌ Error: {ex.Message}";
+        }
+    }
+}
