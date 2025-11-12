@@ -69,7 +69,21 @@ public class McpToolList
                             completionDate = new { type = "string", description = "Completion date (YYYY-MM-DD)" },
                             description = new { type = "string", description = "Work description (optional)" },
                             issueId = new { type = "string", description = "Issue/ticket ID (optional)" },
-                            tags = new { type = "object", description = "Metadata tags (optional)" }
+                            tags = new
+                            {
+                                type = "array",
+                                description = "Metadata tags (optional). Array of tag objects with 'name' and 'value' fields. Example: [{\"name\": \"Billable\", \"value\": \"No\"}, {\"name\": \"Environment\", \"value\": \"Development\"}]",
+                                items = new
+                                {
+                                    type = "object",
+                                    properties = new
+                                    {
+                                        name = new { type = "string", description = "Tag name (e.g., Billable, Type, Environment)" },
+                                        value = new { type = "string", description = "Tag value (e.g., Yes, No, Feature, Development)" }
+                                    },
+                                    required = new[] { "name", "value" }
+                                }
+                            }
                         },
                         required = new[] { "projectCode", "task", "standardHours", "startDate", "completionDate" }
                     }
@@ -109,7 +123,21 @@ public class McpToolList
                             startDate = new { type = "string", description = "Start date (YYYY-MM-DD) (optional)" },
                             completionDate = new
                                 { type = "string", description = "Completion date (YYYY-MM-DD) (optional)" },
-                            tags = new { type = "object", description = "Metadata tags (optional)" }
+                            tags = new
+                            {
+                                type = "array",
+                                description = "Metadata tags (optional). Array of tag objects with 'name' and 'value' fields. Example: [{\"name\": \"Billable\", \"value\": \"No\"}, {\"name\": \"Environment\", \"value\": \"Development\"}]",
+                                items = new
+                                {
+                                    type = "object",
+                                    properties = new
+                                    {
+                                        name = new { type = "string", description = "Tag name (e.g., Billable, Type, Environment)" },
+                                        value = new { type = "string", description = "Tag value (e.g., Yes, No, Feature, Development)" }
+                                    },
+                                    required = new[] { "name", "value" }
+                                }
+                            }
                         },
                         required = new[] { "id" }
                     }
