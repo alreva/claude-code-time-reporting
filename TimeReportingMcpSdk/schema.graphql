@@ -1,0 +1,428 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type DebugAclResponse {
+  userId: String
+  email: String
+  aclEntries: [String!]!
+}
+
+type Mutation {
+  logTime(input: LogTimeInput!): TimeEntry! @authorize
+  updateTimeEntry(id: UUID! input: UpdateTimeEntryInput!): TimeEntry! @authorize
+  deleteTimeEntry(id: UUID!): Boolean! @authorize
+  moveTaskToProject(entryId: UUID! newProjectCode: String! newTask: String!): TimeEntry! @authorize
+  updateTags(entryId: UUID! tags: [TagInput!]!): TimeEntry! @authorize
+  submitTimeEntry(id: UUID!): TimeEntry! @authorize
+  approveTimeEntry(id: UUID!): TimeEntry! @authorize
+  declineTimeEntry(id: UUID! comment: String!): TimeEntry! @authorize
+}
+
+"Information about pagination in a connection."
+type PageInfo {
+  "Indicates whether more edges exist following the set defined by the clients arguments."
+  hasNextPage: Boolean!
+  "Indicates whether more edges exist prior the set defined by the clients arguments."
+  hasPreviousPage: Boolean!
+  "When paginating backwards, the cursor to continue."
+  startCursor: String
+  "When paginating forwards, the cursor to continue."
+  endCursor: String
+}
+
+type Project {
+  code: String!
+  name: String!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  availableTasks: [ProjectTask!]!
+  tags: [ProjectTag!]!
+  timeEntries: [TimeEntry!]!
+}
+
+type ProjectTag {
+  id: Int!
+  tagName: String!
+  isRequired: Boolean!
+  isActive: Boolean!
+  project: Project!
+  allowedValues: [TagValue!]!
+}
+
+type ProjectTask {
+  id: Int!
+  taskName: String!
+  isActive: Boolean!
+  project: Project!
+}
+
+type Query {
+  hello: String!
+  timeEntries("Returns the first _n_ elements from the list." first: Int "Returns the elements in the list that come after the specified cursor." after: String "Returns the last _n_ elements from the list." last: Int "Returns the elements in the list that come before the specified cursor." before: String where: TimeEntryFilterInput order: [TimeEntrySortInput!]): TimeEntriesConnection @authorize
+  timeEntry(id: UUID!): TimeEntry @authorize
+  projects(where: ProjectFilterInput order: [ProjectSortInput!]): [Project!]!
+  project(code: String!): Project
+  debugAcl: DebugAclResponse! @authorize
+}
+
+type TagValue {
+  id: Int!
+  value: String!
+  projectTag: ProjectTag!
+}
+
+"A connection to a list of items."
+type TimeEntriesConnection {
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "A list of edges."
+  edges: [TimeEntriesEdge!]
+  "A flattened list of the nodes."
+  nodes: [TimeEntry!]
+}
+
+"An edge in a connection."
+type TimeEntriesEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: TimeEntry!
+}
+
+type TimeEntry {
+  id: UUID!
+  issueId: String
+  standardHours: Decimal!
+  overtimeHours: Decimal!
+  description: String
+  startDate: LocalDate!
+  completionDate: LocalDate!
+  status: TimeEntryStatus!
+  declineComment: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: String
+  userEmail: String
+  userName: String
+  project: Project!
+  projectTask: ProjectTask!
+  tags: [TimeEntryTag!]!
+}
+
+type TimeEntryTag {
+  id: Int!
+  timeEntry: TimeEntry!
+  tagValue: TagValue!
+}
+
+input BooleanOperationFilterInput {
+  eq: Boolean
+  neq: Boolean
+}
+
+input DateTimeOperationFilterInput {
+  eq: DateTime
+  neq: DateTime
+  in: [DateTime]
+  nin: [DateTime]
+  gt: DateTime
+  ngt: DateTime
+  gte: DateTime
+  ngte: DateTime
+  lt: DateTime
+  nlt: DateTime
+  lte: DateTime
+  nlte: DateTime
+}
+
+input DecimalOperationFilterInput {
+  eq: Decimal
+  neq: Decimal
+  in: [Decimal]
+  nin: [Decimal]
+  gt: Decimal
+  ngt: Decimal
+  gte: Decimal
+  ngte: Decimal
+  lt: Decimal
+  nlt: Decimal
+  lte: Decimal
+  nlte: Decimal
+}
+
+input IntOperationFilterInput {
+  eq: Int
+  neq: Int
+  in: [Int]
+  nin: [Int]
+  gt: Int
+  ngt: Int
+  gte: Int
+  ngte: Int
+  lt: Int
+  nlt: Int
+  lte: Int
+  nlte: Int
+}
+
+input ListFilterInputTypeOfProjectTagFilterInput {
+  all: ProjectTagFilterInput
+  none: ProjectTagFilterInput
+  some: ProjectTagFilterInput
+  any: Boolean
+}
+
+input ListFilterInputTypeOfProjectTaskFilterInput {
+  all: ProjectTaskFilterInput
+  none: ProjectTaskFilterInput
+  some: ProjectTaskFilterInput
+  any: Boolean
+}
+
+input ListFilterInputTypeOfTagValueFilterInput {
+  all: TagValueFilterInput
+  none: TagValueFilterInput
+  some: TagValueFilterInput
+  any: Boolean
+}
+
+input ListFilterInputTypeOfTimeEntryFilterInput {
+  all: TimeEntryFilterInput
+  none: TimeEntryFilterInput
+  some: TimeEntryFilterInput
+  any: Boolean
+}
+
+input ListFilterInputTypeOfTimeEntryTagFilterInput {
+  all: TimeEntryTagFilterInput
+  none: TimeEntryTagFilterInput
+  some: TimeEntryTagFilterInput
+  any: Boolean
+}
+
+input LocalDateOperationFilterInput {
+  eq: LocalDate
+  neq: LocalDate
+  in: [LocalDate]
+  nin: [LocalDate]
+  gt: LocalDate
+  ngt: LocalDate
+  gte: LocalDate
+  ngte: LocalDate
+  lt: LocalDate
+  nlt: LocalDate
+  lte: LocalDate
+  nlte: LocalDate
+}
+
+input LogTimeInput {
+  projectCode: String!
+  task: String!
+  issueId: String
+  standardHours: Decimal!
+  overtimeHours: Decimal = 0
+  description: String
+  startDate: LocalDate!
+  completionDate: LocalDate!
+  tags: [TagInput!]
+}
+
+input ProjectFilterInput {
+  and: [ProjectFilterInput!]
+  or: [ProjectFilterInput!]
+  code: StringOperationFilterInput
+  name: StringOperationFilterInput
+  isActive: BooleanOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+  availableTasks: ListFilterInputTypeOfProjectTaskFilterInput
+  tags: ListFilterInputTypeOfProjectTagFilterInput
+  timeEntries: ListFilterInputTypeOfTimeEntryFilterInput
+}
+
+input ProjectSortInput {
+  code: SortEnumType
+  name: SortEnumType
+  isActive: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+}
+
+input ProjectTagFilterInput {
+  and: [ProjectTagFilterInput!]
+  or: [ProjectTagFilterInput!]
+  id: IntOperationFilterInput
+  tagName: StringOperationFilterInput
+  isRequired: BooleanOperationFilterInput
+  isActive: BooleanOperationFilterInput
+  project: ProjectFilterInput
+  allowedValues: ListFilterInputTypeOfTagValueFilterInput
+}
+
+input ProjectTaskFilterInput {
+  and: [ProjectTaskFilterInput!]
+  or: [ProjectTaskFilterInput!]
+  id: IntOperationFilterInput
+  taskName: StringOperationFilterInput
+  isActive: BooleanOperationFilterInput
+  project: ProjectFilterInput
+}
+
+input ProjectTaskSortInput {
+  id: SortEnumType
+  taskName: SortEnumType
+  isActive: SortEnumType
+  project: ProjectSortInput
+}
+
+input StringOperationFilterInput {
+  and: [StringOperationFilterInput!]
+  or: [StringOperationFilterInput!]
+  eq: String
+  neq: String
+  contains: String
+  ncontains: String
+  in: [String]
+  nin: [String]
+  startsWith: String
+  nstartsWith: String
+  endsWith: String
+  nendsWith: String
+}
+
+input TagInput {
+  name: String!
+  value: String!
+}
+
+input TagValueFilterInput {
+  and: [TagValueFilterInput!]
+  or: [TagValueFilterInput!]
+  id: IntOperationFilterInput
+  value: StringOperationFilterInput
+  projectTag: ProjectTagFilterInput
+}
+
+input TimeEntryFilterInput {
+  and: [TimeEntryFilterInput!]
+  or: [TimeEntryFilterInput!]
+  id: UuidOperationFilterInput
+  issueId: StringOperationFilterInput
+  standardHours: DecimalOperationFilterInput
+  overtimeHours: DecimalOperationFilterInput
+  description: StringOperationFilterInput
+  startDate: LocalDateOperationFilterInput
+  completionDate: LocalDateOperationFilterInput
+  status: TimeEntryStatusOperationFilterInput
+  declineComment: StringOperationFilterInput
+  createdAt: DateTimeOperationFilterInput
+  updatedAt: DateTimeOperationFilterInput
+  userId: StringOperationFilterInput
+  userEmail: StringOperationFilterInput
+  userName: StringOperationFilterInput
+  project: ProjectFilterInput
+  projectTask: ProjectTaskFilterInput
+  tags: ListFilterInputTypeOfTimeEntryTagFilterInput
+}
+
+input TimeEntrySortInput {
+  id: SortEnumType
+  issueId: SortEnumType
+  standardHours: SortEnumType
+  overtimeHours: SortEnumType
+  description: SortEnumType
+  startDate: SortEnumType
+  completionDate: SortEnumType
+  status: SortEnumType
+  declineComment: SortEnumType
+  createdAt: SortEnumType
+  updatedAt: SortEnumType
+  userId: SortEnumType
+  userEmail: SortEnumType
+  userName: SortEnumType
+  project: ProjectSortInput
+  projectTask: ProjectTaskSortInput
+}
+
+input TimeEntryStatusOperationFilterInput {
+  eq: TimeEntryStatus
+  neq: TimeEntryStatus
+  in: [TimeEntryStatus!]
+  nin: [TimeEntryStatus!]
+}
+
+input TimeEntryTagFilterInput {
+  and: [TimeEntryTagFilterInput!]
+  or: [TimeEntryTagFilterInput!]
+  id: IntOperationFilterInput
+  timeEntry: TimeEntryFilterInput
+  tagValue: TagValueFilterInput
+}
+
+input UpdateTimeEntryInput {
+  task: String
+  issueId: String
+  standardHours: Decimal
+  overtimeHours: Decimal
+  description: String
+  startDate: LocalDate
+  completionDate: LocalDate
+  tags: [TagInput!]
+}
+
+input UuidOperationFilterInput {
+  eq: UUID
+  neq: UUID
+  in: [UUID]
+  nin: [UUID]
+  gt: UUID
+  ngt: UUID
+  gte: UUID
+  ngte: UUID
+  lt: UUID
+  nlt: UUID
+  lte: UUID
+  nlte: UUID
+}
+
+"Defines when a policy shall be executed."
+enum ApplyPolicy {
+  "Before the resolver was executed."
+  BEFORE_RESOLVER
+  "After the resolver was executed."
+  AFTER_RESOLVER
+  "The policy is applied in the validation step before the execution."
+  VALIDATION
+}
+
+enum SortEnumType {
+  ASC
+  DESC
+}
+
+enum TimeEntryStatus {
+  NOT_REPORTED
+  SUBMITTED
+  APPROVED
+  DECLINED
+}
+
+"The authorize directive."
+directive @authorize("The name of the authorization policy that determines access to the annotated resource." policy: String "Roles that are allowed to access the annotated resource." roles: [String!] "Defines when when the authorize directive shall be applied.By default the authorize directives are applied during the validation phase." apply: ApplyPolicy! = BEFORE_RESOLVER) repeatable on OBJECT | FIELD_DEFINITION
+
+"The `@specifiedBy` directive is used within the type system definition language to provide a URL for specifying the behavior of custom scalar definitions."
+directive @specifiedBy("The specifiedBy URL points to a human-readable specification. This field will only read a result for scalar types." url: String!) on SCALAR
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time")
+
+"The `Decimal` scalar type represents a decimal floating-point number."
+scalar Decimal
+
+"The `LocalDate` scalar type represents a ISO date string, represented as UTF-8 character sequences YYYY-MM-DD. The scalar follows the specification defined in RFC3339"
+scalar LocalDate
+
+scalar UUID @specifiedBy(url: "https:\/\/tools.ietf.org\/html\/rfc4122")

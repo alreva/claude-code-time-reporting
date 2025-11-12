@@ -1,22 +1,29 @@
 ---
 description: Build the entire solution (API + MCP Server)
-allowed-tools: Bash(.claude/hooks/guard.sh:*)
+allowed-tools:
+  - Bash(.claude/hooks/guard.sh)
 ---
 
-Build both the GraphQL API and MCP Server projects.
+# 🏗️ Build the API and MCP Server
 
-### Execution
+Runs the `.claude/hooks/guard.sh` script, which builds both the **TimeReportingApi** and **TimeReportingMcp** projects.  
+All warnings are treated as errors.
 
-```bash
-.claude/hooks/guard.sh "dotnet build" "slash"
+---
+
+## 🧩 Execution
+
+<toolcall>
+
+```Bash
+./.claude/hooks/guard.sh "dotnet build" "slash"
 ```
 
-### Expected Output
+</toolcall>
 
-- ✅ Build succeeded - Both projects compiled successfully
-- ❌ Build failed - Shows compilation errors and warnings
+---
 
-### Notes
+## ✅ Expected Output
 
-- Treats warnings as errors (zero-warning policy)
-- Builds both TimeReportingApi and TimeReportingMcp projects
+- ✅ **Build succeeded** – Both projects compiled successfully  
+- ❌ **Build failed** – Shows compilation errors and warnings

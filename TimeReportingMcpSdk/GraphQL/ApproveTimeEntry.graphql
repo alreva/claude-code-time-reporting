@@ -1,0 +1,20 @@
+mutation ApproveTimeEntry($id: UUID!) {
+  approveTimeEntry(id: $id) {
+    id
+    status
+    project {
+      code
+      name
+    }
+    projectTask {
+      taskName
+    }
+    standardHours
+    overtimeHours
+    startDate
+    completionDate
+    description
+    issueId
+    updatedAt
+  }
+}

@@ -1,0 +1,31 @@
+mutation SubmitTimeEntry($id: UUID!) {
+  submitTimeEntry(id: $id) {
+    id
+    project {
+      code
+      name
+    }
+    projectTask {
+      taskName
+    }
+    standardHours
+    overtimeHours
+    startDate
+    completionDate
+    status
+    description
+    issueId
+    tags {
+      id
+      tagValue {
+        id
+        value
+        projectTag {
+          tagName
+        }
+      }
+    }
+    createdAt
+    updatedAt
+  }
+}

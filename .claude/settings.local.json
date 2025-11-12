@@ -77,5 +77,8 @@
         ]
       }
     ]
-  }
+  },
+  "disabledMcpjsonServers": [
+    "time-reporting-sdk"
+  ]
 }

@@ -1,0 +1,36 @@
+mutation MoveTaskToProject(
+  $entryId: UUID!
+  $newProjectCode: String!
+  $newTask: String!
+) {
+  moveTaskToProject(
+    entryId: $entryId
+    newProjectCode: $newProjectCode
+    newTask: $newTask
+  ) {
+    id
+    project {
+      code
+      name
+    }
+    projectTask {
+      taskName
+    }
+    standardHours
+    overtimeHours
+    startDate
+    completionDate
+    status
+    tags {
+      id
+      tagValue {
+        id
+        value
+        projectTag {
+          tagName
+        }
+      }
+    }
+    updatedAt
+  }
+}

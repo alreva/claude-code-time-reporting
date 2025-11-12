@@ -1,0 +1,90 @@
+using System.ComponentModel;
+using System.Text;
+using ModelContextProtocol.Server;
+using TimeReportingMcpSdk.Generated;
+
+namespace TimeReportingMcpSdk.Tools;
+
+/// <summary>
+/// Tool to get list of available projects with their tasks and tag configurations
+/// </summary>
+[McpServerToolType]
+public class GetProjectsTool
+{
+    private readonly ITimeReportingClient _client;
+
+    public GetProjectsTool(ITimeReportingClient client)
+    {
+        _client = client;
+    }
+
+    [McpServerTool, Description("Get list of available projects with their tasks and tag configurations")]
+    public async Task<string> GetAvailableProjects()
+    {
+        try
+        {
+            // 1. Execute query to get all projects
+            var result = await _client.GetAvailableProjects.ExecuteAsync();
+
+            // 2. Handle errors
+            if (result.Errors is { Count: > 0 })
+            {
+                var errorMessage = "❌ Failed to get projects:\n\n";
+                errorMessage += string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                return errorMessage;
+            }
+
+            // 3. Format and return response
+            var projects = result.Data!.Projects.ToList();
+            return FormatProjects(projects);
+        }
+        catch (Exception ex)
+        {
+            return $"❌ Error: {ex.Message}";
+        }
+    }
+
+    private string FormatProjects(List<IGetAvailableProjects_Projects> projects)
+    {
+        if (projects.Count == 0)
+        {
+            return "No projects found.";
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Available Projects ({projects.Count}):\n");
+
+        foreach (var project in projects)
+        {
+            sb.AppendLine($"📊 {project.Code} - {project.Name}");
+            sb.AppendLine($"   Status: {(project.IsActive ? "Active" : "Inactive")}");
+
+            // Tasks
+            var activeTasks = project.AvailableTasks.Where(t => t.IsActive).ToList();
+            if (activeTasks.Any())
+            {
+                sb.AppendLine($"   Tasks: {string.Join(", ", activeTasks.Select(t => t.TaskName))}");
+            }
+            else
+            {
+                sb.AppendLine("   Tasks: None");
+            }
+
+            // Tags
+            var activeTags = project.Tags.Where(t => t.IsActive).ToList();
+            if (activeTags.Any())
+            {
+                sb.AppendLine("   Tags:");
+                foreach (var tag in activeTags)
+                {
+                    var values = string.Join(", ", tag.AllowedValues.Select(v => v.Value));
+                    sb.AppendLine($"     • {tag.TagName}: {values}");
+                }
+            }
+
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
+    }
+}

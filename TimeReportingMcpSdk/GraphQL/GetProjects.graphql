@@ -1,0 +1,18 @@
+query GetAvailableProjects {
+  projects {
+    code
+    name
+    isActive
+    availableTasks {
+      taskName
+      isActive
+    }
+    tags {
+      tagName
+      isActive
+      allowedValues {
+        value
+      }
+    }
+  }
+}
