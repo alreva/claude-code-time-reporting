@@ -21,6 +21,9 @@ Write Test → Run /test (FAIL ❌) → Write Code → Run /test (PASS ✅) → 
 **Available Commands:** `/build`, `/test`, `/deploy`, `/db-start` (see full list below)
 **Note:** Use `/deploy` by default for API deployment (containerized), not `/run-api`
 
+**🎯 SLASH COMMAND EXECUTION RULE:**
+When a slash command is invoked (e.g., `/build`, `/test`, `/deploy`), you MUST immediately execute the bash command using the appropriate tool. Do NOT provide explanatory text without executing. Always use the tool first, then optionally explain the results.
+
 ---
 
 ## 🤖 AUTONOMOUS DEVELOPMENT WORKFLOW
