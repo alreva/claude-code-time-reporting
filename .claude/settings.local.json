@@ -56,7 +56,8 @@
       "mcp__time-reporting__decline_time_entry",
       "SlashCommand(/ef-migration:*)",
       "SlashCommand(/user-add-acl:*)",
-      "SlashCommand(/user-list-acl:*)"
+      "SlashCommand(/user-list-acl:*)",
+      "WebFetch(domain:code.claude.com)"
     ],
     "deny": [],
     "ask": []
@@ -64,6 +65,9 @@
   "model": "claude-sonnet-4-5",
   "enabledMcpjsonServers": [
     "time-reporting"
+  ],
+  "disabledMcpjsonServers": [
+    "time-reporting-sdk"
   ],
   "hooks": {
     "PreToolUse": [
@@ -77,8 +81,5 @@
         ]
       }
     ]
-  },
-  "disabledMcpjsonServers": [
-    "time-reporting-sdk"
-  ]
+  }
 }
