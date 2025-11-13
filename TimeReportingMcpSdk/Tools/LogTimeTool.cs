@@ -18,7 +18,36 @@ public class LogTimeTool
         _client = client;
     }
 
-    [McpServerTool, Description("Log time spent on a task")]
+    [McpServerTool, Description(@"Log time spent on a task
+
+Creates a new time entry with NOT_REPORTED status that can be edited until submitted.
+
+Prerequisites:
+- Use get_available_projects first to see valid project codes, tasks, and tags
+- Ensure you have authenticated with Azure CLI (az login)
+
+Input Requirements:
+- projectCode: Valid project code (e.g., 'INTERNAL', 'CLIENT-A')
+- task: Valid task name for the project (case-sensitive)
+- standardHours: Hours worked (must be >= 0, decimal allowed)
+- startDate/completionDate: YYYY-MM-DD format, startDate <= completionDate
+- overtimeHours: Optional overtime hours (must be >= 0)
+- description: Optional work description
+- issueId: Optional ticket/issue ID
+- tags: Optional JSON array of {tagName, value} objects
+
+Example Usage:
+  projectCode: 'INTERNAL'
+  task: 'Development'
+  standardHours: 8.5
+  startDate: '2025-01-13'
+  completionDate: '2025-01-13'
+  description: 'Implemented user authentication'
+  issueId: 'JIRA-123'
+
+Returns:
+- Success: Entry ID, project details, hours, status
+- Error: Validation messages with suggestions for correction")]
     public async Task<string> LogTime(
         [Description("Project code (e.g., INTERNAL, CLIENT-A)")] [Required] string projectCode,
         [Description("Task name")] [Required] string task,

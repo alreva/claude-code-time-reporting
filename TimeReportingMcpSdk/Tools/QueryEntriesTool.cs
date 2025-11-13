@@ -15,7 +15,40 @@ public class QueryEntriesTool
         _client = client;
     }
 
-    [McpServerTool, Description("Query time entries with optional filters")]
+    [McpServerTool, Description(@"Query time entries with optional filters
+
+Retrieves time entries based on specified criteria. All filters are optional and combined with AND logic.
+
+Common Use Cases:
+- View all your time entries: No filters
+- View entries for a project: Use projectCode filter
+- View entries in date range: Use startDate and endDate filters
+- View entries by status: Use status filter (NOT_REPORTED, SUBMITTED, APPROVED, DECLINED)
+- View another user's entries (admins): Use userEmail filter
+
+Filter Behavior:
+- No filters: Returns all entries you have access to
+- Multiple filters: Combined with AND (all must match)
+- Date filters: startDate is inclusive >=, endDate is inclusive <=
+- Status filter: Exact match (case-sensitive)
+- User filter: Exact email match
+
+Example Queries:
+1. My pending entries:
+   status: 'NOT_REPORTED'
+
+2. Entries for a project in January:
+   projectCode: 'INTERNAL'
+   startDate: '2025-01-01'
+   endDate: '2025-01-31'
+
+3. All submitted entries awaiting approval:
+   status: 'SUBMITTED'
+
+Returns:
+- Success: List of matching entries with ID, project, task, hours, dates, status, user
+- No matches: 'No time entries found matching the criteria'
+- Error: Detailed error message with troubleshooting suggestions")]
     public async Task<string> QueryTimeEntries(
         [Description("Filter by project code (optional)")] string? projectCode = null,
         [Description("Filter by start date YYYY-MM-DD (optional)")] string? startDate = null,
