@@ -21,7 +21,20 @@ public class UpdateEntryTool
         Destructive = false,
         OpenWorld = true
     )]
-    [Description("Update an existing time entry")]
+    [Description(@"Update an existing time entry
+
+All fields are optional - only provided fields will be updated.
+Only entries in NOT_REPORTED or DECLINED status can be updated.
+
+Tags Format:
+- Must be JSON array of objects with PascalCase properties: Name and Value
+- Example: '[{""Name"": ""Type"", ""Value"": ""Feature""}, {""Name"": ""Environment"", ""Value"": ""Development""}]'
+- Use get_available_projects to see valid tag names and values for the project
+- Replaces all existing tags (not additive)
+
+Returns:
+- Success: Updated entry details
+- Error: Validation messages with suggestions")]
     public async Task<string> UpdateTimeEntry(
         [Description("Entry ID to update")] [Required] string id,
         [Description("New task name (optional)")] string? task = null,
@@ -31,7 +44,9 @@ public class UpdateEntryTool
         [Description("New completion date YYYY-MM-DD (optional)")] string? completionDate = null,
         [Description("New description (optional)")] string? description = null,
         [Description("New issue ID (optional)")] string? issueId = null,
-        [Description("New tags in JSON array format (optional)")] string? tags = null)
+        [Description(@"Tags in JSON array format with PascalCase properties (optional)
+Example: '[{""Name"": ""Type"", ""Value"": ""Feature""}]'
+Note: Use capital 'Name' and 'Value', not lowercase")] string? tags = null)
     {
         try
         {
