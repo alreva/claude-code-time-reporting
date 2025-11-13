@@ -298,6 +298,102 @@ public class QueryEntriesToolTests
         result.Should().Be("No time entries found matching the criteria.");
     }
 
+    [Theory]
+    [InlineData("NOT_REPORTED", TimeEntryStatus.NotReported)]
+    [InlineData("SUBMITTED", TimeEntryStatus.Submitted)]
+    [InlineData("APPROVED", TimeEntryStatus.Approved)]
+    [InlineData("DECLINED", TimeEntryStatus.Declined)]
+    public async Task QueryTimeEntries_WithStatusUnderscoreFormat_ParsesCorrectly(string statusInput, TimeEntryStatus expectedStatus)
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(status: statusInput);
+
+        // Assert
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 1 &&
+                filter.And![0].Status != null &&
+                filter.And![0].Status!.Eq == expectedStatus),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("NotReported", TimeEntryStatus.NotReported)]
+    [InlineData("Submitted", TimeEntryStatus.Submitted)]
+    [InlineData("Approved", TimeEntryStatus.Approved)]
+    [InlineData("Declined", TimeEntryStatus.Declined)]
+    public async Task QueryTimeEntries_WithStatusPascalCaseFormat_ParsesCorrectly(string statusInput, TimeEntryStatus expectedStatus)
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(status: statusInput);
+
+        // Assert
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 1 &&
+                filter.And![0].Status != null &&
+                filter.And![0].Status!.Eq == expectedStatus),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("not_reported")]
+    [InlineData("notreported")]
+    [InlineData("NOTREPORTED")]
+    [InlineData("NotReported")]
+    public async Task QueryTimeEntries_WithStatusCaseInsensitive_ParsesCorrectly(string statusInput)
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(status: statusInput);
+
+        // Assert - All should parse to NotReported
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 1 &&
+                filter.And![0].Status != null &&
+                filter.And![0].Status!.Eq == TimeEntryStatus.NotReported),
+            Arg.Any<CancellationToken>());
+    }
+
     // Helper methods to create mock objects
     private static IOperationResult<IQueryTimeEntriesResult> CreateMockResult(
         List<IQueryTimeEntries_TimeEntries_Nodes> entries)
