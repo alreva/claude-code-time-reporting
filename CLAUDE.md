@@ -37,15 +37,82 @@ When a slash command is invoked (e.g., `/build`, `/test`, `/deploy`), you MUST i
 3. ✅ Use descriptive commit message: `"Complete Task X.Y: [Description] - All tests passing"`
 4. ✅ DO NOT ask for permission to commit - just do it
 
-**Example commit message:**
-```
-Complete Task 2.3: Implement C# Entity Models with TDD
+#### Commit Message Style (Why-First Format)
 
-- Created TimeEntry, Project, ProjectTask, ProjectTag, TagValue entities
-- Configured Entity Framework with snake_case mapping
-- Added comprehensive unit tests for all models
-- All tests passing ✅
+**CRITICAL: Commits must explain WHY, not just WHAT.**
+
+**Format:**
 ```
+<type>(<scope>): <why this change matters / problem solved>
+
+<optional body:>
+- Context/background if needed
+- Implementation details if complex
+- Impact/metrics if measurable
+
+<optional footer:>
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`
+**Scopes:** `mcp`, `api`, `db`, `seeder`, `docs`, `config`
+
+**Why "Why-First"?**
+- ✅ "What" is visible in `git diff` - anyone can see the code changes
+- ✅ "Why" explains intent and motivation - this gets lost without documentation
+- ✅ Future developers need to understand the reasoning behind decisions
+
+**Examples:**
+
+❌ **Bad (What-focused):**
+```
+refactor(mcp): extract DateHelper utility
+```
+
+✅ **Good (Why-focused):**
+```
+refactor(mcp): eliminate duplicate date parsing across 5 tools
+
+Problem: Date validation was inconsistent - some tools accepted "2025/01/13",
+others required "2025-01-13", causing agent confusion.
+
+Extracted DateHelper utility with strict YYYY-MM-DD validation (regex + TryParse).
+Added 22 tests covering edge cases (invalid formats, leap years, etc.).
+
+Impact: Consistent date handling prevents parsing errors in production
+```
+
+**More Examples:**
+```
+fix(api): prevent N+1 queries causing slow response times
+
+Added DataLoaders for Project and Task relationships in TimeEntry resolvers.
+
+Impact: Reduces query time from 2.5s to 150ms for 100 entries
+```
+
+```
+feat(mcp): improve agent usability with actionable error messages
+
+Why: Generic errors forced agents to guess, causing retry loops.
+
+Enhanced ErrorHandler to provide context-aware suggestions:
+- "Use get_available_projects to see valid tasks" (validation errors)
+- "Only NOT_REPORTED entries can be deleted" (forbidden errors)
+
+Impact: Reduced agent retry attempts from avg 2.1 to 1.2 per tool
+```
+
+**Quick Reference:**
+
+| ❌ What-Focused | ✅ Why-Focused |
+|----------------|---------------|
+| `refactor(mcp): extract DateHelper` | `refactor(mcp): eliminate duplicate date parsing` |
+| `feat(api): add DataLoaders` | `fix(api): resolve N+1 query performance issue` |
+| `docs(mcp): update tool descriptions` | `docs(mcp): improve agent tool discovery` |
+
+**Template File:** A `.gitmessage` template is available in the repository root with examples and guidelines.
 
 ### Rule 2: Phase Planning Before Execution
 **When assigned a PHASE (e.g., "implement Phase 2"), FIRST do planning:**
@@ -332,8 +399,10 @@ A time reporting system that integrates Claude Code with a GraphQL-based time tr
 **Technology Stack:** Single language (C#) for everything
 - **Database:** PostgreSQL 16
 - **API:** ASP.NET Core 10 + HotChocolate GraphQL + Entity Framework Core
-- **MCP Server:** C# Console Application (~200 lines!)
+- **MCP Server:** C# Console Application using ModelContextProtocol SDK (TimeReportingMcpSdk)
 - **Container:** Docker/Podman
+
+**IMPORTANT:** Use **TimeReportingMcpSdk** (SDK-based implementation) NOT TimeReportingMcp (legacy manual implementation)
 
 ## Architecture
 
@@ -369,9 +438,22 @@ PostgreSQL Database
 
 **IMPORTANT**: Do NOT use SQL files - all schema changes are managed via EF Core migrations, and seed data is managed via the TimeReportingSeeder project.
 
+### MCP Server Implementation
+
+**Current Implementation: TimeReportingMcpSdk** (SDK-based)
+- Uses `ModelContextProtocol` NuGet package for MCP protocol handling
+- Leverages StrawberryShake 15 for strongly-typed GraphQL client code generation
+- Simpler, more maintainable codebase compared to manual JSON-RPC implementation
+- All tools inherit from base classes provided by the SDK
+
+**Legacy Implementation: TimeReportingMcp** (manual JSON-RPC)
+- Manual stdio JSON-RPC handling (~200 lines)
+- Still functional but no longer actively developed
+- Use TimeReportingMcpSdk for all new development
+
 ### StrawberryShake Typed GraphQL Client
 
-The MCP server uses **StrawberryShake 15** for strongly-typed GraphQL client code generation:
+Both MCP server implementations use **StrawberryShake 15** for strongly-typed GraphQL client code generation:
 
 **How it works:**
 1. `.graphql` operation files define all queries and mutations
@@ -389,13 +471,13 @@ The MCP server uses **StrawberryShake 15** for strongly-typed GraphQL client cod
 
 The schema validation test executes the API's schema export command and compares it with the MCP schema:
 1. **Schema Export Command**: `dotnet run --project TimeReportingApi -- export-schema` prints schema to stdout
-2. **Schema Validation Test**: `SchemaValidationTests.cs` executes export command and compares with `TimeReportingMcp/schema.graphql`
+2. **Schema Validation Test**: `SchemaValidationTests.cs` executes export command and compares with `TimeReportingMcpSdk/schema.graphql`
 3. **Test Failure**: If schemas don't match, test fails with helpful instructions
 
 **When API schema changes and test fails:**
 ```bash
 # 1. Export the current API schema to MCP project
-dotnet run --project TimeReportingApi -- export-schema > TimeReportingMcp/schema.graphql
+dotnet run --project TimeReportingApi -- export-schema > TimeReportingMcpSdk/schema.graphql
 
 # 2. Rebuild MCP (triggers StrawberryShake code regeneration)
 /build-mcp
@@ -621,12 +703,16 @@ time-reporting-system/
 │   └── PODMAN-SETUP.md
 ├── db/
 │   └── schema/                 # SQL DDL and seed data
-├── TimeReportingApi/           # C# GraphQL API (to be created)
+├── TimeReportingApi/           # C# GraphQL API
 │   ├── Models/
 │   ├── GraphQL/
 │   ├── Services/
 │   └── Data/
-├── TimeReportingMcp/           # C# MCP Server (to be created)
+├── TimeReportingMcpSdk/        # C# MCP Server (SDK-based) ⭐ USE THIS
+│   ├── Program.cs
+│   ├── Tools/
+│   └── schema.graphql
+├── TimeReportingMcp/           # C# MCP Server (Legacy - manual JSON-RPC)
 │   ├── Program.cs
 │   ├── McpServer.cs
 │   ├── Tools/

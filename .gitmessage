@@ -1,0 +1,69 @@
+# <type>(<scope>): <why this change matters / problem solved>
+#
+# Why-First Commit Format:
+# - Focus on WHY (motivation) not WHAT (visible in diff)
+# - Subject line: 50 chars max, imperative mood
+# - Body: Wrap at 72 chars
+#
+# Types: feat, fix, docs, style, refactor, test, chore, perf, ci, build
+# Scopes: mcp, api, db, seeder, docs, config
+#
+# ─────────────────────────────────────────────────────────────────────
+#
+# Body (optional - explain context, implementation, impact):
+# - Why was this change needed? (context/background)
+# - What changed? (implementation details if complex)
+# - What's the impact? (metrics, benefits, affected components)
+#
+# ─────────────────────────────────────────────────────────────────────
+#
+# Footer (optional):
+# Breaking changes: BREAKING CHANGE: description
+# Issue refs: Closes #123, Fixes #456
+# Co-authors: Co-Authored-By: Name <email>
+#
+# ─────────────────────────────────────────────────────────────────────
+#
+# Examples:
+#
+# fix(api): prevent N+1 queries causing slow response times
+#
+# Added DataLoaders for Project and Task relationships in TimeEntry resolvers.
+# Each entry now batches related entity fetches instead of individual queries.
+#
+# Impact: Reduces query time from 2.5s to 150ms for 100 entries
+#
+# ─────────────────────────────────────────────────────────────────────
+#
+# refactor(mcp): eliminate duplicate date parsing across 5 tools
+#
+# Problem: Date validation was inconsistent - some tools accepted "2025/01/13",
+# others required "2025-01-13", causing agent confusion.
+#
+# Extracted DateHelper utility with strict YYYY-MM-DD validation (regex + TryParse).
+# Added 22 tests covering edge cases (invalid formats, leap years, etc.).
+#
+# Impact: Consistent date handling prevents parsing errors in production
+#
+# ─────────────────────────────────────────────────────────────────────
+#
+# feat(mcp): improve agent usability with actionable error messages
+#
+# Why: Generic errors forced agents to guess, causing retry loops.
+#
+# Enhanced ErrorHandler to provide context-aware suggestions:
+# - "Use get_available_projects to see valid tasks" (validation errors)
+# - "Only NOT_REPORTED entries can be deleted" (forbidden errors)
+#
+# Impact: Reduced agent retry attempts from avg 2.1 to 1.2 per tool
+#
+# ─────────────────────────────────────────────────────────────────────
+#
+# Remember:
+# - Subject: Why this commit exists (motivation/problem)
+# - Body: Context, implementation, impact (if needed)
+# - Footer: Breaking changes, issue refs, co-authors
+#
+# 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#
+# Co-Authored-By: Claude <noreply@anthropic.com>
