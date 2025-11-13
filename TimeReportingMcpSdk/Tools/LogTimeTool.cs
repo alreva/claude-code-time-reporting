@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
 
@@ -43,8 +44,9 @@ Input Requirements:
 - tags: Optional JSON array with name/value properties (case-insensitive)
 
 Tags Format:
-- JSON array of objects with name and value properties
-- Example: '[{""name"": ""Type"", ""value"": ""Feature""}, {""name"": ""Billable"", ""value"": ""Yes""}]'
+- Supports two formats (both case-insensitive):
+  1. Dictionary: '{""Type"": ""Feature"", ""Billable"": ""Yes""}' (recommended - simpler)
+  2. Array: '[{""name"": ""Type"", ""value"": ""Feature""}]'
 - Use get_available_projects to see valid tag names and values for the project
 
 Example Usage:
@@ -55,7 +57,7 @@ Example Usage:
   completionDate: '2025-01-13'
   description: 'Implemented user authentication'
   issueId: 'JIRA-123'
-  tags: '[{""name"": ""Type"", ""value"": ""Feature""}]'
+  tags: '{""Type"": ""Feature""}'
 
 Returns:
 - Success: Entry ID, project details, hours, status
@@ -69,8 +71,9 @@ Returns:
         [Description("Overtime hours (optional)")] decimal? overtimeHours = null,
         [Description("Description of work done (optional)")] string? description = null,
         [Description("Issue/ticket ID (optional)")] string? issueId = null,
-        [Description(@"Tags in JSON array format (optional)
-Example: '[{""name"": ""Type"", ""value"": ""Feature""}]'
+        [Description(@"Tags in JSON format (optional)
+Dictionary format: '{""Type"": ""Feature"", ""Billable"": ""Yes""}'
+Array format: '[{""name"": ""Type"", ""value"": ""Feature""}]'
 Property names are case-insensitive")] string? tags = null)
     {
         try
@@ -79,11 +82,7 @@ Property names are case-insensitive")] string? tags = null)
             List<TagInput>? tagList = null;
             if (!string.IsNullOrEmpty(tags))
             {
-                var options = new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
-                tagList = System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tags, options);
+                tagList = ParseTags(tags);
             }
 
             var input = new LogTimeInput
@@ -138,6 +137,33 @@ Property names are case-insensitive")] string? tags = null)
         catch (Exception ex)
         {
             return $"❌ Error: {ex.Message}";
+        }
+    }
+
+    private static List<TagInput> ParseTags(string tagsJson)
+    {
+        var options = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        // Try parsing as array format first: [{"name": "Type", "value": "Feature"}]
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tagsJson, options)
+                   ?? new List<TagInput>();
+        }
+        catch
+        {
+            // If that fails, try parsing as dictionary format: {"Type": "Feature", "Environment": "Production"}
+            var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(tagsJson, options);
+            if (dict == null) return new List<TagInput>();
+
+            return dict.Select(kvp => new TagInput
+            {
+                Name = kvp.Key,
+                Value = kvp.Value
+            }).ToList();
         }
     }
 }

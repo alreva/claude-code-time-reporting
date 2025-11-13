@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
 
@@ -27,8 +28,9 @@ All fields are optional - only provided fields will be updated.
 Only entries in NOT_REPORTED or DECLINED status can be updated.
 
 Tags Format:
-- JSON array of objects with name/value properties (case-insensitive)
-- Example: '[{""name"": ""Type"", ""value"": ""Feature""}, {""name"": ""Environment"", ""value"": ""Development""}]'
+- Supports two formats (both case-insensitive):
+  1. Dictionary: '{""Type"": ""Feature"", ""Environment"": ""Development""}' (recommended - simpler)
+  2. Array: '[{""name"": ""Type"", ""value"": ""Feature""}]'
 - Use get_available_projects to see valid tag names and values for the project
 - Replaces all existing tags (not additive)
 
@@ -44,8 +46,9 @@ Returns:
         [Description("New completion date YYYY-MM-DD (optional)")] string? completionDate = null,
         [Description("New description (optional)")] string? description = null,
         [Description("New issue ID (optional)")] string? issueId = null,
-        [Description(@"Tags in JSON array format (optional)
-Example: '[{""name"": ""Type"", ""value"": ""Feature""}]'
+        [Description(@"Tags in JSON format (optional)
+Dictionary format: '{""Type"": ""Feature"", ""Environment"": ""Development""}'
+Array format: '[{""name"": ""Type"", ""value"": ""Feature""}]'
 Property names are case-insensitive")] string? tags = null)
     {
         try
@@ -55,11 +58,7 @@ Property names are case-insensitive")] string? tags = null)
             List<TagInput>? tagList = null;
             if (!string.IsNullOrEmpty(tags))
             {
-                var options = new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
-                tagList = System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tags, options);
+                tagList = ParseTags(tags);
             }
 
             var input = new UpdateTimeEntryInput
@@ -95,6 +94,33 @@ Property names are case-insensitive")] string? tags = null)
         catch (Exception ex)
         {
             return $"❌ Error: {ex.Message}";
+        }
+    }
+
+    private static List<TagInput> ParseTags(string tagsJson)
+    {
+        var options = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        // Try parsing as array format first: [{"name": "Type", "value": "Feature"}]
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tagsJson, options)
+                   ?? new List<TagInput>();
+        }
+        catch
+        {
+            // If that fails, try parsing as dictionary format: {"Type": "Feature", "Environment": "Production"}
+            var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(tagsJson, options);
+            if (dict == null) return new List<TagInput>();
+
+            return dict.Select(kvp => new TagInput
+            {
+                Name = kvp.Key,
+                Value = kvp.Value
+            }).ToList();
         }
     }
 }
