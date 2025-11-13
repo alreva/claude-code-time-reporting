@@ -15,7 +15,13 @@ public class SubmitEntryTool
         _client = client;
     }
 
-    [McpServerTool, Description("Submit a time entry for approval")]
+    [McpServerTool(
+        ReadOnly = false,
+        Idempotent = true,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description("Submit a time entry for approval")]
     public async Task<string> SubmitTimeEntry(
         [Description("Entry ID to submit")] [Required] string id)
     {

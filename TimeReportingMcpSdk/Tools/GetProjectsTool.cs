@@ -18,7 +18,13 @@ public class GetProjectsTool
         _client = client;
     }
 
-    [McpServerTool, Description(@"Get list of available projects with their tasks and tag configurations
+    [McpServerTool(
+        ReadOnly = true,
+        Idempotent = true,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description(@"Get list of available projects with their tasks and tag configurations
 
 CRITICAL: Always call this tool FIRST before creating or updating time entries. It provides the authoritative list of valid values.
 

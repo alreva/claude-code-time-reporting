@@ -15,7 +15,13 @@ public class UpdateEntryTool
         _client = client;
     }
 
-    [McpServerTool, Description("Update an existing time entry")]
+    [McpServerTool(
+        ReadOnly = false,
+        Idempotent = true,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description("Update an existing time entry")]
     public async Task<string> UpdateTimeEntry(
         [Description("Entry ID to update")] [Required] string id,
         [Description("New task name (optional)")] string? task = null,

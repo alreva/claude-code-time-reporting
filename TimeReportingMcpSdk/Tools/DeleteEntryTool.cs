@@ -15,7 +15,13 @@ public class DeleteEntryTool
         _client = client;
     }
 
-    [McpServerTool, Description("Delete a time entry")]
+    [McpServerTool(
+        ReadOnly = false,
+        Idempotent = true,
+        Destructive = true,
+        OpenWorld = true
+    )]
+    [Description("Delete a time entry")]
     public async Task<string> DeleteTimeEntry(
         [Description("Entry ID to delete")] [Required] string id)
     {

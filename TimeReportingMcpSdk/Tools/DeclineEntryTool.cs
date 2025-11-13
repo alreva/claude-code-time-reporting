@@ -15,7 +15,13 @@ public class DeclineEntryTool
         _client = client;
     }
 
-    [McpServerTool, Description("Decline a submitted time entry with a comment")]
+    [McpServerTool(
+        ReadOnly = false,
+        Idempotent = true,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description("Decline a submitted time entry with a comment")]
     public async Task<string> DeclineTimeEntry(
         [Description("Entry ID to decline")] [Required] string id,
         [Description("Reason for declining")] [Required] string comment)

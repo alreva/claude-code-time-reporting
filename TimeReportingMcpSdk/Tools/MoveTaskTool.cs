@@ -15,7 +15,13 @@ public class MoveTaskTool
         _client = client;
     }
 
-    [McpServerTool, Description("Move a time entry to a different project and task")]
+    [McpServerTool(
+        ReadOnly = false,
+        Idempotent = true,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description("Move a time entry to a different project and task")]
     public async Task<string> MoveTaskToProject(
         [Description("Entry ID to move")] [Required] string entryId,
         [Description("New project code")] [Required] string newProjectCode,

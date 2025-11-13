@@ -15,7 +15,13 @@ public class QueryEntriesTool
         _client = client;
     }
 
-    [McpServerTool, Description(@"Query time entries with optional filters
+    [McpServerTool(
+        ReadOnly = true,
+        Idempotent = true,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description(@"Query time entries with optional filters
 
 Retrieves time entries based on specified criteria. All filters are optional and combined with AND logic.
 

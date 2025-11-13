@@ -18,7 +18,13 @@ public class LogTimeTool
         _client = client;
     }
 
-    [McpServerTool, Description(@"Log time spent on a task
+    [McpServerTool(
+        ReadOnly = false,
+        Idempotent = false,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description(@"Log time spent on a task
 
 Creates a new time entry with NOT_REPORTED status that can be edited until submitted.
 

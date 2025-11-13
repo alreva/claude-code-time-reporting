@@ -17,7 +17,13 @@ public class HelloTool
         _client = client;
     }
 
-    [McpServerTool, Description("Test connectivity to the GraphQL API. Calls the { hello } query and returns its response.")]
+    [McpServerTool(
+        ReadOnly = true,
+        Idempotent = true,
+        Destructive = false,
+        OpenWorld = true
+    )]
+    [Description("Test connectivity to the GraphQL API. Calls the { hello } query and returns its response.")]
     public async Task<string> Hello()
     {
         try
