@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
+using TimeReportingMcpSdk.Utils;
 
 namespace TimeReportingMcpSdk.Tools;
 
@@ -82,7 +82,7 @@ Property names are case-insensitive")] string? tags = null)
             List<TagInput>? tagList = null;
             if (!string.IsNullOrEmpty(tags))
             {
-                tagList = ParseTags(tags);
+                tagList = TagHelper.ParseTags(tags);
             }
 
             var input = new LogTimeInput
@@ -137,33 +137,6 @@ Property names are case-insensitive")] string? tags = null)
         catch (Exception ex)
         {
             return $"❌ Error: {ex.Message}";
-        }
-    }
-
-    private static List<TagInput> ParseTags(string tagsJson)
-    {
-        var options = new System.Text.Json.JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        // Try parsing as array format first: [{"name": "Type", "value": "Feature"}]
-        try
-        {
-            return System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tagsJson, options)
-                   ?? new List<TagInput>();
-        }
-        catch
-        {
-            // If that fails, try parsing as dictionary format: {"Type": "Feature", "Environment": "Production"}
-            var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(tagsJson, options);
-            if (dict == null) return new List<TagInput>();
-
-            return dict.Select(kvp => new TagInput
-            {
-                Name = kvp.Key,
-                Value = kvp.Value
-            }).ToList();
         }
     }
 }
