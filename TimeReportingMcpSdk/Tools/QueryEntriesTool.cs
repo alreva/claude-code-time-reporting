@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
@@ -146,21 +147,47 @@ Returns:
             var sb = new StringBuilder();
             sb.AppendLine($"Time Entries ({entries.Count}):\n");
 
+            // Table header
+            sb.AppendLine("| Date       | Project       | Task         | Hours | Status       | Tags                  | User         |");
+            sb.AppendLine("|------------|---------------|--------------|-------|--------------|----------------------|--------------|");
+
             foreach (var entry in entries)
             {
-                sb.AppendLine($"📝 ID: {entry.Id}");
-                sb.AppendLine($"   Project: {entry.Project.Code} - {entry.Project.Name}");
-                sb.AppendLine($"   Task: {entry.ProjectTask.TaskName}");
-                sb.AppendLine($"   Hours: {entry.StandardHours} standard" +
-                              (entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : ""));
-                sb.AppendLine($"   Period: {entry.StartDate} to {entry.CompletionDate}");
-                sb.AppendLine($"   Status: {entry.Status}");
-                sb.AppendLine($"   User: {entry.UserEmail}");
-                if (!string.IsNullOrEmpty(entry.Description))
-                {
-                    sb.AppendLine($"   Description: {entry.Description}");
-                }
-                sb.AppendLine();
+                // Format dates
+                var dateRange = entry.StartDate == entry.CompletionDate
+                    ? $"{entry.StartDate}"
+                    : $"{entry.StartDate}-{entry.CompletionDate}";
+
+                // Format hours
+                var hoursFormatted = entry.OvertimeHours > 0
+                    ? $"{entry.StandardHours}+{entry.OvertimeHours}OT"
+                    : $"{entry.StandardHours}";
+
+                // Format tags
+                var tagsFormatted = entry.Tags?.Any() == true
+                    ? string.Join(", ", entry.Tags.Select(t => $"{t.TagValue.ProjectTag.TagName}:{t.TagValue.Value}"))
+                    : "-";
+
+                // Format project code
+                var projectFormatted = entry.Project.Code.Length > 13
+                    ? entry.Project.Code.Substring(0, 10) + "..."
+                    : entry.Project.Code;
+
+                // Format task name
+                var taskFormatted = entry.ProjectTask.TaskName.Length > 12
+                    ? entry.ProjectTask.TaskName.Substring(0, 9) + "..."
+                    : entry.ProjectTask.TaskName;
+
+                // Format user email (just username part)
+                var userFormatted = entry.UserEmail?.Contains('@') == true
+                    ? entry.UserEmail.Substring(0, entry.UserEmail.IndexOf('@'))
+                    : entry.UserEmail ?? "";
+                userFormatted = userFormatted.Length > 12 ? userFormatted.Substring(0, 9) + "..." : userFormatted;
+
+                // Format status
+                var statusFormatted = entry.Status.ToString();
+
+                sb.AppendLine($"| {dateRange,-10} | {projectFormatted,-13} | {taskFormatted,-12} | {hoursFormatted,-5} | {statusFormatted,-12} | {tagsFormatted,-20} | {userFormatted,-12} |");
             }
 
             return sb.ToString();

@@ -263,10 +263,18 @@ public class QueryEntriesToolTests
 
         // Assert
         result.Should().Contain("Time Entries (1)");
-        result.Should().Contain("INTERNAL - Internal Development");
+        result.Should().Contain("INTERNAL");
         result.Should().Contain("Development");
         result.Should().Contain("8");
-        result.Should().Contain("test@example.com");
+        result.Should().Contain("test");
+        // Verify table structure
+        result.Should().Contain("| Date");
+        result.Should().Contain("| Project");
+        result.Should().Contain("| Task");
+        result.Should().Contain("| Hours");
+        result.Should().Contain("| Status");
+        result.Should().Contain("| Tags");
+        result.Should().Contain("| User");
     }
 
     [Fact]
