@@ -60,14 +60,16 @@ Returns:
         [Description("Filter by project code (optional)")] string? projectCode = null,
         [Description("Filter by start date YYYY-MM-DD (optional)")] string? startDate = null,
         [Description("Filter by end date YYYY-MM-DD (optional)")] string? endDate = null,
-        [Description("Filter by status: NOT_REPORTED, SUBMITTED, APPROVED, DECLINED (optional)")] string? status = null,
+        [Description("Filter by status (optional, case-insensitive): NOT_REPORTED, SUBMITTED, APPROVED, DECLINED or NotReported, Submitted, Approved, Declined")] string? status = null,
         [Description("Filter by user email (optional)")] string? userEmail = null)
     {
         try
         {
             DateOnly? startDateParsed = !string.IsNullOrEmpty(startDate) ? DateOnly.Parse(startDate) : null;
             DateOnly? endDateParsed = !string.IsNullOrEmpty(endDate) ? DateOnly.Parse(endDate) : null;
-            TimeEntryStatus? statusParsed = !string.IsNullOrEmpty(status) ? Enum.Parse<TimeEntryStatus>(status) : null;
+            TimeEntryStatus? statusParsed = !string.IsNullOrEmpty(status)
+                ? Enum.Parse<TimeEntryStatus>(status.Replace("_", ""), ignoreCase: true)
+                : null;
 
             // Build a list of filter conditions
             var filters = new List<TimeEntryFilterInput>();
