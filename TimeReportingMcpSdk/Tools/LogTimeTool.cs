@@ -40,11 +40,11 @@ Input Requirements:
 - overtimeHours: Optional overtime hours (must be >= 0)
 - description: Optional work description
 - issueId: Optional ticket/issue ID
-- tags: Optional JSON array with PascalCase properties (Name, Value)
+- tags: Optional JSON array with name/value properties (case-insensitive)
 
 Tags Format:
-- Must use capital 'Name' and 'Value' (not lowercase)
-- Example: '[{""Name"": ""Type"", ""Value"": ""Feature""}, {""Name"": ""Billable"", ""Value"": ""Yes""}]'
+- JSON array of objects with name and value properties
+- Example: '[{""name"": ""Type"", ""value"": ""Feature""}, {""name"": ""Billable"", ""value"": ""Yes""}]'
 - Use get_available_projects to see valid tag names and values for the project
 
 Example Usage:
@@ -55,7 +55,7 @@ Example Usage:
   completionDate: '2025-01-13'
   description: 'Implemented user authentication'
   issueId: 'JIRA-123'
-  tags: '[{""Name"": ""Type"", ""Value"": ""Feature""}]'
+  tags: '[{""name"": ""Type"", ""value"": ""Feature""}]'
 
 Returns:
 - Success: Entry ID, project details, hours, status
@@ -69,9 +69,9 @@ Returns:
         [Description("Overtime hours (optional)")] decimal? overtimeHours = null,
         [Description("Description of work done (optional)")] string? description = null,
         [Description("Issue/ticket ID (optional)")] string? issueId = null,
-        [Description(@"Tags in JSON array format with PascalCase properties (optional)
-Example: '[{""Name"": ""Type"", ""Value"": ""Feature""}]'
-Note: Use capital 'Name' and 'Value', not lowercase")] string? tags = null)
+        [Description(@"Tags in JSON array format (optional)
+Example: '[{""name"": ""Type"", ""value"": ""Feature""}]'
+Property names are case-insensitive")] string? tags = null)
     {
         try
         {
@@ -79,7 +79,11 @@ Note: Use capital 'Name' and 'Value', not lowercase")] string? tags = null)
             List<TagInput>? tagList = null;
             if (!string.IsNullOrEmpty(tags))
             {
-                tagList = System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tags);
+                var options = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                tagList = System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tags, options);
             }
 
             var input = new LogTimeInput
