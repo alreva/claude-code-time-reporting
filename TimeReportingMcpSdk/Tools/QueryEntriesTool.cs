@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
+using TimeReportingMcpSdk.Utils;
 
 namespace TimeReportingMcpSdk.Tools;
 
@@ -60,9 +61,15 @@ Returns:
 Output Format: JSON array that you can parse, filter, aggregate, and format as needed for the user")]
     public async Task<string> QueryTimeEntries(
         [Description("Filter by project code (optional)")] string? projectCode = null,
+        [Description("Filter by task name (optional)")] string? task = null,
         [Description("Filter by start date YYYY-MM-DD (optional)")] string? startDate = null,
         [Description("Filter by end date YYYY-MM-DD (optional)")] string? endDate = null,
         [Description("Filter by status (optional, case-insensitive): NOT_REPORTED, SUBMITTED, APPROVED, DECLINED or NotReported, Submitted, Approved, Declined")] string? status = null,
+        [Description("Filter by description text - partial match (optional)")] string? description = null,
+        [Description("Filter entries with overtime hours > 0 (optional)")] bool? hasOvertime = null,
+        [Description("Filter by minimum total hours (standardHours + overtimeHours) (optional)")] decimal? minHours = null,
+        [Description("Filter by maximum total hours (standardHours + overtimeHours) (optional)")] decimal? maxHours = null,
+        [Description("Filter by tags in JSON format: {\"Type\": \"Feature\"} or [{\"name\": \"Type\", \"value\": \"Feature\"}] (optional)")] string? tags = null,
         [Description("Filter by user email (optional)")] string? userEmail = null)
     {
         try
@@ -123,6 +130,66 @@ Output Format: JSON array that you can parse, filter, aggregate, and format as n
                 });
             }
 
+            // Add task filter
+            if (!string.IsNullOrEmpty(task))
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    ProjectTask = new ProjectTaskFilterInput
+                    {
+                        TaskName = new StringOperationFilterInput { Eq = task }
+                    }
+                });
+            }
+
+            // Add description filter (partial match)
+            if (!string.IsNullOrEmpty(description))
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    Description = new StringOperationFilterInput { Contains = description }
+                });
+            }
+
+            // Add hasOvertime filter
+            if (hasOvertime.HasValue)
+            {
+                filters.Add(new TimeEntryFilterInput
+                {
+                    OvertimeHours = new DecimalOperationFilterInput
+                    {
+                        Gt = hasOvertime.Value ? 0m : (decimal?)null,
+                        Eq = hasOvertime.Value ? null : 0m
+                    }
+                });
+            }
+
+            // Add minHours filter
+            if (minHours.HasValue)
+            {
+                // Note: This filters on standardHours only. For total (standard + overtime),
+                // we'd need to filter results after retrieval or use a custom filter
+                filters.Add(new TimeEntryFilterInput
+                {
+                    StandardHours = new DecimalOperationFilterInput { Gte = minHours.Value }
+                });
+            }
+
+            // Add maxHours filter
+            if (maxHours.HasValue)
+            {
+                // Note: This filters on standardHours only. For total (standard + overtime),
+                // we'd need to filter results after retrieval or use a custom filter
+                filters.Add(new TimeEntryFilterInput
+                {
+                    StandardHours = new DecimalOperationFilterInput { Lte = maxHours.Value }
+                });
+            }
+
+            // Add tags filter (if provided, parse and add to filters)
+            // Note: Tag filtering in GraphQL is complex - may need to filter results after retrieval
+            // For now, we'll skip this and implement it as a post-filter if needed
+
             // Build the final filter input with AND logic
             TimeEntryFilterInput? whereClause = null;
             if (filters.Count > 0)
@@ -143,6 +210,39 @@ Output Format: JSON array that you can parse, filter, aggregate, and format as n
             }
 
             var entries = result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>();
+
+            // Apply post-filters that can't be done in GraphQL
+
+            // Filter by total hours (minHours/maxHours need standard + overtime)
+            if (minHours.HasValue)
+            {
+                entries = entries.Where(e => (e.StandardHours + e.OvertimeHours) >= minHours.Value).ToList();
+            }
+            if (maxHours.HasValue)
+            {
+                entries = entries.Where(e => (e.StandardHours + e.OvertimeHours) <= maxHours.Value).ToList();
+            }
+
+            // Filter by tags
+            if (!string.IsNullOrEmpty(tags))
+            {
+                try
+                {
+                    var tagFilters = TagHelper.ParseTags(tags);
+                    entries = entries.Where(entry =>
+                        tagFilters.All(filter =>
+                            entry.Tags?.Any(t =>
+                                t.TagValue.ProjectTag.TagName.Equals(filter.Name, StringComparison.OrdinalIgnoreCase) &&
+                                t.TagValue.Value.Equals(filter.Value, StringComparison.OrdinalIgnoreCase)) == true
+                        )
+                    ).ToList();
+                }
+                catch
+                {
+                    // Invalid tag format - ignore filter
+                }
+            }
+
             if (entries.Count == 0)
             {
                 return "[]";  // Empty JSON array
