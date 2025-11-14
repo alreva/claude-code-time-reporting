@@ -154,14 +154,22 @@ Output Format: JSON array that you can parse, filter, aggregate, and format as n
             // Add hasOvertime filter
             if (hasOvertime.HasValue)
             {
-                filters.Add(new TimeEntryFilterInput
+                if (hasOvertime.Value)
                 {
-                    OvertimeHours = new DecimalOperationFilterInput
+                    // Has overtime: OvertimeHours > 0
+                    filters.Add(new TimeEntryFilterInput
                     {
-                        Gt = hasOvertime.Value ? 0m : (decimal?)null,
-                        Eq = hasOvertime.Value ? null : 0m
-                    }
-                });
+                        OvertimeHours = new DecimalOperationFilterInput { Gt = 0m }
+                    });
+                }
+                else
+                {
+                    // No overtime: OvertimeHours = 0
+                    filters.Add(new TimeEntryFilterInput
+                    {
+                        OvertimeHours = new DecimalOperationFilterInput { Eq = 0m }
+                    });
+                }
             }
 
             // Add minHours filter
