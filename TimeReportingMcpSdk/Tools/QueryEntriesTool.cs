@@ -221,6 +221,19 @@ Output Format: JSON array that you can parse, filter, aggregate, and format as n
 
             // Apply post-filters that can't be done in GraphQL
 
+            // Filter by hasOvertime (defensive post-filter in case GraphQL filter doesn't work)
+            if (hasOvertime.HasValue)
+            {
+                if (hasOvertime.Value)
+                {
+                    entries = entries.Where(e => e.OvertimeHours > 0m).ToList();
+                }
+                else
+                {
+                    entries = entries.Where(e => e.OvertimeHours == 0m).ToList();
+                }
+            }
+
             // Filter by total hours (minHours/maxHours need standard + overtime)
             if (minHours.HasValue)
             {

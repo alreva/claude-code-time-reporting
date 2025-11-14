@@ -447,12 +447,17 @@ public class QueryEntriesToolTests
     }
 
     [Fact]
-    public async Task QueryTimeEntries_WithHasOvertimeTrue_PassesCorrectFilterToGraphQLClient()
+    public async Task QueryTimeEntries_WithHasOvertimeTrue_FiltersToOnlyOvertimeEntries()
     {
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        // GraphQL should return ALL entries (both with and without overtime)
+        // because GraphQL filter may not work correctly - we need to test this!
+        var entryWithOvertime = CreateMockEntryWithHours(standardHours: 6m, overtimeHours: 2m);
+        var entryWithoutOvertime = CreateMockEntryWithHours(standardHours: 8m, overtimeHours: 0m);
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entryWithOvertime, entryWithoutOvertime });
 
         mockClient.QueryTimeEntries.Returns(mockQuery);
         mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
@@ -461,9 +466,9 @@ public class QueryEntriesToolTests
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
-        await tool.QueryTimeEntries(hasOvertime: true);
+        var result = await tool.QueryTimeEntries(hasOvertime: true);
 
-        // Assert
+        // Assert - Verify GraphQL filter structure
         await mockQuery.Received(1).ExecuteAsync(
             Arg.Is<TimeEntryFilterInput>(filter =>
                 filter != null &&
@@ -472,15 +477,25 @@ public class QueryEntriesToolTests
                 filter.And![0].OvertimeHours != null &&
                 filter.And![0].OvertimeHours!.Gt == 0m),
             Arg.Any<CancellationToken>());
+
+        // Assert - Verify ACTUAL filtering behavior
+        // If GraphQL filter works, should only return entry with overtime
+        // This test will FAIL if GraphQL doesn't filter correctly
+        result.Should().Contain("\"overtimeHours\": 2"); // entry with overtime included
+        result.Should().NotContain("\"overtimeHours\": 0"); // entry without overtime excluded
     }
 
     [Fact]
-    public async Task QueryTimeEntries_WithHasOvertimeFalse_PassesCorrectFilterToGraphQLClient()
+    public async Task QueryTimeEntries_WithHasOvertimeFalse_FiltersToOnlyNonOvertimeEntries()
     {
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        // GraphQL should return ALL entries (both with and without overtime)
+        var entryWithOvertime = CreateMockEntryWithHours(standardHours: 6m, overtimeHours: 2m);
+        var entryWithoutOvertime = CreateMockEntryWithHours(standardHours: 8m, overtimeHours: 0m);
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entryWithOvertime, entryWithoutOvertime });
 
         mockClient.QueryTimeEntries.Returns(mockQuery);
         mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
@@ -489,9 +504,9 @@ public class QueryEntriesToolTests
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
-        await tool.QueryTimeEntries(hasOvertime: false);
+        var result = await tool.QueryTimeEntries(hasOvertime: false);
 
-        // Assert
+        // Assert - Verify GraphQL filter structure
         await mockQuery.Received(1).ExecuteAsync(
             Arg.Is<TimeEntryFilterInput>(filter =>
                 filter != null &&
@@ -500,6 +515,11 @@ public class QueryEntriesToolTests
                 filter.And![0].OvertimeHours != null &&
                 filter.And![0].OvertimeHours!.Eq == 0m),
             Arg.Any<CancellationToken>());
+
+        // Assert - Verify ACTUAL filtering behavior
+        // If GraphQL filter works, should only return entry without overtime
+        result.Should().Contain("\"overtimeHours\": 0"); // entry without overtime included
+        result.Should().NotContain("\"overtimeHours\": 2"); // entry with overtime excluded
     }
 
     [Fact]

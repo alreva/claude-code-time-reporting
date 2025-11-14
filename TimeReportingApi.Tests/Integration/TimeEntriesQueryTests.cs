@@ -318,4 +318,140 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var data = result.RootElement.GetProperty("data").GetProperty("timeEntry");
         data.ValueKind.Should().Be(JsonValueKind.Null);
     }
+
+    [Fact]
+    public async Task TimeEntries_FilterByOvertimeHoursGreaterThanZero_ReturnsOnlyOvertimeEntries()
+    {
+        // Arrange - Add entries with and without overtime
+        var project = await _context.Projects.FirstAsync();
+        var task = await _context.ProjectTasks.FirstAsync();
+
+        var entryWithOvertime = new TimeEntry
+        {
+            Id = Guid.NewGuid(),
+            StandardHours = 6.0m,
+            OvertimeHours = 2.0m, // Has overtime
+            StartDate = new DateOnly(2025, 10, 25),
+            CompletionDate = new DateOnly(2025, 10, 25),
+            Status = TimeEntryStatus.NotReported,
+            UserId = "test-oid-123",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Project = project,
+            ProjectTask = task
+        };
+
+        var entryWithoutOvertime = new TimeEntry
+        {
+            Id = Guid.NewGuid(),
+            StandardHours = 8.0m,
+            OvertimeHours = 0.0m, // No overtime
+            StartDate = new DateOnly(2025, 10, 26),
+            CompletionDate = new DateOnly(2025, 10, 26),
+            Status = TimeEntryStatus.NotReported,
+            UserId = "test-oid-123",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Project = project,
+            ProjectTask = task
+        };
+
+        _context.TimeEntries.AddRange(entryWithOvertime, entryWithoutOvertime);
+        await _context.SaveChangesAsync();
+
+        var query = @"
+            query {
+                timeEntries(where: { overtimeHours: { gt: 0 } }) {
+                    nodes {
+                        id
+                        standardHours
+                        overtimeHours
+                    }
+                }
+            }";
+
+        // Act
+        var result = await ExecuteGraphQL(query);
+
+        // Assert
+        var nodes = result.RootElement
+            .GetProperty("data")
+            .GetProperty("timeEntries")
+            .GetProperty("nodes");
+
+        // Should only return entry with overtime
+        nodes.GetArrayLength().Should().BeGreaterThan(0);
+        foreach (var node in nodes.EnumerateArray())
+        {
+            node.GetProperty("overtimeHours").GetDecimal().Should().BeGreaterThan(0m);
+        }
+    }
+
+    [Fact]
+    public async Task TimeEntries_FilterByOvertimeHoursEqualToZero_ReturnsOnlyNonOvertimeEntries()
+    {
+        // Arrange - Add entries with and without overtime
+        var project = await _context.Projects.FirstAsync();
+        var task = await _context.ProjectTasks.FirstAsync();
+
+        var entryWithOvertime = new TimeEntry
+        {
+            Id = Guid.NewGuid(),
+            StandardHours = 6.0m,
+            OvertimeHours = 3.0m, // Has overtime
+            StartDate = new DateOnly(2025, 10, 27),
+            CompletionDate = new DateOnly(2025, 10, 27),
+            Status = TimeEntryStatus.NotReported,
+            UserId = "test-oid-123",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Project = project,
+            ProjectTask = task
+        };
+
+        var entryWithoutOvertime = new TimeEntry
+        {
+            Id = Guid.NewGuid(),
+            StandardHours = 8.0m,
+            OvertimeHours = 0.0m, // No overtime
+            StartDate = new DateOnly(2025, 10, 28),
+            CompletionDate = new DateOnly(2025, 10, 28),
+            Status = TimeEntryStatus.NotReported,
+            UserId = "test-oid-123",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Project = project,
+            ProjectTask = task
+        };
+
+        _context.TimeEntries.AddRange(entryWithOvertime, entryWithoutOvertime);
+        await _context.SaveChangesAsync();
+
+        var query = @"
+            query {
+                timeEntries(where: { overtimeHours: { eq: 0 } }) {
+                    nodes {
+                        id
+                        standardHours
+                        overtimeHours
+                    }
+                }
+            }";
+
+        // Act
+        var result = await ExecuteGraphQL(query);
+
+        // Assert
+        var nodes = result.RootElement
+            .GetProperty("data")
+            .GetProperty("timeEntries")
+            .GetProperty("nodes");
+
+        // Should only return entries without overtime
+        nodes.GetArrayLength().Should().BeGreaterThan(0);
+        foreach (var node in nodes.EnumerateArray())
+        {
+            node.GetProperty("overtimeHours").GetDecimal().Should().Be(0m);
+        }
+    }
 }
