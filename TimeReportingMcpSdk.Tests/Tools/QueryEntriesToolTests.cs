@@ -389,6 +389,308 @@ public class QueryEntriesToolTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task QueryTimeEntries_WithTask_PassesCorrectFilterToGraphQLClient()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(task: "Development");
+
+        // Assert
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 1 &&
+                filter.And![0].ProjectTask != null &&
+                filter.And![0].ProjectTask!.TaskName != null &&
+                filter.And![0].ProjectTask!.TaskName!.Eq == "Development"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithDescription_PassesCorrectFilterToGraphQLClient()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(description: "authentication");
+
+        // Assert
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 1 &&
+                filter.And![0].Description != null &&
+                filter.And![0].Description!.Contains == "authentication"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithHasOvertimeTrue_PassesCorrectFilterToGraphQLClient()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(hasOvertime: true);
+
+        // Assert
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 1 &&
+                filter.And![0].OvertimeHours != null &&
+                filter.And![0].OvertimeHours!.Gt == 0m),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithHasOvertimeFalse_PassesCorrectFilterToGraphQLClient()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(hasOvertime: false);
+
+        // Assert
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 1 &&
+                filter.And![0].OvertimeHours != null &&
+                filter.And![0].OvertimeHours!.Eq == 0m),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithMinHours_FiltersResultsByTotalHours()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+
+        var entry1 = CreateMockEntryWithHours(standardHours: 6m, overtimeHours: 2m); // Total: 8h
+        var entry2 = CreateMockEntryWithHours(standardHours: 10m, overtimeHours: 0m); // Total: 10h
+        var entry3 = CreateMockEntryWithHours(standardHours: 4m, overtimeHours: 0m); // Total: 4h
+
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entry1, entry2, entry3 });
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        var result = await tool.QueryTimeEntries(minHours: 8m);
+
+        // Assert - Should only include entries with 8h or more total
+        result.Should().Contain("\"standardHours\": 6"); // entry1
+        result.Should().Contain("\"standardHours\": 10"); // entry2
+        result.Should().NotContain("\"standardHours\": 4"); // entry3 excluded
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithMaxHours_FiltersResultsByTotalHours()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+
+        var entry1 = CreateMockEntryWithHours(standardHours: 6m, overtimeHours: 2m); // Total: 8h
+        var entry2 = CreateMockEntryWithHours(standardHours: 10m, overtimeHours: 0m); // Total: 10h
+        var entry3 = CreateMockEntryWithHours(standardHours: 4m, overtimeHours: 0m); // Total: 4h
+
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entry1, entry2, entry3 });
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        var result = await tool.QueryTimeEntries(maxHours: 8m);
+
+        // Assert - Should only include entries with 8h or less total
+        result.Should().Contain("\"standardHours\": 6"); // entry1
+        result.Should().Contain("\"standardHours\": 4"); // entry3
+        result.Should().NotContain("\"standardHours\": 10"); // entry2 excluded
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithMinAndMaxHours_FiltersResultsByTotalHoursRange()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+
+        var entry1 = CreateMockEntryWithHours(standardHours: 6m, overtimeHours: 2m); // Total: 8h
+        var entry2 = CreateMockEntryWithHours(standardHours: 10m, overtimeHours: 0m); // Total: 10h
+        var entry3 = CreateMockEntryWithHours(standardHours: 4m, overtimeHours: 0m); // Total: 4h
+
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entry1, entry2, entry3 });
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        var result = await tool.QueryTimeEntries(minHours: 6m, maxHours: 9m);
+
+        // Assert - Should only include entry1 (8h total)
+        result.Should().Contain("\"standardHours\": 6"); // entry1 only
+        result.Should().NotContain("\"standardHours\": 10"); // entry2 too high
+        result.Should().NotContain("\"standardHours\": 4"); // entry3 too low
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithTagsDictionary_FiltersResultsByTags()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+
+        var entry1 = CreateMockEntryWithTags(new[] { ("Type", "Feature"), ("Environment", "Production") });
+        var entry2 = CreateMockEntryWithTags(new[] { ("Type", "Bug"), ("Environment", "Production") });
+        var entry3 = CreateMockEntryWithTags(new[] { ("Type", "Feature"), ("Environment", "Development") });
+
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entry1, entry2, entry3 });
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act - Filter by Type=Feature AND Environment=Production
+        var result = await tool.QueryTimeEntries(tags: "{\"Type\": \"Feature\", \"Environment\": \"Production\"}");
+
+        // Assert - Should only include entry1
+        var jsonResult = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(result);
+        jsonResult.GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithTagsArray_FiltersResultsByTags()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+
+        var entry1 = CreateMockEntryWithTags(new[] { ("Type", "Feature") });
+        var entry2 = CreateMockEntryWithTags(new[] { ("Type", "Bug") });
+
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entry1, entry2 });
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act - Filter by Type=Feature using array format
+        var result = await tool.QueryTimeEntries(tags: "[{\"name\": \"Type\", \"value\": \"Feature\"}]");
+
+        // Assert - Should only include entry1
+        var jsonResult = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(result);
+        jsonResult.GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithInvalidTags_IgnoresTagFilter()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+
+        var entry1 = CreateMockEntryWithTags(new[] { ("Type", "Feature") });
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes> { entry1 });
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act - Invalid JSON should not throw, just ignore the filter
+        var result = await tool.QueryTimeEntries(tags: "invalid json");
+
+        // Assert - Should return all entries (tag filter ignored)
+        result.Should().Contain("\"standardHours\":");
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithMultipleNewFilters_CombinesThemCorrectly()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        var mockResult = CreateMockResult(new List<IQueryTimeEntries_TimeEntries_Nodes>());
+
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        mockQuery.ExecuteAsync(Arg.Any<TimeEntryFilterInput?>(), Arg.Any<CancellationToken>())
+            .Returns(mockResult);
+
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        await tool.QueryTimeEntries(
+            task: "Development",
+            description: "API",
+            hasOvertime: true);
+
+        // Assert - Should have 3 GraphQL filters
+        await mockQuery.Received(1).ExecuteAsync(
+            Arg.Is<TimeEntryFilterInput>(filter =>
+                filter != null &&
+                filter.And != null &&
+                filter.And!.Count == 3),
+            Arg.Any<CancellationToken>());
+    }
+
     // Helper methods to create mock objects
     private static IOperationResult<IQueryTimeEntriesResult> CreateMockResult(
         List<IQueryTimeEntries_TimeEntries_Nodes> entries)
@@ -435,7 +737,88 @@ public class QueryEntriesToolTests
         mockEntry.CompletionDate.Returns(completionDate);
         mockEntry.Status.Returns(status);
         mockEntry.UserEmail.Returns(userEmail);
+        mockEntry.UserName.Returns("Test User");
         mockEntry.Description.Returns((string?)null);
+        mockEntry.IssueId.Returns((string?)null);
+        mockEntry.CreatedAt.Returns(DateTimeOffset.UtcNow);
+        mockEntry.UpdatedAt.Returns(DateTimeOffset.UtcNow);
+        mockEntry.Tags.Returns((IReadOnlyList<IQueryTimeEntries_TimeEntries_Nodes_Tags>?)null);
+
+        return mockEntry;
+    }
+
+    private static IQueryTimeEntries_TimeEntries_Nodes CreateMockEntryWithHours(
+        decimal standardHours,
+        decimal overtimeHours)
+    {
+        var mockProject = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes_Project>();
+        mockProject.Code.Returns("INTERNAL");
+        mockProject.Name.Returns("Internal");
+
+        var mockTask = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes_ProjectTask>();
+        mockTask.TaskName.Returns("Development");
+
+        var mockEntry = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes>();
+        mockEntry.Id.Returns(Guid.NewGuid());
+        mockEntry.Project.Returns(mockProject);
+        mockEntry.ProjectTask.Returns(mockTask);
+        mockEntry.StandardHours.Returns(standardHours);
+        mockEntry.OvertimeHours.Returns(overtimeHours);
+        mockEntry.StartDate.Returns(new DateOnly(2025, 1, 1));
+        mockEntry.CompletionDate.Returns(new DateOnly(2025, 1, 1));
+        mockEntry.Status.Returns(TimeEntryStatus.NotReported);
+        mockEntry.UserEmail.Returns("test@example.com");
+        mockEntry.UserName.Returns("Test User");
+        mockEntry.Description.Returns((string?)null);
+        mockEntry.IssueId.Returns((string?)null);
+        mockEntry.CreatedAt.Returns(DateTimeOffset.UtcNow);
+        mockEntry.UpdatedAt.Returns(DateTimeOffset.UtcNow);
+        mockEntry.Tags.Returns((IReadOnlyList<IQueryTimeEntries_TimeEntries_Nodes_Tags>?)null);
+
+        return mockEntry;
+    }
+
+    private static IQueryTimeEntries_TimeEntries_Nodes CreateMockEntryWithTags(
+        (string Name, string Value)[] tags)
+    {
+        var mockProject = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes_Project>();
+        mockProject.Code.Returns("INTERNAL");
+        mockProject.Name.Returns("Internal");
+
+        var mockTask = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes_ProjectTask>();
+        mockTask.TaskName.Returns("Development");
+
+        var mockTags = tags.Select(tag =>
+        {
+            var mockProjectTag = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes_Tags_TagValue_ProjectTag>();
+            mockProjectTag.TagName.Returns(tag.Name);
+
+            var mockTagValue = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes_Tags_TagValue>();
+            mockTagValue.ProjectTag.Returns(mockProjectTag);
+            mockTagValue.Value.Returns(tag.Value);
+
+            var mockEntryTag = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes_Tags>();
+            mockEntryTag.TagValue.Returns(mockTagValue);
+
+            return mockEntryTag;
+        }).ToList();
+
+        var mockEntry = Substitute.For<IQueryTimeEntries_TimeEntries_Nodes>();
+        mockEntry.Id.Returns(Guid.NewGuid());
+        mockEntry.Project.Returns(mockProject);
+        mockEntry.ProjectTask.Returns(mockTask);
+        mockEntry.StandardHours.Returns(8m);
+        mockEntry.OvertimeHours.Returns(0m);
+        mockEntry.StartDate.Returns(new DateOnly(2025, 1, 1));
+        mockEntry.CompletionDate.Returns(new DateOnly(2025, 1, 1));
+        mockEntry.Status.Returns(TimeEntryStatus.NotReported);
+        mockEntry.UserEmail.Returns("test@example.com");
+        mockEntry.UserName.Returns("Test User");
+        mockEntry.Description.Returns((string?)null);
+        mockEntry.IssueId.Returns((string?)null);
+        mockEntry.CreatedAt.Returns(DateTimeOffset.UtcNow);
+        mockEntry.UpdatedAt.Returns(DateTimeOffset.UtcNow);
+        mockEntry.Tags.Returns(mockTags);
 
         return mockEntry;
     }
