@@ -261,24 +261,19 @@ public class QueryEntriesToolTests
         // Act
         var result = await tool.QueryTimeEntries();
 
-        // Assert
-        result.Should().Contain("Time Entries (1)");
+        // Assert - Should return valid JSON
+        result.Should().StartWith("[");
+        result.Should().EndWith("]");
         result.Should().Contain("INTERNAL");
         result.Should().Contain("Development");
-        result.Should().Contain("8");
-        result.Should().Contain("test");
-        // Verify table structure
-        result.Should().Contain("| Date");
-        result.Should().Contain("| Project");
-        result.Should().Contain("| Task");
-        result.Should().Contain("| Hours");
-        result.Should().Contain("| Status");
-        result.Should().Contain("| Tags");
-        result.Should().Contain("| User");
+        result.Should().Contain("\"standardHours\":");
+        result.Should().Contain("\"task\":");
+        result.Should().Contain("\"projectCode\":");
+        result.Should().Contain("\"status\":");
     }
 
     [Fact]
-    public async Task QueryTimeEntries_ReturnsNoEntriesMessage_WhenNoEntriesFound()
+    public async Task QueryTimeEntries_ReturnsEmptyJsonArray_WhenNoEntriesFound()
     {
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
@@ -295,7 +290,7 @@ public class QueryEntriesToolTests
         var result = await tool.QueryTimeEntries();
 
         // Assert
-        result.Should().Be("No time entries found matching the criteria.");
+        result.Should().Be("[]");
     }
 
     [Theory]

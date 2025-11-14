@@ -53,9 +53,11 @@ Example Queries:
    status: 'SUBMITTED'
 
 Returns:
-- Success: List of matching entries with ID, project, task, hours, dates, status, user
-- No matches: 'No time entries found matching the criteria'
-- Error: Detailed error message with troubleshooting suggestions")]
+- Success: JSON array of time entry objects with all fields (id, projectCode, projectName, task, standardHours, overtimeHours, startDate, completionDate, status, description, issueId, userEmail, userName, tags, createdAt, updatedAt)
+- No matches: Empty JSON array []
+- Error: Error message prefixed with ❌
+
+Output Format: JSON array that you can parse, filter, aggregate, and format as needed for the user")]
     public async Task<string> QueryTimeEntries(
         [Description("Filter by project code (optional)")] string? projectCode = null,
         [Description("Filter by start date YYYY-MM-DD (optional)")] string? startDate = null,
@@ -143,56 +145,38 @@ Returns:
             var entries = result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>();
             if (entries.Count == 0)
             {
-                return "No time entries found matching the criteria.";
+                return "[]";  // Empty JSON array
             }
 
-            var sb = new StringBuilder();
-            sb.AppendLine($"Time Entries ({entries.Count}):\n");
-
-            // Table header
-            sb.AppendLine("| Date       | Project       | Task         | Hours | Status       | Tags                  | User         |");
-            sb.AppendLine("|------------|---------------|--------------|-------|--------------|----------------------|--------------|");
-
-            foreach (var entry in entries)
+            // Build structured JSON response
+            var jsonEntries = entries.Select(entry => new
             {
-                // Format dates
-                var dateRange = entry.StartDate == entry.CompletionDate
-                    ? $"{entry.StartDate}"
-                    : $"{entry.StartDate}-{entry.CompletionDate}";
+                id = entry.Id.ToString(),
+                projectCode = entry.Project.Code,
+                projectName = entry.Project.Name,
+                task = entry.ProjectTask.TaskName,
+                standardHours = entry.StandardHours,
+                overtimeHours = entry.OvertimeHours,
+                startDate = entry.StartDate.ToString("yyyy-MM-dd"),
+                completionDate = entry.CompletionDate.ToString("yyyy-MM-dd"),
+                status = entry.Status.ToString(),
+                description = entry.Description,
+                issueId = entry.IssueId,
+                userEmail = entry.UserEmail,
+                userName = entry.UserName,
+                tags = entry.Tags?.Select(t => new
+                {
+                    name = t.TagValue.ProjectTag.TagName,
+                    value = t.TagValue.Value
+                }).ToArray() ?? Array.Empty<object>(),
+                createdAt = entry.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                updatedAt = entry.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+            }).ToList();
 
-                // Format hours
-                var hoursFormatted = entry.OvertimeHours > 0
-                    ? $"{entry.StandardHours}+{entry.OvertimeHours}OT"
-                    : $"{entry.StandardHours}";
-
-                // Format tags
-                var tagsFormatted = entry.Tags?.Any() == true
-                    ? string.Join(", ", entry.Tags.Select(t => $"{t.TagValue.ProjectTag.TagName}:{t.TagValue.Value}"))
-                    : "-";
-
-                // Format project code
-                var projectFormatted = entry.Project.Code.Length > 13
-                    ? entry.Project.Code.Substring(0, 10) + "..."
-                    : entry.Project.Code;
-
-                // Format task name
-                var taskFormatted = entry.ProjectTask.TaskName.Length > 12
-                    ? entry.ProjectTask.TaskName.Substring(0, 9) + "..."
-                    : entry.ProjectTask.TaskName;
-
-                // Format user email (just username part)
-                var userFormatted = entry.UserEmail?.Contains('@') == true
-                    ? entry.UserEmail.Substring(0, entry.UserEmail.IndexOf('@'))
-                    : entry.UserEmail ?? "";
-                userFormatted = userFormatted.Length > 12 ? userFormatted.Substring(0, 9) + "..." : userFormatted;
-
-                // Format status
-                var statusFormatted = entry.Status.ToString();
-
-                sb.AppendLine($"| {dateRange,-10} | {projectFormatted,-13} | {taskFormatted,-12} | {hoursFormatted,-5} | {statusFormatted,-12} | {tagsFormatted,-20} | {userFormatted,-12} |");
-            }
-
-            return sb.ToString();
+            return System.Text.Json.JsonSerializer.Serialize(jsonEntries, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
         }
         catch (Exception ex)
         {
