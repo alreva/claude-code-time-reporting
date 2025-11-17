@@ -22,21 +22,23 @@ public class UpdateEntryTool
         Destructive = false,
         OpenWorld = true
     )]
-    [Description(@"Update an existing time entry
+    [Description("""
+                 Update an existing time entry
 
-All fields are optional - only provided fields will be updated.
-Only entries in NOT_REPORTED or DECLINED status can be updated.
+                 All fields are optional - only provided fields will be updated.
+                 Only entries in NOT_REPORTED or DECLINED status can be updated.
 
-Tags Format:
-- Supports two formats (both case-insensitive):
-  1. Dictionary: '{""Type"": ""Feature"", ""Environment"": ""Development""}' (recommended - simpler)
-  2. Array: '[{""name"": ""Type"", ""value"": ""Feature""}]'
-- Use get_available_projects to see valid tag names and values for the project
-- Replaces all existing tags (not additive)
+                 Tags Format:
+                 - Supports two formats (both case-insensitive):
+                   1. Dictionary: '{"Type": "Feature", "Environment": "Development"}' (recommended - simpler)
+                   2. Array: '[{"name": "Type", "value": "Feature"}]'
+                 - Use get_available_projects to see valid tag names and values for the project
+                 - Replaces all existing tags (not additive)
 
-Returns:
-- Success: Updated entry details
-- Error: Validation messages with suggestions")]
+                 Returns:
+                 - Success: Updated entry details
+                 - Error: Validation messages with suggestions
+                 """)]
     public async Task<string> UpdateTimeEntry(
         [Description("Entry ID to update")] [Required] string id,
         [Description("New task name (optional)")] string? task = null,
@@ -46,10 +48,12 @@ Returns:
         [Description("New completion date YYYY-MM-DD (optional)")] string? completionDate = null,
         [Description("New description (optional)")] string? description = null,
         [Description("New issue ID (optional)")] string? issueId = null,
-        [Description(@"Tags in JSON format (optional)
-Dictionary format: '{""Type"": ""Feature"", ""Environment"": ""Development""}'
-Array format: '[{""name"": ""Type"", ""value"": ""Feature""}]'
-Property names are case-insensitive")] string? tags = null)
+        [Description("""
+                     Tags in JSON format (optional)
+                     Dictionary format: '{"Type": "Feature", "Environment": "Development"}'
+                     Array format: '[{"name": "Type", "value": "Feature"}]'
+                     Property names are case-insensitive
+                     """)] string? tags = null)
     {
         try
         {

@@ -175,23 +175,25 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_WithValidInput_UpdatesEntry()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        standardHours: 7.5
-                        overtimeHours: 0.5
-                        description: ""Updated description""
-                    }}
-                ) {{
-                    id
-                    standardHours
-                    overtimeHours
-                    description
-                    updatedAt
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 standardHours: 7.5
+                                                 overtimeHours: 0.5
+                                                 description: "Updated description"
+                                             }
+                                         ) {
+                                             id
+                                             standardHours
+                                             overtimeHours
+                                             description
+                                             updatedAt
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -218,20 +220,22 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_WithPartialInput_UpdatesOnlyProvidedFields()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        description: ""Partial update""
-                    }}
-                ) {{
-                    id
-                    standardHours
-                    description
-                    issueId
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 description: "Partial update"
+                                             }
+                                         ) {
+                                             id
+                                             standardHours
+                                             description
+                                             issueId
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -249,18 +253,20 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_WithTaskChange_UpdatesTask()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        task: ""Testing""
-                    }}
-                ) {{
-                    id
-                    projectTask {{ taskName }}
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 task: "Testing"
+                                             }
+                                         ) {
+                                             id
+                                             projectTask { taskName }
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -286,20 +292,22 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         var newStartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-1));
         var newEndDate = DateOnly.FromDateTime(DateTime.Today);
 
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        startDate: ""{newStartDate:yyyy-MM-dd}""
-                        completionDate: ""{newEndDate:yyyy-MM-dd}""
-                    }}
-                ) {{
-                    id
-                    startDate
-                    completionDate
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 startDate: "{{newStartDate:yyyy-MM-dd}}"
+                                                 completionDate: "{{newEndDate:yyyy-MM-dd}}"
+                                             }
+                                         ) {
+                                             id
+                                             startDate
+                                             completionDate
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -316,19 +324,21 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_UpdatesUpdatedAtTimestamp()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        description: ""Testing timestamp""
-                    }}
-                ) {{
-                    id
-                    createdAt
-                    updatedAt
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 description: "Testing timestamp"
+                                             }
+                                         ) {
+                                             id
+                                             createdAt
+                                             updatedAt
+                                         }
+                                     }
+                         """;
 
         // Act
         var beforeUpdate = DateTime.UtcNow.AddSeconds(-1);
@@ -367,17 +377,19 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         _context.TimeEntries.Add(submittedEntry);
         await _context.SaveChangesAsync();
 
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{submittedEntry.Id}""
-                    input: {{
-                        description: ""Should not work""
-                    }}
-                ) {{
-                    id
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{submittedEntry.Id}}"
+                                             input: {
+                                                 description: "Should not work"
+                                             }
+                                         ) {
+                                             id
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -408,17 +420,19 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         _context.TimeEntries.Add(approvedEntry);
         await _context.SaveChangesAsync();
 
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{approvedEntry.Id}""
-                    input: {{
-                        description: ""Should not work""
-                    }}
-                ) {{
-                    id
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{approvedEntry.Id}}"
+                                             input: {
+                                                 description: "Should not work"
+                                             }
+                                         ) {
+                                             id
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -451,19 +465,21 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         _context.TimeEntries.Add(declinedEntry);
         await _context.SaveChangesAsync();
 
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{declinedEntry.Id}""
-                    input: {{
-                        description: ""Revised per feedback""
-                    }}
-                ) {{
-                    id
-                    description
-                    status
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{declinedEntry.Id}}"
+                                             input: {
+                                                 description: "Revised per feedback"
+                                             }
+                                         ) {
+                                             id
+                                             description
+                                             status
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -491,17 +507,19 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{nonExistentId}""
-                    input: {{
-                        description: ""Should not work""
-                    }}
-                ) {{
-                    id
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{nonExistentId}}"
+                                             input: {
+                                                 description: "Should not work"
+                                             }
+                                         ) {
+                                             id
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -520,17 +538,19 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_WithInvalidTask_ReturnsError()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        task: ""InvalidTask""
-                    }}
-                ) {{
-                    id
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 task: "InvalidTask"
+                                             }
+                                         ) {
+                                             id
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -550,17 +570,19 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_WithNegativeStandardHours_ReturnsError()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        standardHours: -1.0
-                    }}
-                ) {{
-                    id
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 standardHours: -1.0
+                                             }
+                                         ) {
+                                             id
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -575,17 +597,19 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_WithNegativeOvertimeHours_ReturnsError()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        overtimeHours: -2.0
-                    }}
-                ) {{
-                    id
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 overtimeHours: -2.0
+                                             }
+                                         ) {
+                                             id
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -604,18 +628,20 @@ public class UpdateTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task UpdateTimeEntry_WithStartDateAfterCompletionDate_ReturnsError()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                updateTimeEntry(
-                    id: ""{_testEntryId}""
-                    input: {{
-                        startDate: ""2025-10-25""
-                        completionDate: ""2025-10-24""
-                    }}
-                ) {{
-                    id
-                }}
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         updateTimeEntry(
+                                             id: "{{_testEntryId}}"
+                                             input: {
+                                                 startDate: "2025-10-25"
+                                                 completionDate: "2025-10-24"
+                                             }
+                                         ) {
+                                             id
+                                         }
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);

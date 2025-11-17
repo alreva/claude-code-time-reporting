@@ -9,15 +9,17 @@ public class RedundantUsingAnalyzerTests
     public async Task WhenExplicitUsingMatchesGlobalUsing_ShouldReportDiagnostic()
     {
         // Arrange - Code with explicit using that matches global using
-        const string testCode = @"
-using System.Net;
+        const string testCode = """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-    }
-}";
+                                using System.Net;
+
+                                namespace TestNamespace
+                                {
+                                    public class TestClass
+                                    {
+                                    }
+                                }
+                                """;
 
         // Expected diagnostic
         var expected = new DiagnosticResult(RedundantUsingAnalyzer.DiagnosticId, Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
@@ -32,15 +34,17 @@ namespace TestNamespace
     public async Task WhenExplicitUsingDoesNotMatchGlobalUsing_ShouldNotReportDiagnostic()
     {
         // Arrange - Code with explicit using that does NOT match global using
-        const string testCode = @"
-using System.Collections.Generic;
+        const string testCode = """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-    }
-}";
+                                using System.Collections.Generic;
+
+                                namespace TestNamespace
+                                {
+                                    public class TestClass
+                                    {
+                                    }
+                                }
+                                """;
 
         // Act & Assert - No diagnostics expected
         await VerifyAnalyzerAsync(testCode, new[] { "System.Net" });
@@ -50,13 +54,15 @@ namespace TestNamespace
     public async Task WhenNoExplicitUsings_ShouldNotReportDiagnostic()
     {
         // Arrange - Code with no explicit usings
-        const string testCode = @"
-namespace TestNamespace
-{
-    public class TestClass
-    {
-    }
-}";
+        const string testCode = """
+
+                                namespace TestNamespace
+                                {
+                                    public class TestClass
+                                    {
+                                    }
+                                }
+                                """;
 
         // Act & Assert - No diagnostics expected
         await VerifyAnalyzerAsync(testCode, new[] { "System.Net" });
@@ -66,15 +72,17 @@ namespace TestNamespace
     public async Task WhenStaticUsing_ShouldNotReportDiagnostic()
     {
         // Arrange - Code with static using (should be ignored)
-        const string testCode = @"
-using static System.Math;
+        const string testCode = """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-    }
-}";
+                                using static System.Math;
+
+                                namespace TestNamespace
+                                {
+                                    public class TestClass
+                                    {
+                                    }
+                                }
+                                """;
 
         // Act & Assert - No diagnostics expected (static usings are ignored)
         await VerifyAnalyzerAsync(testCode, new[] { "System.Math" });
@@ -84,15 +92,17 @@ namespace TestNamespace
     public async Task WhenUsingAlias_ShouldNotReportDiagnostic()
     {
         // Arrange - Code with using alias (should be ignored)
-        const string testCode = @"
-using Net = System.Net;
+        const string testCode = """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-    }
-}";
+                                using Net = System.Net;
+
+                                namespace TestNamespace
+                                {
+                                    public class TestClass
+                                    {
+                                    }
+                                }
+                                """;
 
         // Act & Assert - No diagnostics expected (aliases are ignored)
         await VerifyAnalyzerAsync(testCode, new[] { "System.Net" });
@@ -102,16 +112,18 @@ namespace TestNamespace
     public async Task WhenMultipleRedundantUsings_ShouldReportMultipleDiagnostics()
     {
         // Arrange - Code with multiple redundant usings
-        const string testCode = @"
-using System.Net;
-using Microsoft.EntityFrameworkCore;
+        const string testCode = """
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-    }
-}";
+                                using System.Net;
+                                using Microsoft.EntityFrameworkCore;
+
+                                namespace TestNamespace
+                                {
+                                    public class TestClass
+                                    {
+                                    }
+                                }
+                                """;
 
         // Expected diagnostics for both redundant usings
         var expected = new[]

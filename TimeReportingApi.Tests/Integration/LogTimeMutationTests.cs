@@ -125,23 +125,25 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithValidMinimalInput_CreatesTimeEntry()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                    project { code }
-                    projectTask { taskName }
-                    standardHours
-                    overtimeHours
-                    status
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                           project { code }
+                                           projectTask { taskName }
+                                           standardHours
+                                           overtimeHours
+                                           status
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -172,30 +174,32 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithAllFields_CreatesCompleteTimeEntry()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    issueId: ""DEV-123""
-                    standardHours: 6.5
-                    overtimeHours: 1.5
-                    description: ""Implemented authentication feature""
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                    project { code }
-                    projectTask { taskName }
-                    issueId
-                    standardHours
-                    overtimeHours
-                    description
-                    startDate
-                    completionDate
-                    status
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           issueId: "DEV-123"
+                                           standardHours: 6.5
+                                           overtimeHours: 1.5
+                                           description: "Implemented authentication feature"
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                           project { code }
+                                           projectTask { taskName }
+                                           issueId
+                                           standardHours
+                                           overtimeHours
+                                           description
+                                           startDate
+                                           completionDate
+                                           status
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -219,20 +223,22 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithDateRange_CreatesTimeEntry()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 16.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-25""
-                }) {
-                    id
-                    startDate
-                    completionDate
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 16.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-25"
+                                       }) {
+                                           id
+                                           startDate
+                                           completionDate
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -253,18 +259,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithNonExistentProject_ReturnsValidationError()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INVALID""
-                    task: ""Development""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INVALID"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -280,18 +288,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithInactiveProject_ReturnsValidationError()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INACTIVE""
-                    task: ""Development""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INACTIVE"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -311,18 +321,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithInvalidTask_ReturnsValidationError()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""InvalidTask""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "InvalidTask"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -338,18 +350,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithInactiveTask_ReturnsValidationError()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Deprecated""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Deprecated"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -369,18 +383,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithNegativeStandardHours_ReturnsValidationError()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: -1.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: -1.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -395,19 +411,21 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithNegativeOvertimeHours_ReturnsValidationError()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 8.0
-                    overtimeHours: -2.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           overtimeHours: -2.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -422,21 +440,23 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithZeroHours_CreatesTimeEntry()
     {
         // Arrange - Edge case: 0 hours is valid
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 0.0
-                    overtimeHours: 0.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                    standardHours
-                    overtimeHours
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 0.0
+                                           overtimeHours: 0.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                           standardHours
+                                           overtimeHours
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -456,18 +476,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithStartDateAfterCompletionDate_ReturnsValidationError()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 8.0
-                    startDate: ""2025-10-25""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-25"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -483,18 +505,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_WithSameStartAndCompletionDate_CreatesTimeEntry()
     {
         // Arrange - Edge case: same date is valid
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -511,18 +535,20 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_SetsStatusToNotReported()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    status
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           status
+                                       }
+                                   }
+                       """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -536,20 +562,22 @@ public class LogTimeMutationTests : IClassFixture<PostgresContainerFixture>, IAs
     public async Task LogTime_SetsCreatedAtAndUpdatedAt()
     {
         // Arrange
-        var mutation = @"
-            mutation {
-                logTime(input: {
-                    projectCode: ""INTERNAL""
-                    task: ""Development""
-                    standardHours: 8.0
-                    startDate: ""2025-10-24""
-                    completionDate: ""2025-10-24""
-                }) {
-                    id
-                    createdAt
-                    updatedAt
-                }
-            }";
+        var mutation = """
+
+                                   mutation {
+                                       logTime(input: {
+                                           projectCode: "INTERNAL"
+                                           task: "Development"
+                                           standardHours: 8.0
+                                           startDate: "2025-10-24"
+                                           completionDate: "2025-10-24"
+                                       }) {
+                                           id
+                                           createdAt
+                                           updatedAt
+                                       }
+                                   }
+                       """;
 
         // Act
         var beforeExecution = DateTime.UtcNow.AddSeconds(-1); // Add 1 second buffer for timing

@@ -173,10 +173,12 @@ public class DeleteTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     public async Task DeleteTimeEntry_WithNotReportedStatus_DeletesEntry()
     {
         // Arrange
-        var mutation = $@"
-            mutation {{
-                deleteTimeEntry(id: ""{_testEntryId}"")
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         deleteTimeEntry(id: "{{_testEntryId}}")
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -217,10 +219,12 @@ public class DeleteTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         _context.TimeEntries.Add(declinedEntry);
         await _context.SaveChangesAsync();
 
-        var mutation = $@"
-            mutation {{
-                deleteTimeEntry(id: ""{declinedEntry.Id}"")
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         deleteTimeEntry(id: "{{declinedEntry.Id}}")
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -264,10 +268,12 @@ public class DeleteTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         _context.TimeEntries.Add(submittedEntry);
         await _context.SaveChangesAsync();
 
-        var mutation = $@"
-            mutation {{
-                deleteTimeEntry(id: ""{submittedEntry.Id}"")
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         deleteTimeEntry(id: "{{submittedEntry.Id}}")
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -307,10 +313,12 @@ public class DeleteTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
         _context.TimeEntries.Add(approvedEntry);
         await _context.SaveChangesAsync();
 
-        var mutation = $@"
-            mutation {{
-                deleteTimeEntry(id: ""{approvedEntry.Id}"")
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         deleteTimeEntry(id: "{{approvedEntry.Id}}")
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);
@@ -335,10 +343,12 @@ public class DeleteTimeEntryMutationTests : IClassFixture<PostgresContainerFixtu
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
-        var mutation = $@"
-            mutation {{
-                deleteTimeEntry(id: ""{nonExistentId}"")
-            }}";
+        var mutation = $$"""
+
+                                     mutation {
+                                         deleteTimeEntry(id: "{{nonExistentId}}")
+                                     }
+                         """;
 
         // Act
         var result = await ExecuteGraphQL(mutation);

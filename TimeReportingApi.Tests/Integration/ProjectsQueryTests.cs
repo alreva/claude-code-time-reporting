@@ -114,14 +114,16 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
     public async Task Projects_WithNoFilters_ReturnsAllProjects()
     {
         // Arrange
-        var query = @"
-            query {
-                projects {
-                    code
-                    name
-                    isActive
-                }
-            }";
+        var query = """
+
+                                query {
+                                    projects {
+                                        code
+                                        name
+                                        isActive
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -135,14 +137,16 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
     public async Task Projects_FilterByActive_Works()
     {
         // Arrange
-        var query = @"
-            query {
-                projects(where: { isActive: { eq: true } }) {
-                    code
-                    name
-                    isActive
-                }
-            }";
+        var query = """
+
+                                query {
+                                    projects(where: { isActive: { eq: true } }) {
+                                        code
+                                        name
+                                        isActive
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -160,13 +164,15 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
     public async Task Projects_SortByName_Works()
     {
         // Arrange
-        var query = @"
-            query {
-                projects(order: { name: ASC }) {
-                    code
-                    name
-                }
-            }";
+        var query = """
+
+                                query {
+                                    projects(order: { name: ASC }) {
+                                        code
+                                        name
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -184,17 +190,19 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
     public async Task Projects_IncludesNavigationProperties()
     {
         // Arrange
-        var query = @"
-            query {
-                projects(where: { code: { eq: ""ACTIVE"" } }) {
-                    code
-                    name
-                    availableTasks {
-                        taskName
-                        isActive
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    projects(where: { code: { eq: "ACTIVE" } }) {
+                                        code
+                                        name
+                                        availableTasks {
+                                            taskName
+                                            isActive
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -212,14 +220,16 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
     public async Task Project_WithValidCode_ReturnsProjectWithDetails()
     {
         // Arrange
-        var query = @"
-            query {
-                project(code: ""ACTIVE"") {
-                    code
-                    name
-                    isActive
-                }
-            }";
+        var query = """
+
+                                query {
+                                    project(code: "ACTIVE") {
+                                        code
+                                        name
+                                        isActive
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -235,12 +245,14 @@ public class ProjectsQueryTests : IClassFixture<PostgresContainerFixture>, IAsyn
     public async Task Project_WithInvalidCode_ReturnsNull()
     {
         // Arrange
-        var query = @"
-            query {
-                project(code: ""NONEXISTENT"") {
-                    code
-                }
-            }";
+        var query = """
+
+                                query {
+                                    project(code: "NONEXISTENT") {
+                                        code
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);

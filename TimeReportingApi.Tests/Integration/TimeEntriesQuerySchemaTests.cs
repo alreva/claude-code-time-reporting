@@ -33,14 +33,16 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
     public async Task TimeEntriesQuery_IsExposed()
     {
         // Arrange
-        var introspectionQuery = @"
-            query {
-                __type(name: ""Query"") {
-                    fields {
-                        name
-                    }
-                }
-            }";
+        var introspectionQuery = """
+
+                                             query {
+                                                 __type(name: "Query") {
+                                                     fields {
+                                                         name
+                                                     }
+                                                 }
+                                             }
+                                 """;
 
         // Act
         var result = await ExecuteGraphQL(introspectionQuery);
@@ -62,21 +64,23 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
     public async Task TimeEntriesQuery_HasPagination()
     {
         // Arrange
-        var introspectionQuery = @"
-            query {
-                __type(name: ""Query"") {
-                    fields {
-                        name
-                        type {
-                            name
-                            kind
-                            ofType {
-                                name
-                            }
-                        }
-                    }
-                }
-            }";
+        var introspectionQuery = """
+
+                                             query {
+                                                 __type(name: "Query") {
+                                                     fields {
+                                                         name
+                                                         type {
+                                                             name
+                                                             kind
+                                                             ofType {
+                                                                 name
+                                                             }
+                                                         }
+                                                     }
+                                                 }
+                                             }
+                                 """;
 
         // Act
         var result = await ExecuteGraphQL(introspectionQuery);
@@ -117,14 +121,16 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
     public async Task TimeEntriesQuery_SupportsFiltering()
     {
         // Arrange - Query with where clause to verify filtering is configured
-        var query = @"
-            query {
-                timeEntries(where: { status: { eq: NOT_REPORTED } }) {
-                    nodes {
-                        id
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(where: { status: { eq: NOT_REPORTED } }) {
+                                        nodes {
+                                            id
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -138,14 +144,16 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
     public async Task TimeEntriesQuery_SupportsSorting()
     {
         // Arrange - Query with order clause to verify sorting is configured
-        var query = @"
-            query {
-                timeEntries(order: { startDate: DESC }) {
-                    nodes {
-                        id
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(order: { startDate: DESC }) {
+                                        nodes {
+                                            id
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -159,18 +167,20 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
     public async Task TimeEntriesQuery_SupportsPageInfo()
     {
         // Arrange
-        var query = @"
-            query {
-                timeEntries(first: 10) {
-                    pageInfo {
-                        hasNextPage
-                        hasPreviousPage
-                    }
-                    nodes {
-                        id
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(first: 10) {
+                                        pageInfo {
+                                            hasNextPage
+                                            hasPreviousPage
+                                        }
+                                        nodes {
+                                            id
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);

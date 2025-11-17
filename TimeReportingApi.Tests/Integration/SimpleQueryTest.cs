@@ -23,10 +23,12 @@ public class SimpleQueryTest : IClassFixture<TestWebApplicationFactory>
     public async Task HelloQuery_Works()
     {
         // Arrange
-        var query = @"
-            query {
-                hello
-            }";
+        var query = """
+
+                                query {
+                                    hello
+                                }
+                    """;
 
         var request = new { query };
 

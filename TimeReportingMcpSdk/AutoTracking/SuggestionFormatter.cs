@@ -19,25 +19,27 @@ public class SuggestionFormatter
         var hours = context.GetSuggestedHours();
         var sessionMinutes = (int)Math.Round(context.GetSessionMinutes());
 
-        var message = $@"
-🕐 Time Tracking Suggestion
+        var message = $"""
 
-I noticed you've been working for about {FormatDuration(sessionMinutes)}. Would you like to log this time?
+                       🕐 Time Tracking Suggestion
 
-Suggested entry:
-  • Project: {context.LastProjectCode}
-  • Task: {context.LastTask}
-  • Hours: {hours}
+                       I noticed you've been working for about {FormatDuration(sessionMinutes)}. Would you like to log this time?
 
-To log this time, just say:
-  ""Log {hours} hours on {context.LastProjectCode}, {context.LastTask}""
+                       Suggested entry:
+                         • Project: {context.LastProjectCode}
+                         • Task: {context.LastTask}
+                         • Hours: {hours}
 
-Or modify as needed:
-  ""Log 1.5 hours on {context.LastProjectCode}, Bug Fixing""
-  ""Log 2 hours on CUSTOMER-XYZ, Development""
+                       To log this time, just say:
+                         "Log {hours} hours on {context.LastProjectCode}, {context.LastTask}"
 
-Or say ""skip"" to dismiss this suggestion.
-";
+                       Or modify as needed:
+                         "Log 1.5 hours on {context.LastProjectCode}, Bug Fixing"
+                         "Log 2 hours on CUSTOMER-XYZ, Development"
+
+                       Or say "skip" to dismiss this suggestion.
+
+                       """;
 
         return message.Trim();
     }
@@ -71,14 +73,16 @@ Or say ""skip"" to dismiss this suggestion.
 
         var hours = context.GetSuggestedHours();
 
-        return $@"
-🕐 {customMessage}
+        return $"""
 
-Suggested: {hours}h on {context.LastProjectCode} / {context.LastTask}
+                🕐 {customMessage}
 
-Say: ""Log {hours} hours on {context.LastProjectCode}, {context.LastTask}""
-Or modify as needed.
-".Trim();
+                Suggested: {hours}h on {context.LastProjectCode} / {context.LastTask}
+
+                Say: "Log {hours} hours on {context.LastProjectCode}, {context.LastTask}"
+                Or modify as needed.
+
+                """.Trim();
     }
 
     /// <summary>

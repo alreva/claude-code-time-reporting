@@ -141,14 +141,16 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
     public async Task TimeEntries_WithNoFilters_ReturnsAllEntries()
     {
         // Arrange
-        var query = @"
-            query {
-                timeEntries {
-                    nodes {
-                        id
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries {
+                                        nodes {
+                                            id
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -165,14 +167,16 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
     public async Task TimeEntries_FilterByStatus_Works()
     {
         // Arrange
-        var query = @"
-            query {
-                timeEntries(where: { status: { eq: SUBMITTED } }) {
-                    nodes {
-                        status
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(where: { status: { eq: SUBMITTED } }) {
+                                        nodes {
+                                            status
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -190,16 +194,18 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
     public async Task TimeEntries_FilterByProjectNavigation_Works()
     {
         // Arrange
-        var query = @"
-            query {
-                timeEntries(where: { project: { code: { eq: ""TEST"" } } }) {
-                    nodes {
-                        project {
-                            code
-                        }
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(where: { project: { code: { eq: "TEST" } } }) {
+                                        nodes {
+                                            project {
+                                                code
+                                            }
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -216,14 +222,16 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
     public async Task TimeEntries_SortByStartDate_Works()
     {
         // Arrange
-        var query = @"
-            query {
-                timeEntries(order: { startDate: DESC }) {
-                    nodes {
-                        startDate
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(order: { startDate: DESC }) {
+                                        nodes {
+                                            startDate
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -243,17 +251,19 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
     public async Task TimeEntries_WithPagination_ReturnsFirstPage()
     {
         // Arrange
-        var query = @"
-            query {
-                timeEntries(first: 1) {
-                    nodes {
-                        id
-                    }
-                    pageInfo {
-                        hasNextPage
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(first: 1) {
+                                        nodes {
+                                            id
+                                        }
+                                        pageInfo {
+                                            hasNextPage
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -272,13 +282,15 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
     {
         // Arrange
         var existingEntry = await _context.TimeEntries.FirstAsync();
-        var query = $@"
-            query {{
-                timeEntry(id: ""{existingEntry.Id}"") {{
-                    id
-                    standardHours
-                }}
-            }}";
+        var query = $$"""
+
+                                  query {
+                                      timeEntry(id: "{{existingEntry.Id}}") {
+                                          id
+                                          standardHours
+                                      }
+                                  }
+                      """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -304,12 +316,14 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
     public async Task TimeEntry_WithInvalidId_ReturnsNull()
     {
         // Arrange
-        var query = $@"
-            query {{
-                timeEntry(id: ""{Guid.NewGuid()}"") {{
-                    id
-                }}
-            }}";
+        var query = $$"""
+
+                                  query {
+                                      timeEntry(id: "{{Guid.NewGuid()}}") {
+                                          id
+                                      }
+                                  }
+                      """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -359,16 +373,18 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         _context.TimeEntries.AddRange(entryWithOvertime, entryWithoutOvertime);
         await _context.SaveChangesAsync();
 
-        var query = @"
-            query {
-                timeEntries(where: { overtimeHours: { gt: 0 } }) {
-                    nodes {
-                        id
-                        standardHours
-                        overtimeHours
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(where: { overtimeHours: { gt: 0 } }) {
+                                        nodes {
+                                            id
+                                            standardHours
+                                            overtimeHours
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
@@ -427,16 +443,18 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         _context.TimeEntries.AddRange(entryWithOvertime, entryWithoutOvertime);
         await _context.SaveChangesAsync();
 
-        var query = @"
-            query {
-                timeEntries(where: { overtimeHours: { eq: 0 } }) {
-                    nodes {
-                        id
-                        standardHours
-                        overtimeHours
-                    }
-                }
-            }";
+        var query = """
+
+                                query {
+                                    timeEntries(where: { overtimeHours: { eq: 0 } }) {
+                                        nodes {
+                                            id
+                                            standardHours
+                                            overtimeHours
+                                        }
+                                    }
+                                }
+                    """;
 
         // Act
         var result = await ExecuteGraphQL(query);
