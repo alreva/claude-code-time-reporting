@@ -81,19 +81,26 @@ public class UpdateEntryTool
 
             if (result.Errors is { Count: > 0 })
             {
-                return "❌ Failed to update time entry:\n\n" +
-                       string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                var errors = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                return $"""
+                         ❌ Failed to update time entry:
+
+                         {errors}
+                         """;
             }
 
             var entry = result.Data!.UpdateTimeEntry;
-            return $"✅ Time entry updated successfully!\n\n" +
-                   $"ID: {entry.Id}\n" +
-                   $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
-                   $"Task: {entry.ProjectTask.TaskName}\n" +
-                   $"Hours: {entry.StandardHours} standard" +
-                   (entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "") + "\n" +
-                   $"Period: {entry.StartDate} to {entry.CompletionDate}\n" +
-                   $"Status: {entry.Status}";
+            var overtimeInfo = entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "";
+            return $"""
+                     ✅ Time entry updated successfully!
+
+                     ID: {entry.Id}
+                     Project: {entry.Project.Code} - {entry.Project.Name}
+                     Task: {entry.ProjectTask.TaskName}
+                     Hours: {entry.StandardHours} standard{overtimeInfo}
+                     Period: {entry.StartDate} to {entry.CompletionDate}
+                     Status: {entry.Status}
+                     """;
         }
         catch (Exception ex)
         {

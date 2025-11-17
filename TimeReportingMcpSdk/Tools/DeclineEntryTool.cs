@@ -38,20 +38,27 @@ public class DeclineEntryTool
 
             if (result.Errors is { Count: > 0 })
             {
-                return "❌ Failed to decline time entry:\n\n" +
-                       string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                var errors = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                return $"""
+                         ❌ Failed to decline time entry:
+
+                         {errors}
+                         """;
             }
 
             var entry = result.Data!.DeclineTimeEntry;
-            return $"✅ Time entry declined successfully!\n\n" +
-                   $"ID: {entry.Id}\n" +
-                   $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
-                   $"Task: {entry.ProjectTask.TaskName}\n" +
-                   $"Hours: {entry.StandardHours}" +
-                   (entry.OvertimeHours > 0 ? $" + {entry.OvertimeHours} overtime" : "") + "\n" +
-                   $"New Status: {entry.Status}\n" +
-                   $"Decline Reason: {entry.DeclineComment}\n" +
-                   $"Updated At: {entry.UpdatedAt}";
+            var overtimeInfo = entry.OvertimeHours > 0 ? $" + {entry.OvertimeHours} overtime" : "";
+            return $"""
+                     ✅ Time entry declined successfully!
+
+                     ID: {entry.Id}
+                     Project: {entry.Project.Code} - {entry.Project.Name}
+                     Task: {entry.ProjectTask.TaskName}
+                     Hours: {entry.StandardHours}{overtimeInfo}
+                     New Status: {entry.Status}
+                     Decline Reason: {entry.DeclineComment}
+                     Updated At: {entry.UpdatedAt}
+                     """;
         }
         catch (Exception ex)
         {

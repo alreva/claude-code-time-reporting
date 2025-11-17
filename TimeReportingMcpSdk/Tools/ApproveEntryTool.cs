@@ -32,19 +32,26 @@ public class ApproveEntryTool
 
             if (result.Errors is { Count: > 0 })
             {
-                return "❌ Failed to approve time entry:\n\n" +
-                       string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                var errors = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                return $"""
+                         ❌ Failed to approve time entry:
+
+                         {errors}
+                         """;
             }
 
             var entry = result.Data!.ApproveTimeEntry;
-            return $"✅ Time entry approved successfully!\n\n" +
-                   $"ID: {entry.Id}\n" +
-                   $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
-                   $"Task: {entry.ProjectTask.TaskName}\n" +
-                   $"Hours: {entry.StandardHours}" +
-                   (entry.OvertimeHours > 0 ? $" + {entry.OvertimeHours} overtime" : "") + "\n" +
-                   $"New Status: {entry.Status}\n" +
-                   $"Updated At: {entry.UpdatedAt}";
+            var overtimeInfo = entry.OvertimeHours > 0 ? $" + {entry.OvertimeHours} overtime" : "";
+            return $"""
+                     ✅ Time entry approved successfully!
+
+                     ID: {entry.Id}
+                     Project: {entry.Project.Code} - {entry.Project.Name}
+                     Task: {entry.ProjectTask.TaskName}
+                     Hours: {entry.StandardHours}{overtimeInfo}
+                     New Status: {entry.Status}
+                     Updated At: {entry.UpdatedAt}
+                     """;
         }
         catch (Exception ex)
         {

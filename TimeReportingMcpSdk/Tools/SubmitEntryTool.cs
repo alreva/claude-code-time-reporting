@@ -32,15 +32,22 @@ public class SubmitEntryTool
 
             if (result.Errors is { Count: > 0 })
             {
-                return "❌ Failed to submit time entry:\n\n" +
-                       string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                var errors = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                return $"""
+                         ❌ Failed to submit time entry:
+
+                         {errors}
+                         """;
             }
 
             var entry = result.Data!.SubmitTimeEntry;
-            return $"✅ Time entry submitted successfully!\n\n" +
-                   $"ID: {entry.Id}\n" +
-                   $"New Status: {entry.Status}\n" +
-                   $"Updated At: {entry.UpdatedAt}";
+            return $"""
+                     ✅ Time entry submitted successfully!
+
+                     ID: {entry.Id}
+                     New Status: {entry.Status}
+                     Updated At: {entry.UpdatedAt}
+                     """;
         }
         catch (Exception ex)
         {

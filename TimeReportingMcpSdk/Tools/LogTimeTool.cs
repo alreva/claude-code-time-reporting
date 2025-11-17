@@ -106,37 +106,29 @@ public class LogTimeTool
 
             if (result.Errors is { Count: > 0 })
             {
-                var errorMessage = "❌ Failed to create time entry:\n\n";
-                errorMessage += string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
-                return errorMessage;
+                var errors = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                return $"""
+                         ❌ Failed to create time entry:
+
+                         {errors}
+                         """;
             }
 
             var entry = result.Data!.LogTime;
-            var message = $"✅ Time entry created successfully!\n\n" +
-                          $"ID: {entry.Id}\n" +
-                          $"Project: {entry.Project.Code} - {entry.Project.Name}\n" +
-                          $"Task: {entry.ProjectTask.TaskName}\n" +
-                          $"Hours: {entry.StandardHours} standard";
+            var overtimeInfo = entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "";
+            var descriptionInfo = !string.IsNullOrEmpty(entry.Description) ? $"\nDescription: {entry.Description}" : "";
+            var issueInfo = !string.IsNullOrEmpty(entry.IssueId) ? $"\nIssue: {entry.IssueId}" : "";
 
-            if (entry.OvertimeHours > 0)
-            {
-                message += $", {entry.OvertimeHours} overtime";
-            }
+            return $"""
+                     ✅ Time entry created successfully!
 
-            message += $"\nPeriod: {entry.StartDate} to {entry.CompletionDate}\n" +
-                       $"Status: {entry.Status}";
-
-            if (!string.IsNullOrEmpty(entry.Description))
-            {
-                message += $"\nDescription: {entry.Description}";
-            }
-
-            if (!string.IsNullOrEmpty(entry.IssueId))
-            {
-                message += $"\nIssue: {entry.IssueId}";
-            }
-
-            return message;
+                     ID: {entry.Id}
+                     Project: {entry.Project.Code} - {entry.Project.Name}
+                     Task: {entry.ProjectTask.TaskName}
+                     Hours: {entry.StandardHours} standard{overtimeInfo}
+                     Period: {entry.StartDate} to {entry.CompletionDate}
+                     Status: {entry.Status}{descriptionInfo}{issueInfo}
+                     """;
         }
         catch (Exception ex)
         {

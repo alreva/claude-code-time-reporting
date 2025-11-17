@@ -34,18 +34,25 @@ public class MoveTaskTool
 
             if (result.Errors is { Count: > 0 })
             {
-                return "❌ Failed to move time entry:\n\n" +
-                       string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                var errors = string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
+                return $"""
+                         ❌ Failed to move time entry:
+
+                         {errors}
+                         """;
             }
 
             var entry = result.Data!.MoveTaskToProject;
-            return $"✅ Time entry moved successfully!\n\n" +
-                   $"ID: {entry.Id}\n" +
-                   $"New Project: {entry.Project.Code} - {entry.Project.Name}\n" +
-                   $"New Task: {entry.ProjectTask.TaskName}\n" +
-                   $"Hours: {entry.StandardHours} standard" +
-                   (entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "") + "\n" +
-                   $"Status: {entry.Status}";
+            var overtimeInfo = entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "";
+            return $"""
+                     ✅ Time entry moved successfully!
+
+                     ID: {entry.Id}
+                     New Project: {entry.Project.Code} - {entry.Project.Name}
+                     New Task: {entry.ProjectTask.TaskName}
+                     Hours: {entry.StandardHours} standard{overtimeInfo}
+                     Status: {entry.Status}
+                     """;
         }
         catch (Exception ex)
         {
