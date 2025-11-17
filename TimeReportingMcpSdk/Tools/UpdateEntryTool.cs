@@ -90,17 +90,7 @@ public class UpdateEntryTool
             }
 
             var entry = result.Data!.UpdateTimeEntry;
-            var overtimeInfo = entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "";
-            return $"""
-                     ✅ Time entry updated successfully!
-
-                     ID: {entry.Id}
-                     Project: {entry.Project.Code} - {entry.Project.Name}
-                     Task: {entry.ProjectTask.TaskName}
-                     Hours: {entry.StandardHours} standard{overtimeInfo}
-                     Period: {entry.StartDate} to {entry.CompletionDate}
-                     Status: {entry.Status}
-                     """;
+            return TimeEntryFormatter.FormatAsJson(entry);
         }
         catch (Exception ex)
         {

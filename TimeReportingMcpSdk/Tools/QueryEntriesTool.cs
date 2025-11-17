@@ -271,35 +271,8 @@ public class QueryEntriesTool
                 return "[]";  // Empty JSON array
             }
 
-            // Build structured JSON response
-            var jsonEntries = entries.Select(entry => new
-            {
-                id = entry.Id.ToString(),
-                projectCode = entry.Project.Code,
-                projectName = entry.Project.Name,
-                task = entry.ProjectTask.TaskName,
-                standardHours = entry.StandardHours,
-                overtimeHours = entry.OvertimeHours,
-                startDate = entry.StartDate.ToString("yyyy-MM-dd"),
-                completionDate = entry.CompletionDate.ToString("yyyy-MM-dd"),
-                status = entry.Status.ToString(),
-                description = entry.Description,
-                issueId = entry.IssueId,
-                userEmail = entry.UserEmail,
-                userName = entry.UserName,
-                tags = entry.Tags?.Select(t => new
-                {
-                    name = t.TagValue.ProjectTag.TagName,
-                    value = t.TagValue.Value
-                }).ToArray() ?? Array.Empty<object>(),
-                createdAt = entry.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                updatedAt = entry.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
-            }).ToList();
-
-            return System.Text.Json.JsonSerializer.Serialize(jsonEntries, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            // Build structured JSON response using TimeEntryFormatter
+            return TimeEntryFormatter.FormatAsJsonArray(entries);
         }
         catch (Exception ex)
         {

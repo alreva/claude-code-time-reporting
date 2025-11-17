@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
+using TimeReportingMcpSdk.Utils;
 
 namespace TimeReportingMcpSdk.Tools;
 
@@ -41,17 +42,7 @@ public class ApproveEntryTool
             }
 
             var entry = result.Data!.ApproveTimeEntry;
-            var overtimeInfo = entry.OvertimeHours > 0 ? $" + {entry.OvertimeHours} overtime" : "";
-            return $"""
-                     ✅ Time entry approved successfully!
-
-                     ID: {entry.Id}
-                     Project: {entry.Project.Code} - {entry.Project.Name}
-                     Task: {entry.ProjectTask.TaskName}
-                     Hours: {entry.StandardHours}{overtimeInfo}
-                     New Status: {entry.Status}
-                     Updated At: {entry.UpdatedAt}
-                     """;
+            return TimeEntryFormatter.FormatAsJson(entry);
         }
         catch (Exception ex)
         {

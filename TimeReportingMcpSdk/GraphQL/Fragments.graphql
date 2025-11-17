@@ -1,0 +1,50 @@
+# GraphQL Fragments for DRY field selection
+# These fragments ensure all tools return consistent, complete TimeEntry data
+
+fragment ProjectFields on Project {
+  code
+  name
+}
+
+fragment ProjectTaskFields on ProjectTask {
+  taskName
+}
+
+fragment TagValueFields on TimeEntryTag {
+  id
+  tagValue {
+    id
+    value
+    projectTag {
+      tagName
+    }
+  }
+}
+
+# Complete TimeEntry fields - use this in all queries/mutations that return TimeEntry
+# Adding a new field? Update this fragment only - changes propagate to all 7 tools automatically
+fragment TimeEntryFields on TimeEntry {
+  id
+  project {
+    ...ProjectFields
+  }
+  projectTask {
+    ...ProjectTaskFields
+  }
+  issueId
+  standardHours
+  overtimeHours
+  description
+  startDate
+  completionDate
+  status
+  declineComment
+  userId
+  userEmail
+  userName
+  tags {
+    ...TagValueFields
+  }
+  createdAt
+  updatedAt
+}

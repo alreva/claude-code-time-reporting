@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
+using TimeReportingMcpSdk.Utils;
 
 namespace TimeReportingMcpSdk.Tools;
 
@@ -41,13 +42,7 @@ public class SubmitEntryTool
             }
 
             var entry = result.Data!.SubmitTimeEntry;
-            return $"""
-                     ✅ Time entry submitted successfully!
-
-                     ID: {entry.Id}
-                     New Status: {entry.Status}
-                     Updated At: {entry.UpdatedAt}
-                     """;
+            return TimeEntryFormatter.FormatAsJson(entry);
         }
         catch (Exception ex)
         {

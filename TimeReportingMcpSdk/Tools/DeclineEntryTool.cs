@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
+using TimeReportingMcpSdk.Utils;
 
 namespace TimeReportingMcpSdk.Tools;
 
@@ -47,18 +48,7 @@ public class DeclineEntryTool
             }
 
             var entry = result.Data!.DeclineTimeEntry;
-            var overtimeInfo = entry.OvertimeHours > 0 ? $" + {entry.OvertimeHours} overtime" : "";
-            return $"""
-                     ✅ Time entry declined successfully!
-
-                     ID: {entry.Id}
-                     Project: {entry.Project.Code} - {entry.Project.Name}
-                     Task: {entry.ProjectTask.TaskName}
-                     Hours: {entry.StandardHours}{overtimeInfo}
-                     New Status: {entry.Status}
-                     Decline Reason: {entry.DeclineComment}
-                     Updated At: {entry.UpdatedAt}
-                     """;
+            return TimeEntryFormatter.FormatAsJson(entry);
         }
         catch (Exception ex)
         {

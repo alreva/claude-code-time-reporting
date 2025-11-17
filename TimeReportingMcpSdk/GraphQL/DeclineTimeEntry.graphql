@@ -1,21 +1,5 @@
 mutation DeclineTimeEntry($id: UUID!, $comment: String!) {
   declineTimeEntry(id: $id, comment: $comment) {
-    id
-    status
-    declineComment
-    project {
-      code
-      name
-    }
-    projectTask {
-      taskName
-    }
-    standardHours
-    overtimeHours
-    startDate
-    completionDate
-    description
-    issueId
-    updatedAt
+    ...TimeEntryFields
   }
 }

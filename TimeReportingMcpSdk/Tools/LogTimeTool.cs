@@ -115,20 +115,7 @@ public class LogTimeTool
             }
 
             var entry = result.Data!.LogTime;
-            var overtimeInfo = entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "";
-            var descriptionInfo = !string.IsNullOrEmpty(entry.Description) ? $"\nDescription: {entry.Description}" : "";
-            var issueInfo = !string.IsNullOrEmpty(entry.IssueId) ? $"\nIssue: {entry.IssueId}" : "";
-
-            return $"""
-                     ✅ Time entry created successfully!
-
-                     ID: {entry.Id}
-                     Project: {entry.Project.Code} - {entry.Project.Name}
-                     Task: {entry.ProjectTask.TaskName}
-                     Hours: {entry.StandardHours} standard{overtimeInfo}
-                     Period: {entry.StartDate} to {entry.CompletionDate}
-                     Status: {entry.Status}{descriptionInfo}{issueInfo}
-                     """;
+            return TimeEntryFormatter.FormatAsJson(entry);
         }
         catch (Exception ex)
         {

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using ModelContextProtocol.Server;
 using TimeReportingMcpSdk.Generated;
+using TimeReportingMcpSdk.Utils;
 
 namespace TimeReportingMcpSdk.Tools;
 
@@ -43,16 +44,7 @@ public class MoveTaskTool
             }
 
             var entry = result.Data!.MoveTaskToProject;
-            var overtimeInfo = entry.OvertimeHours > 0 ? $", {entry.OvertimeHours} overtime" : "";
-            return $"""
-                     ✅ Time entry moved successfully!
-
-                     ID: {entry.Id}
-                     New Project: {entry.Project.Code} - {entry.Project.Name}
-                     New Task: {entry.ProjectTask.TaskName}
-                     Hours: {entry.StandardHours} standard{overtimeInfo}
-                     Status: {entry.Status}
-                     """;
+            return TimeEntryFormatter.FormatAsJson(entry);
         }
         catch (Exception ex)
         {
