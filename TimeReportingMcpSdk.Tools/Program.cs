@@ -1,54 +1,84 @@
+using System.ComponentModel;
 using System.Text;
 using System.Text.RegularExpressions;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace TimeReportingMcpSdk.Tools;
 
 /// <summary>
 /// Tool to auto-generate GraphQL fragments from schema.
-/// Usage: dotnet run --project TimeReportingMcpSdk.Tools -- generate-fragments --schema schema.graphql --output Fragments.graphql
+/// Usage: dotnet run -- generate-fragments --schema schema.graphql --output Fragments.graphql
 /// </summary>
 class Program
 {
-    static async Task<int> Main(string[] args)
+    static int Main(string[] args)
     {
-        if (args.Length < 4 || args[0] != "generate-fragments")
+        var app = new CommandApp<GenerateFragmentsCommand>();
+        app.Configure(config =>
         {
-            Console.WriteLine("Usage: dotnet run -- generate-fragments --schema <schema-file> --output <output-file>");
-            return 1;
-        }
+            config.SetApplicationName("fragment-generator");
+            config.AddCommand<GenerateFragmentsCommand>("generate-fragments")
+                .WithDescription("Generate GraphQL fragments from schema");
+        });
 
-        var schemaPath = GetArgValue(args, "--schema");
-        var outputPath = GetArgValue(args, "--output");
+        return app.Run(args);
+    }
+}
 
-        if (string.IsNullOrEmpty(schemaPath) || string.IsNullOrEmpty(outputPath))
+/// <summary>
+/// Command to generate GraphQL fragments from schema file.
+/// </summary>
+class GenerateFragmentsCommand : Command<GenerateFragmentsCommand.Settings>
+{
+    public class Settings : CommandSettings
+    {
+        [CommandOption("--schema <PATH>")]
+        [Description("Path to the GraphQL schema file")]
+        public string? SchemaPath { get; init; }
+
+        [CommandOption("--output <PATH>")]
+        [Description("Path for the generated fragments file")]
+        public string? OutputPath { get; init; }
+
+        public override ValidationResult Validate()
         {
-            Console.Error.WriteLine("Error: --schema and --output are required");
-            return 1;
-        }
+            if (string.IsNullOrWhiteSpace(SchemaPath))
+                return ValidationResult.Error("Schema path is required (--schema)");
 
+            if (string.IsNullOrWhiteSpace(OutputPath))
+                return ValidationResult.Error("Output path is required (--output)");
+
+            if (!File.Exists(SchemaPath))
+                return ValidationResult.Error($"Schema file not found: {SchemaPath}");
+
+            return ValidationResult.Success();
+        }
+    }
+
+    public override int Execute(CommandContext context, Settings settings)
+    {
         try
         {
-            var schemaText = await File.ReadAllTextAsync(schemaPath);
+            AnsiConsole.MarkupLine("[blue]📄 Reading schema...[/]");
+            var schemaText = File.ReadAllText(settings.SchemaPath!);
+
+            AnsiConsole.MarkupLine("[blue]🎨 Generating fragments...[/]");
             var generator = new FragmentGenerator();
             var fragments = generator.GenerateFragments(schemaText);
 
-            await File.WriteAllTextAsync(outputPath, fragments);
+            AnsiConsole.MarkupLine("[blue]💾 Writing output...[/]");
+            File.WriteAllText(settings.OutputPath!, fragments);
 
-            Console.WriteLine($"✅ Generated fragments in {outputPath}");
+            AnsiConsole.MarkupLine($"[green]✅ Generated fragments in {settings.OutputPath}[/]");
             return 0;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"❌ Error: {ex.Message}");
-            Console.Error.WriteLine(ex.StackTrace);
+            AnsiConsole.MarkupLine($"[red]❌ Error: {ex.Message}[/]");
+            AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
             return 1;
         }
-    }
-
-    static string? GetArgValue(string[] args, string name)
-    {
-        var index = Array.IndexOf(args, name);
-        return index >= 0 && index < args.Length - 1 ? args[index + 1] : null;
     }
 }
 
