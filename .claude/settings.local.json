@@ -20,6 +20,7 @@
       "SlashCommand(/status)",
       "SlashCommand(/deploy)",
       "SlashCommand(/seed-db)",
+      "SlashCommand(/generate-fragments)",
       "SlashCommand(/user-add-acl)",
       "SlashCommand(/user-list-acl)",
       "SlashCommand(/user-remove-acl)",

@@ -467,32 +467,49 @@ Both MCP server implementations use **StrawberryShake 15** for strongly-typed Gr
 - ✅ Types always synchronized with API schema
 - ✅ ~250 lines of code eliminated
 
-**Schema Synchronization (Automated):**
+**Schema and Fragment Auto-Generation (Fully Automated):**
 
-The schema validation test executes the API's schema export command and compares it with the MCP schema:
-1. **Schema Export Command**: `dotnet run --project TimeReportingApi -- export-schema` prints schema to stdout
-2. **Schema Validation Test**: `SchemaValidationTests.cs` executes export command and compares with `TimeReportingMcpSdk/schema.graphql`
-3. **Test Failure**: If schemas don't match, test fails with helpful instructions
+The MCP SDK project includes MSBuild integration that automatically generates both schema and fragments during build:
 
-**When API schema changes and test fails:**
+**What happens automatically when you build TimeReportingMcpSdk:**
+1. **API Build**: Builds the TimeReportingApi project to get latest DLL
+2. **Schema Export**: Executes `dotnet TimeReportingApi.dll export-schema` to get current schema
+3. **URL Cleanup**: Fixes escaped slashes in URLs (`https:\/\/` → `https://`)
+4. **Fragment Generation**: Runs TimeReportingMcpSdk.Tools to auto-generate `Fragments.graphql` from schema
+5. **StrawberryShake Codegen**: Generates strongly-typed C# client code from schema + fragments + operations
+
+**Zero-maintenance workflow:**
 ```bash
-# 1. Export the current API schema to MCP project
-dotnet run --project TimeReportingApi -- export-schema > TimeReportingMcpSdk/schema.graphql
+# Make changes to TimeEntry.cs (add a field)
+# Then just build - everything auto-generates:
+/build
 
-# 2. Rebuild MCP (triggers StrawberryShake code regeneration)
-/build-mcp
-
-# 3. Re-run tests to verify
-/test
+# Schema, fragments, and typed client code are all regenerated automatically!
+# All tests pass with the new field included everywhere.
 ```
 
-**Why this approach?**
-- ✅ Prevents MCP schema drift from API schema
-- ✅ StrawberryShake code generation always uses correct types
-- ✅ Test-driven validation catches schema mismatches early
-- ✅ No build dependencies - test executes export command directly
-- ✅ Unix-friendly: schema export prints to stdout (can redirect anywhere)
-- ✅ Works in any environment (CI/CD, local dev, not Claude Code-specific)
+**Manual fragment regeneration (if needed):**
+```bash
+# Regenerate fragments only (without full build):
+/generate-fragments
+```
+
+**How it works (MSBuild Integration):**
+- `TimeReportingMcpSdk.csproj` has a custom MSBuild target `AutoGenerateSchemaAndFragments`
+- Runs `BeforeTargets="BeforeBuild;ResolveReferences"` to execute early in build process
+- Can be disabled by building with `/p:AutoGenerateFragments=false`
+
+**Benefits:**
+- ✅ Adding a field to `TimeEntry.cs` requires ZERO manual updates
+- ✅ No more manual fragment updates when schema changes
+- ✅ No more copy-paste errors or missing fields
+- ✅ Fragments always include ALL fields from schema
+- ✅ StrawberryShake types always match API types
+- ✅ Build fails fast if schema/fragments are incompatible
+
+**Tools:**
+- `TimeReportingMcpSdk.Tools` - Fragment generator using text-based schema parsing
+- `/generate-fragments` - Slash command for manual fragment regeneration
 
 See [ADR 0009](docs/adr/0009-strawberryshake-typed-graphql-client.md) for architectural decision details.
 
@@ -538,6 +555,9 @@ Custom slash commands are defined in `.claude/commands/`. **YOU HAVE PERMISSION*
 
 #### Deployment Commands
 - **`/seed-db`** - Run database seeder to populate seed data
+
+#### Code Generation Commands
+- **`/generate-fragments`** - Auto-generate GraphQL fragments from schema (normally runs automatically during build)
 
 ### Usage Pattern
 

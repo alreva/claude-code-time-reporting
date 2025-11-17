@@ -34,4 +34,48 @@
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
   </ItemGroup>
 
+  <!-- Auto-generate schema and fragments before StrawberryShake runs -->
+  <PropertyGroup>
+    <AutoGenerateFragments Condition="'$(AutoGenerateFragments)' == ''">true</AutoGenerateFragments>
+  </PropertyGroup>
+
+  <Target Name="AutoGenerateSchemaAndFragments"
+          BeforeTargets="BeforeBuild;ResolveReferences"
+          Condition="'$(AutoGenerateFragments)' == 'true'">
+
+    <PropertyGroup>
+      <ApiProjectPath>$(MSBuildThisFileDirectory)../TimeReportingApi/TimeReportingApi.csproj</ApiProjectPath>
+      <ApiDllPath>$(MSBuildThisFileDirectory)../TimeReportingApi/bin/$(Configuration)/net10.0/TimeReportingApi.dll</ApiDllPath>
+      <SchemaOutputPath>$(MSBuildThisFileDirectory)schema.graphql</SchemaOutputPath>
+      <FragmentsOutputPath>$(MSBuildThisFileDirectory)GraphQL/Fragments.graphql</FragmentsOutputPath>
+      <ToolsProjectPath>$(MSBuildThisFileDirectory)../TimeReportingMcpSdk.Tools/TimeReportingMcpSdk.Tools.csproj</ToolsProjectPath>
+    </PropertyGroup>
+
+    <!-- Step 1: Build the API project (so we can export schema) -->
+    <Message Importance="high" Text="🔧 Building API to export schema..." />
+    <MSBuild Projects="$(ApiProjectPath)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- Step 2: Export schema from API -->
+    <Message Importance="high" Text="📄 Exporting GraphQL schema..." />
+    <Exec Command="dotnet &quot;$(ApiDllPath)&quot; export-schema > &quot;$(SchemaOutputPath).tmp&quot;" />
+
+    <!-- Fix escaped forward slashes in URLs (https:\/ -> https://) -->
+    <Exec Command="sed 's/\\\\\//\//g' &quot;$(SchemaOutputPath).tmp&quot; > &quot;$(SchemaOutputPath)&quot;" />
+    <Delete Files="$(SchemaOutputPath).tmp" />
+
+    <!-- Step 3: Build the fragment generator tool -->
+    <Message Importance="high" Text="🔨 Building fragment generator..." />
+    <MSBuild Projects="$(ToolsProjectPath)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- Step 4: Generate fragments from schema -->
+    <Message Importance="high" Text="🎨 Auto-generating GraphQL fragments..." />
+    <Exec Command="dotnet run --project &quot;$(ToolsProjectPath)&quot; --no-build -- generate-fragments --schema &quot;$(SchemaOutputPath)&quot; --output &quot;$(FragmentsOutputPath)&quot;" />
+
+    <Message Importance="high" Text="✅ Schema and fragments auto-generated successfully!" />
+  </Target>
+
 </Project>
