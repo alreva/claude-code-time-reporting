@@ -7,7 +7,15 @@
       "namespace": "TimeReportingMcpSdk.Generated",
       "dependencyInjection": true,
       "strictSchemaValidation": false,
-      "useSingleFile": true
+      "useSingleFile": true,
+      "entityTypes": [
+        "TimeEntry",
+        "Project",
+        "ProjectTask",
+        "ProjectTag",
+        "TagValue",
+        "TimeEntryTag"
+      ]
     }
   }
 }

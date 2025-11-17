@@ -178,8 +178,64 @@ New test pattern in `ToolResponseFormatTests.cs`:
 
 ---
 
+## Update: Entity Type Configuration (2025-01-17)
+
+**Problem:** While fragments eliminated field selection duplication, `TimeEntryFormatter` still used `dynamic` typing with explicit casts for each property.
+
+**Solution:** Configure StrawberryShake `entityTypes` to generate shared fragment interfaces.
+
+**Configuration Added to `.graphqlrc.json`:**
+```json
+"entityTypes": [
+  "TimeEntry",
+  "Project",
+  "ProjectTask",
+  "ProjectTag",
+  "TagValue",
+  "TimeEntryTag"
+]
+```
+
+**Result:**
+
+StrawberryShake now generates:
+1. **Fragment interfaces** (shared across all operations):
+   - `ITimeEntryFields`
+   - `IProjectFields`
+   - `IProjectTaskFields`
+   - `ITagValueFields`
+
+2. **Operation-specific interfaces that IMPLEMENT fragment interfaces**:
+   - `IQueryTimeEntries_TimeEntries_Nodes : ITimeEntryFields`
+   - `ILogTime_LogTime : ITimeEntryFields`
+   - etc.
+
+**Benefits:**
+
+1. ✅ `TimeEntryFormatter` now uses strongly-typed `ITimeEntryFields` instead of `dynamic`
+2. ✅ No more explicit type casts - IntelliSense and compile-time safety
+3. ✅ Cleaner, more maintainable code:
+   ```csharp
+   // Before (dynamic):
+   id = ((Guid)entry.Id).ToString(),
+   projectCode = (string)entry.Project.Code,
+
+   // After (ITimeEntryFields):
+   id = entry.Id.ToString(),
+   projectCode = entry.Project.Code,
+   ```
+4. ✅ True type sharing - all operations return types implementing the same fragment interface
+
+**Implementation:**
+- Updated `TimeEntryFormatter.cs` to use `ITimeEntryFields` parameter type
+- Removed all explicit type casts
+- All 316 tests pass
+
+---
+
 **References:**
 - GraphQL Fragments: https://graphql.org/learn/queries/#fragments
+- StrawberryShake Entity Types: https://chillicream.com/docs/strawberryshake/v15/entities
 - StrawberryShake: https://chillicream.com/docs/strawberryshake/v15
 - Related: ADR 0009 (StrawberryShake Typed GraphQL Client)
 

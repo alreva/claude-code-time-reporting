@@ -58,7 +58,8 @@
       "SlashCommand(/user-add-acl:*)",
       "SlashCommand(/user-list-acl:*)",
       "WebFetch(domain:code.claude.com)",
-      "Skill(superpowers:systematic-debugging)"
+      "Skill(superpowers:systematic-debugging)",
+      "Skill(superpowers:brainstorming)"
     ],
     "deny": [],
     "ask": []
