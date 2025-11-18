@@ -656,9 +656,12 @@ public class Mutation
         // Load entry with all navigation properties for full data
         var entry = await context.TimeEntries
             .Include(e => e.Project)
+                .ThenInclude(p => p.Tags)
+                    .ThenInclude(t => t.AllowedValues)
             .Include(e => e.ProjectTask)
             .Include(e => e.Tags)
                 .ThenInclude(t => t.TagValue)
+                    .ThenInclude(tv => tv.ProjectTag)
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (entry == null)
@@ -722,9 +725,12 @@ public class Mutation
         // Load entry with all navigation properties for full data
         var entry = await context.TimeEntries
             .Include(e => e.Project)
+                .ThenInclude(p => p.Tags)
+                    .ThenInclude(t => t.AllowedValues)
             .Include(e => e.ProjectTask)
             .Include(e => e.Tags)
                 .ThenInclude(t => t.TagValue)
+                    .ThenInclude(tv => tv.ProjectTag)
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (entry == null)
