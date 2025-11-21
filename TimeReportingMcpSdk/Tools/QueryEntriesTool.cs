@@ -24,7 +24,7 @@ public class QueryEntriesTool
         OpenWorld = true
     )]
     [Description("""
-                 Query time entries with optional filters
+                 Query time entries with optional filters, pagination, and sorting
 
                  Retrieves time entries based on specified criteria. All filters are optional and combined with AND logic.
 
@@ -34,6 +34,20 @@ public class QueryEntriesTool
                  - View entries in date range: Use startDate and endDate filters
                  - View entries by status: Use status filter (NOT_REPORTED, SUBMITTED, APPROVED, DECLINED)
                  - View another user's entries (admins): Use userEmail filter
+                 - Get earliest 10 entries: Use first=10, sortBy='startDate', sortOrder='asc'
+                 - Get latest 5 entries: Use first=5, sortBy='startDate', sortOrder='desc'
+
+                 Pagination:
+                 - Use 'first' parameter to limit results (e.g., first=10 for first 10 entries)
+                 - Use 'after' parameter with cursor for next page (cursor-based pagination)
+                 - Use 'last' parameter to get last N entries
+                 - Use 'before' parameter with cursor for previous page
+                 - Response includes pageInfo with hasNextPage, hasPreviousPage, and cursors
+
+                 Sorting:
+                 - Use 'sortBy' to specify field: 'startDate', 'completionDate', or 'standardHours'
+                 - Use 'sortOrder' to specify direction: 'asc' (ascending, default) or 'desc' (descending)
+                 - Sorting is applied before pagination
 
                  Filter Behavior:
                  - No filters: Returns all entries you have access to
@@ -54,6 +68,18 @@ public class QueryEntriesTool
                  3. All submitted entries awaiting approval:
                     status: 'SUBMITTED'
 
+                 4. Earliest 10 entries from November:
+                    startDate: '2025-11-01'
+                    endDate: '2025-11-30'
+                    first: 10
+                    sortBy: 'startDate'
+                    sortOrder: 'asc'
+
+                 5. Latest 5 entries with most hours:
+                    first: 5
+                    sortBy: 'standardHours'
+                    sortOrder: 'desc'
+
                  Returns:
                  - Success: JSON array of time entry objects with all fields (id, projectCode, projectName, task, standardHours, overtimeHours, startDate, completionDate, status, description, issueId, userEmail, userName, tags, createdAt, updatedAt)
                  - No matches: Empty JSON array []
@@ -72,7 +98,13 @@ public class QueryEntriesTool
         [Description("Filter by minimum total hours (standardHours + overtimeHours) (optional)")] decimal? minHours = null,
         [Description("Filter by maximum total hours (standardHours + overtimeHours) (optional)")] decimal? maxHours = null,
         [Description("Filter by tags in JSON format: {\"Type\": \"Feature\"} or [{\"name\": \"Type\", \"value\": \"Feature\"}] (optional)")] string? tags = null,
-        [Description("Filter by user email (optional)")] string? userEmail = null)
+        [Description("Filter by user email (optional)")] string? userEmail = null,
+        [Description("Return first N entries (pagination) (optional)")] int? first = null,
+        [Description("Cursor for pagination - return entries after this cursor (optional)")] string? after = null,
+        [Description("Return last N entries (pagination) (optional)")] int? last = null,
+        [Description("Cursor for pagination - return entries before this cursor (optional)")] string? before = null,
+        [Description("Sort by field: startDate, completionDate, standardHours (optional)")] string? sortBy = null,
+        [Description("Sort order: asc or desc (default: asc) (optional)")] string? sortOrder = null)
     {
         try
         {
@@ -210,8 +242,48 @@ public class QueryEntriesTool
                 };
             }
 
-            // Execute query with filters (pass null if no filters applied)
-            var result = await _client.QueryTimeEntries.ExecuteAsync(whereClause);
+            // Build sorting input
+            IReadOnlyList<TimeEntrySortInput>? orderInput = null;
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                var order = string.IsNullOrEmpty(sortOrder) || sortOrder.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                    ? SortEnumType.Asc
+                    : SortEnumType.Desc;
+
+                var sortInput = new TimeEntrySortInput();
+
+                // Map sortBy field to the appropriate sort property
+                switch (sortBy.ToLowerInvariant())
+                {
+                    case "startdate":
+                        sortInput.StartDate = order;
+                        break;
+                    case "completiondate":
+                        sortInput.CompletionDate = order;
+                        break;
+                    case "standardhours":
+                        sortInput.StandardHours = order;
+                        break;
+                    default:
+                        // Invalid sortBy - ignore sorting
+                        break;
+                }
+
+                // Only add sorting if a valid field was specified
+                if (sortInput.StartDate != null || sortInput.CompletionDate != null || sortInput.StandardHours != null)
+                {
+                    orderInput = new List<TimeEntrySortInput> { sortInput };
+                }
+            }
+
+            // Execute query with filters, pagination, and sorting
+            var result = await _client.QueryTimeEntries.ExecuteAsync(
+                whereClause,
+                first,
+                after,
+                last,
+                before,
+                orderInput);
 
             if (result.Errors is { Count: > 0 })
             {
