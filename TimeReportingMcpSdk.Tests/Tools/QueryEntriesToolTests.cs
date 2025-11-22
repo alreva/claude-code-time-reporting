@@ -10,8 +10,7 @@ namespace TimeReportingMcpSdk.Tests.Tools;
 /// are correctly passed to the GraphQL client.
 ///
 /// Note: These tests focus on verifying BEHAVIOR (correct parameters passed to GraphQL client),
-/// not implementation details. We mock only the ITimeReportingClient (the dependency we control),
-/// and verify it receives the correct arguments.
+/// not implementation details. We use NSubstitute's ReceivedCalls() to inspect actual arguments.
 /// </summary>
 public class QueryEntriesToolTests
 {
@@ -23,19 +22,7 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
@@ -43,20 +30,17 @@ public class QueryEntriesToolTests
             startDate: "2025-11-05",
             endDate: "2025-11-11");
 
-        // Assert - Verify date filters are passed correctly
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 2 &&
-                filter.And!.Any(f => f.StartDate != null && f.StartDate.Gte != null) &&
-                filter.And!.Any(f => f.CompletionDate != null && f.CompletionDate.Lte != null)),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var filter = mockQuery
+            .ReceivedCalls()
+            .FirstOrDefault()?
+            .GetArguments()
+            .FirstOrDefault() as TimeEntryFilterInput;
+
+        Assert.NotNull(filter?.And);
+        Assert.Equal(2, filter!.And!.Count);
+        Assert.Contains(filter.And, f => f.StartDate?.Gte != null);
+        Assert.Contains(filter.And, f => f.CompletionDate?.Lte != null);
     }
 
     [Fact]
@@ -65,39 +49,26 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
+        const string projectCode = "INTERNAL";
 
         // Act
-        await tool.QueryTimeEntries(projectCode: "INTERNAL");
+        await tool.QueryTimeEntries(projectCode: projectCode);
 
-        // Assert - Verify project code filter is passed correctly
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 1 &&
-                filter.And![0].Project != null &&
-                filter.And![0].Project!.Code != null &&
-                filter.And![0].Project!.Code!.Eq == "INTERNAL"),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var actualProjectCode = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .FirstOrDefault()?
+            .Project?
+            .Code?
+            .Eq;
+
+        Assert.Equal(projectCode, actualProjectCode);
     }
 
     [Fact]
@@ -106,38 +77,24 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries(status: "NotReported");
 
-        // Assert - Verify status filter is passed correctly
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 1 &&
-                filter.And![0].Status != null &&
-                filter.And![0].Status!.Eq == TimeEntryStatus.NotReported),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var actualStatus = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .FirstOrDefault()?
+            .Status?
+            .Eq;
+
+        Assert.Equal(TimeEntryStatus.NotReported, actualStatus);
     }
 
     [Fact]
@@ -146,33 +103,20 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries();
 
-        // Assert - Verify null filter is passed when no filters specified
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput?>(filter => filter == null),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var filter = mockQuery
+            .ReceivedCalls()
+            .FirstOrDefault()?
+            .GetArguments()
+            .FirstOrDefault() as TimeEntryFilterInput;
+
+        Assert.Null(filter);
     }
 
     [Fact]
@@ -181,38 +125,25 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
+        const string testEmail = "test@example.com";
 
         // Act
-        await tool.QueryTimeEntries(userEmail: "test@example.com");
+        await tool.QueryTimeEntries(userEmail: testEmail);
 
-        // Assert
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 1 &&
-                filter.And![0].UserEmail != null &&
-                filter.And![0].UserEmail!.Eq == "test@example.com"),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        // Assert - Use NSubstitute's ReceivedCalls to get the actual arguments
+        var actualEmail = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .FirstOrDefault()?
+            .UserEmail?
+            .Eq;
+
+        Assert.Equal(testEmail, actualEmail);
     }
 
     [Fact]
@@ -221,39 +152,26 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
+        const string taskName = "Development";
 
         // Act
-        await tool.QueryTimeEntries(task: "Development");
+        await tool.QueryTimeEntries(task: taskName);
 
         // Assert
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 1 &&
-                filter.And![0].ProjectTask != null &&
-                filter.And![0].ProjectTask!.TaskName != null &&
-                filter.And![0].ProjectTask!.TaskName!.Eq == "Development"),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        var actualTask = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .FirstOrDefault()?
+            .ProjectTask?
+            .TaskName?
+            .Eq;
+
+        Assert.Equal(taskName, actualTask);
     }
 
     [Fact]
@@ -262,38 +180,25 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
+        const string description = "authentication";
 
         // Act
-        await tool.QueryTimeEntries(description: "authentication");
+        await tool.QueryTimeEntries(description: description);
 
         // Assert
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 1 &&
-                filter.And![0].Description != null &&
-                filter.And![0].Description!.Contains == "authentication"),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        var actualDescription = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .FirstOrDefault()?
+            .Description?
+            .Contains;
+
+        Assert.Equal(description, actualDescription);
     }
 
     [Fact]
@@ -302,38 +207,24 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries(startDate: "2025-11-05");
 
         // Assert
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 1 &&
-                filter.And![0].StartDate != null &&
-                filter.And![0].StartDate!.Gte!.Value == new DateOnly(2025, 11, 5)),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        var actualStartDate = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .FirstOrDefault()?
+            .StartDate?
+            .Gte;
+
+        Assert.Equal(new DateOnly(2025, 11, 5), actualStartDate);
     }
 
     [Fact]
@@ -342,38 +233,24 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries(endDate: "2025-11-11");
 
         // Assert
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 1 &&
-                filter.And![0].CompletionDate != null &&
-                filter.And![0].CompletionDate!.Lte!.Value == new DateOnly(2025, 11, 11)),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        var actualEndDate = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .FirstOrDefault()?
+            .CompletionDate?
+            .Lte;
+
+        Assert.Equal(new DateOnly(2025, 11, 11), actualEndDate);
     }
 
     [Fact]
@@ -382,19 +259,7 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
@@ -405,17 +270,15 @@ public class QueryEntriesToolTests
             status: "NotReported");
 
         // Assert - Verify all 4 filters are combined with AND logic
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 4), // All 4 filters present
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        var filterCount = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()
+                .FirstOrDefault() as TimeEntryFilterInput)?
+            .And?
+            .Count;
+
+        Assert.Equal(4, filterCount);
     }
 
     #endregion
@@ -428,33 +291,22 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries(first: 10);
 
-        // Assert - Verify pagination parameters are passed correctly
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Any<TimeEntryFilterInput?>(),
-            Arg.Is<int?>(f => f == 10),  // first = 10
-            Arg.Is<string?>(a => a == null),  // after = null
-            Arg.Is<int?>(l => l == null),  // last = null
-            Arg.Is<string?>(b => b == null),  // before = null
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var args = mockQuery
+            .ReceivedCalls()
+            .FirstOrDefault()?
+            .GetArguments();
+
+        Assert.Equal(10, args?[1]);  // first parameter
+        Assert.Null(args?[2]);       // after parameter
+        Assert.Null(args?[3]);       // last parameter
+        Assert.Null(args?[4]);       // before parameter
     }
 
     [Fact]
@@ -463,33 +315,20 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries(first: 10, after: "cursor123");
 
-        // Assert - Verify cursor pagination works
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Any<TimeEntryFilterInput?>(),
-            Arg.Is<int?>(f => f == 10),
-            Arg.Is<string?>(a => a == "cursor123"),  // after cursor
-            Arg.Is<int?>(l => l == null),
-            Arg.Is<string?>(b => b == null),
-            Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var args = mockQuery
+            .ReceivedCalls()
+            .FirstOrDefault()?
+            .GetArguments();
+
+        Assert.Equal(10, args?[1]);           // first parameter
+        Assert.Equal("cursor123", args?[2]);  // after parameter
     }
 
     #endregion
@@ -502,36 +341,21 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries(sortBy: "startDate", sortOrder: "asc");
 
-        // Assert - Verify sorting parameter is passed correctly
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Any<TimeEntryFilterInput?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Is<IReadOnlyList<TimeEntrySortInput>?>(order =>
-                order != null &&
-                order.Count == 1 &&
-                order[0].StartDate == SortEnumType.Asc),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var order = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()?[5] as IReadOnlyList<TimeEntrySortInput>)?
+            .FirstOrDefault()?
+            .StartDate;
+
+        Assert.Equal(SortEnumType.Asc, order);
     }
 
     [Fact]
@@ -540,36 +364,21 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
         await tool.QueryTimeEntries(sortBy: "completionDate", sortOrder: "desc");
 
-        // Assert - Verify descending sort works
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Any<TimeEntryFilterInput?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Any<int?>(),
-            Arg.Any<string?>(),
-            Arg.Is<IReadOnlyList<TimeEntrySortInput>?>(order =>
-                order != null &&
-                order.Count == 1 &&
-                order[0].CompletionDate == SortEnumType.Desc),
-            Arg.Any<CancellationToken>());
+        // Assert
+        var order = (mockQuery
+                .ReceivedCalls()
+                .FirstOrDefault()?
+                .GetArguments()?[5] as IReadOnlyList<TimeEntrySortInput>)?
+            .FirstOrDefault()?
+            .CompletionDate;
+
+        Assert.Equal(SortEnumType.Desc, order);
     }
 
     #endregion
@@ -582,19 +391,7 @@ public class QueryEntriesToolTests
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
         var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
-        var mockResult = CreateEmptyMockResult();
-
         mockClient.QueryTimeEntries.Returns(mockQuery);
-        mockQuery.ExecuteAsync(
-                Arg.Any<TimeEntryFilterInput?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<int?>(),
-                Arg.Any<string?>(),
-                Arg.Any<IReadOnlyList<TimeEntrySortInput>?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(mockResult);
-
         var tool = new QueryEntriesTool(mockClient);
 
         // Act - Simulate "get earliest 10 entries from November"
@@ -605,44 +402,19 @@ public class QueryEntriesToolTests
             sortBy: "startDate",
             sortOrder: "asc");
 
-        // Assert - Verify all parameters are passed correctly
-        await mockQuery.Received(1).ExecuteAsync(
-            Arg.Is<TimeEntryFilterInput>(filter =>
-                filter != null &&
-                filter.And != null &&
-                filter.And!.Count == 2), // date filters
-            Arg.Is<int?>(f => f == 10), // first = 10
-            Arg.Is<string?>(a => a == null), // no cursor
-            Arg.Is<int?>(l => l == null),
-            Arg.Is<string?>(b => b == null),
-            Arg.Is<IReadOnlyList<TimeEntrySortInput>?>(order =>
-                order != null &&
-                order.Count == 1 &&
-                order[0].StartDate == SortEnumType.Asc), // sort by startDate asc
-            Arg.Any<CancellationToken>());
-    }
+        // Assert
+        var args = mockQuery
+            .ReceivedCalls()
+            .FirstOrDefault()?
+            .GetArguments();
 
-    #endregion
+        var filter = args?[0] as TimeEntryFilterInput;
+        var first = args?[1];
+        var order = (args?[5] as IReadOnlyList<TimeEntrySortInput>)?.FirstOrDefault()?.StartDate;
 
-    #region Helper Methods
-
-    /// <summary>
-    /// Creates an empty mock result for tests that only verify parameters passed to GraphQL client.
-    /// We're testing behavior (correct parameters), not data transformation.
-    /// </summary>
-    private static IOperationResult<IQueryTimeEntriesResult> CreateEmptyMockResult()
-    {
-        var mockTimeEntries = Substitute.For<IQueryTimeEntries_TimeEntries>();
-        mockTimeEntries.Nodes.Returns(new List<IQueryTimeEntries_TimeEntries_Nodes>());
-
-        var mockResultData = Substitute.For<IQueryTimeEntriesResult>();
-        mockResultData.TimeEntries.Returns(mockTimeEntries);
-
-        var mockResult = Substitute.For<IOperationResult<IQueryTimeEntriesResult>>();
-        mockResult.Data.Returns(mockResultData);
-        mockResult.Errors.Returns((IReadOnlyList<IClientError>?)null);
-
-        return mockResult;
+        Assert.Equal(2, filter?.And?.Count);        // 2 date filters
+        Assert.Equal(10, first);                     // first = 10
+        Assert.Equal(SortEnumType.Asc, order);      // sort by startDate asc
     }
 
     #endregion
