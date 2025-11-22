@@ -13,12 +13,12 @@ public class Query
     /// <summary>
     /// Get time entries with filtering, sorting, and pagination.
     /// HotChocolate automatically generates filtering and sorting capabilities.
-    /// Order matters: UsePaging -> UseProjection -> UseFiltering -> UseSorting
+    /// Order matters: UseOffsetPaging -> UseProjection -> UseFiltering -> UseSorting
     /// Requires authentication and automatically filters by authenticated user.
     /// Security: Users can see their own entries + all entries from projects where they have Approve (A) or Manage (M) permission.
     /// </summary>
     [Authorize]
-    [UsePaging(DefaultPageSize = 50, MaxPageSize = 200)]
+    [UseOffsetPaging(DefaultPageSize = 50, MaxPageSize = 200)]
     [UseProjection]
     [UseFiltering]
     [UseSorting]

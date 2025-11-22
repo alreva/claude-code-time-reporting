@@ -2,7 +2,7 @@ query QueryTimeEntries(
   $where: TimeEntryFilterInput
 ) {
   timeEntries(where: $where) {
-    nodes {
+    items {
       id
       project {
         code

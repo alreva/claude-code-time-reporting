@@ -13,6 +13,7 @@
     <PackageVersion Include="HotChocolate.AspNetCore.Authorization" Version="15.1.11" />
     <PackageVersion Include="HotChocolate.Data" Version="15.1.11" />
     <PackageVersion Include="HotChocolate.Data.EntityFramework" Version="15.1.11" />
+    <PackageVersion Include="HotChocolate.Types.OffsetPagination" Version="15.1.11" />
     <!-- StrawberryShake GraphQL Client (typed client code generation) -->
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
     <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />

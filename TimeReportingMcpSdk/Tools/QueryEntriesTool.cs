@@ -34,15 +34,13 @@ public class QueryEntriesTool
                  - View entries in date range: Use startDate and endDate filters
                  - View entries by status: Use status filter (NOT_REPORTED, SUBMITTED, APPROVED, DECLINED)
                  - View another user's entries (admins): Use userEmail filter
-                 - Get earliest 10 entries: Use first=10, sortBy='startDate', sortOrder='asc'
-                 - Get latest 5 entries: Use first=5, sortBy='startDate', sortOrder='desc'
+                 - Get earliest 10 entries: Use take=10, sortBy='startDate', sortOrder='asc'
+                 - Get latest 5 entries: Use take=5, sortBy='startDate', sortOrder='desc'
 
                  Pagination:
-                 - Use 'first' parameter to limit results (e.g., first=10 for first 10 entries)
-                 - Use 'after' parameter with cursor for next page (cursor-based pagination)
-                 - Use 'last' parameter to get last N entries
-                 - Use 'before' parameter with cursor for previous page
-                 - Response includes pageInfo with hasNextPage, hasPreviousPage, and cursors
+                 - Use 'take' parameter to limit results (e.g., take=10 for first 10 entries)
+                 - Use 'skip' parameter for offset pagination (e.g., skip=10 to skip first 10 entries)
+                 - Response includes pageInfo with hasNextPage, hasPreviousPage
 
                  Sorting:
                  - Use 'sortBy' to specify field: 'startDate', 'completionDate', or 'standardHours'
@@ -71,12 +69,20 @@ public class QueryEntriesTool
                  4. Earliest 10 entries from November:
                     startDate: '2025-11-01'
                     endDate: '2025-11-30'
-                    first: 10
+                    take: 10
                     sortBy: 'startDate'
                     sortOrder: 'asc'
 
-                 5. Latest 5 entries with most hours:
-                    first: 5
+                 5. Next 10 entries from November (skip first 10):
+                    startDate: '2025-11-01'
+                    endDate: '2025-11-30'
+                    skip: 10
+                    take: 10
+                    sortBy: 'startDate'
+                    sortOrder: 'asc'
+
+                 6. Latest 5 entries with most hours:
+                    take: 5
                     sortBy: 'standardHours'
                     sortOrder: 'desc'
 
@@ -99,10 +105,8 @@ public class QueryEntriesTool
         [Description("Filter by maximum total hours (standardHours + overtimeHours) (optional)")] decimal? maxHours = null,
         [Description("Filter by tags in JSON format: {\"Type\": \"Feature\"} or [{\"name\": \"Type\", \"value\": \"Feature\"}] (optional)")] string? tags = null,
         [Description("Filter by user email (optional)")] string? userEmail = null,
-        [Description("Return first N entries (pagination) (optional)")] int? first = null,
-        [Description("Cursor for pagination - return entries after this cursor (optional)")] string? after = null,
-        [Description("Return last N entries (pagination) (optional)")] int? last = null,
-        [Description("Cursor for pagination - return entries before this cursor (optional)")] string? before = null,
+        [Description("Skip first N entries (offset pagination) (optional)")] int? skip = null,
+        [Description("Take/limit N entries (optional)")] int? take = null,
         [Description("Sort by field: startDate, completionDate, standardHours (optional)")] string? sortBy = null,
         [Description("Sort order: asc or desc (default: asc) (optional)")] string? sortOrder = null)
     {
@@ -279,10 +283,8 @@ public class QueryEntriesTool
             // Execute query with filters, pagination, and sorting
             var result = await _client.QueryTimeEntries.ExecuteAsync(
                 whereClause,
-                first,
-                after,
-                last,
-                before,
+                skip,
+                take,
                 orderInput);
 
             if (result.Errors is { Count: > 0 })
@@ -291,7 +293,7 @@ public class QueryEntriesTool
                        string.Join("\n", result.Errors.Select(e => $"- {e.Message}"));
             }
 
-            var entries = result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>();
+            var entries = result.Data!.TimeEntries?.Items?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Items>();
 
             // Apply post-filters that can't be done in GraphQL
 

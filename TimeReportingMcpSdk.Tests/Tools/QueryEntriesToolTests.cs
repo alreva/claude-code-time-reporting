@@ -286,7 +286,7 @@ public class QueryEntriesToolTests
     #region Pagination Tests
 
     [Fact]
-    public async Task QueryTimeEntries_WithFirstParameter_PassesPaginationToGraphQLClient()
+    public async Task QueryTimeEntries_WithTakeParameter_PassesPaginationToGraphQLClient()
     {
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
@@ -295,7 +295,7 @@ public class QueryEntriesToolTests
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
-        await tool.QueryTimeEntries(first: 10);
+        await tool.QueryTimeEntries(take: 10);
 
         // Assert
         var args = mockQuery
@@ -303,14 +303,12 @@ public class QueryEntriesToolTests
             .FirstOrDefault()?
             .GetArguments();
 
-        Assert.Equal(10, args?[1]);  // first parameter
-        Assert.Null(args?[2]);       // after parameter
-        Assert.Null(args?[3]);       // last parameter
-        Assert.Null(args?[4]);       // before parameter
+        Assert.Null(args?[1]);       // skip parameter
+        Assert.Equal(10, args?[2]);  // take parameter
     }
 
     [Fact]
-    public async Task QueryTimeEntries_WithCursorPagination_PassesAfterParameterToGraphQLClient()
+    public async Task QueryTimeEntries_WithOffsetPagination_PassesSkipAndTakeParametersToGraphQLClient()
     {
         // Arrange
         var mockClient = Substitute.For<ITimeReportingClient>();
@@ -319,7 +317,7 @@ public class QueryEntriesToolTests
         var tool = new QueryEntriesTool(mockClient);
 
         // Act
-        await tool.QueryTimeEntries(first: 10, after: "cursor123");
+        await tool.QueryTimeEntries(skip: 10, take: 10);
 
         // Assert
         var args = mockQuery
@@ -327,8 +325,8 @@ public class QueryEntriesToolTests
             .FirstOrDefault()?
             .GetArguments();
 
-        Assert.Equal(10, args?[1]);           // first parameter
-        Assert.Equal("cursor123", args?[2]);  // after parameter
+        Assert.Equal(10, args?[1]);  // skip parameter
+        Assert.Equal(10, args?[2]);  // take parameter
     }
 
     #endregion
@@ -351,7 +349,7 @@ public class QueryEntriesToolTests
         var order = (mockQuery
                 .ReceivedCalls()
                 .FirstOrDefault()?
-                .GetArguments()?[5] as IReadOnlyList<TimeEntrySortInput>)?
+                .GetArguments()?[3] as IReadOnlyList<TimeEntrySortInput>)?
             .FirstOrDefault()?
             .StartDate;
 
@@ -374,7 +372,7 @@ public class QueryEntriesToolTests
         var order = (mockQuery
                 .ReceivedCalls()
                 .FirstOrDefault()?
-                .GetArguments()?[5] as IReadOnlyList<TimeEntrySortInput>)?
+                .GetArguments()?[3] as IReadOnlyList<TimeEntrySortInput>)?
             .FirstOrDefault()?
             .CompletionDate;
 
@@ -398,7 +396,7 @@ public class QueryEntriesToolTests
         await tool.QueryTimeEntries(
             startDate: "2025-11-01",
             endDate: "2025-11-30",
-            first: 10,
+            take: 10,
             sortBy: "startDate",
             sortOrder: "asc");
 
@@ -409,11 +407,13 @@ public class QueryEntriesToolTests
             .GetArguments();
 
         var filter = args?[0] as TimeEntryFilterInput;
-        var first = args?[1];
-        var order = (args?[5] as IReadOnlyList<TimeEntrySortInput>)?.FirstOrDefault()?.StartDate;
+        var skip = args?[1];
+        var take = args?[2];
+        var order = (args?[3] as IReadOnlyList<TimeEntrySortInput>)?.FirstOrDefault()?.StartDate;
 
         Assert.Equal(2, filter?.And?.Count);        // 2 date filters
-        Assert.Equal(10, first);                     // first = 10
+        Assert.Null(skip);                           // skip not specified
+        Assert.Equal(10, take);                      // take = 10
         Assert.Equal(SortEnumType.Asc, order);      // sort by startDate asc
     }
 

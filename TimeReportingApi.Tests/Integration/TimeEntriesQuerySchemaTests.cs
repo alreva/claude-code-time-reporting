@@ -114,7 +114,7 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
         }
 
         typeName.Should().NotBeNullOrEmpty();
-        typeName.Should().Contain("Connection");
+        typeName.Should().Contain("CollectionSegment");
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
 
                                 query {
                                     timeEntries(where: { status: { eq: NOT_REPORTED } }) {
-                                        nodes {
+                                        items {
                                             id
                                         }
                                     }
@@ -148,7 +148,7 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
 
                                 query {
                                     timeEntries(order: { startDate: DESC }) {
-                                        nodes {
+                                        items {
                                             id
                                         }
                                     }
@@ -170,12 +170,12 @@ public class TimeEntriesQuerySchemaTests : IClassFixture<TestWebApplicationFacto
         var query = """
 
                                 query {
-                                    timeEntries(first: 10) {
+                                    timeEntries(take: 10) {
                                         pageInfo {
                                             hasNextPage
                                             hasPreviousPage
                                         }
-                                        nodes {
+                                        items {
                                             id
                                         }
                                     }

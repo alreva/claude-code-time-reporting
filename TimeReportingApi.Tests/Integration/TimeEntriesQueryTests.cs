@@ -145,7 +145,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
 
                                 query {
                                     timeEntries {
-                                        nodes {
+                                        items {
                                             id
                                         }
                                     }
@@ -159,7 +159,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var nodes = result.RootElement
             .GetProperty("data")
             .GetProperty("timeEntries")
-            .GetProperty("nodes");
+            .GetProperty("items");
         nodes.GetArrayLength().Should().Be(2);
     }
 
@@ -171,7 +171,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
 
                                 query {
                                     timeEntries(where: { status: { eq: SUBMITTED } }) {
-                                        nodes {
+                                        items {
                                             status
                                         }
                                     }
@@ -185,7 +185,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var nodes = result.RootElement
             .GetProperty("data")
             .GetProperty("timeEntries")
-            .GetProperty("nodes");
+            .GetProperty("items");
         nodes.GetArrayLength().Should().Be(1);
         nodes[0].GetProperty("status").GetString().Should().Be("SUBMITTED");
     }
@@ -198,7 +198,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
 
                                 query {
                                     timeEntries(where: { project: { code: { eq: "TEST" } } }) {
-                                        nodes {
+                                        items {
                                             project {
                                                 code
                                             }
@@ -214,7 +214,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var nodes = result.RootElement
             .GetProperty("data")
             .GetProperty("timeEntries")
-            .GetProperty("nodes");
+            .GetProperty("items");
         nodes.GetArrayLength().Should().Be(2);
     }
 
@@ -226,7 +226,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
 
                                 query {
                                     timeEntries(order: { startDate: DESC }) {
-                                        nodes {
+                                        items {
                                             startDate
                                         }
                                     }
@@ -240,7 +240,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var nodes = result.RootElement
             .GetProperty("data")
             .GetProperty("timeEntries")
-            .GetProperty("nodes");
+            .GetProperty("items");
 
         var firstDate = DateOnly.Parse(nodes[0].GetProperty("startDate").GetString()!);
         var secondDate = DateOnly.Parse(nodes[1].GetProperty("startDate").GetString()!);
@@ -254,8 +254,8 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var query = """
 
                                 query {
-                                    timeEntries(first: 1) {
-                                        nodes {
+                                    timeEntries(take: 1) {
+                                        items {
                                             id
                                         }
                                         pageInfo {
@@ -270,7 +270,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
 
         // Assert
         var data = result.RootElement.GetProperty("data").GetProperty("timeEntries");
-        var nodes = data.GetProperty("nodes");
+        var nodes = data.GetProperty("items");
         nodes.GetArrayLength().Should().Be(1);
 
         var hasNextPage = data.GetProperty("pageInfo").GetProperty("hasNextPage").GetBoolean();
@@ -377,7 +377,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
 
                                 query {
                                     timeEntries(where: { overtimeHours: { gt: 0 } }) {
-                                        nodes {
+                                        items {
                                             id
                                             standardHours
                                             overtimeHours
@@ -393,7 +393,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var nodes = result.RootElement
             .GetProperty("data")
             .GetProperty("timeEntries")
-            .GetProperty("nodes");
+            .GetProperty("items");
 
         // Should only return entry with overtime
         nodes.GetArrayLength().Should().BeGreaterThan(0);
@@ -447,7 +447,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
 
                                 query {
                                     timeEntries(where: { overtimeHours: { eq: 0 } }) {
-                                        nodes {
+                                        items {
                                             id
                                             standardHours
                                             overtimeHours
@@ -463,7 +463,7 @@ public class TimeEntriesQueryTests : IClassFixture<PostgresContainerFixture>, IA
         var nodes = result.RootElement
             .GetProperty("data")
             .GetProperty("timeEntries")
-            .GetProperty("nodes");
+            .GetProperty("items");
 
         // Should only return entries without overtime
         nodes.GetArrayLength().Should().BeGreaterThan(0);

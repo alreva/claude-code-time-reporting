@@ -1,20 +1,16 @@
 query QueryTimeEntries(
   $where: TimeEntryFilterInput
-  $first: Int
-  $after: String
-  $last: Int
-  $before: String
+  $skip: Int
+  $take: Int
   $order: [TimeEntrySortInput!]
 ) {
-  timeEntries(where: $where, first: $first, after: $after, last: $last, before: $before, order: $order) {
-    nodes {
+  timeEntries(where: $where, skip: $skip, take: $take, order: $order) {
+    items {
       ...TimeEntryFields
     }
     pageInfo {
       hasNextPage
       hasPreviousPage
-      startCursor
-      endCursor
     }
   }
 }

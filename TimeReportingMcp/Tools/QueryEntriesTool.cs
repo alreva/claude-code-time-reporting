@@ -106,7 +106,7 @@ public class QueryEntriesTool : IMcpTool
             }
 
             // 4. Get all entries
-            var allEntries = result.Data!.TimeEntries?.Nodes?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Nodes>();
+            var allEntries = result.Data!.TimeEntries?.Items?.ToList() ?? new List<IQueryTimeEntries_TimeEntries_Items>();
 
             // 5. Apply client-side filtering
             var filteredEntries = allEntries.AsEnumerable();
@@ -147,7 +147,7 @@ public class QueryEntriesTool : IMcpTool
         }
     }
 
-    private ToolResult CreateSuccessResult(List<IQueryTimeEntries_TimeEntries_Nodes> entries)
+    private ToolResult CreateSuccessResult(List<IQueryTimeEntries_TimeEntries_Items> entries)
     {
         if (entries.Count == 0)
         {
