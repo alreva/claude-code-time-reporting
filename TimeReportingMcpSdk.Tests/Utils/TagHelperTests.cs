@@ -95,16 +95,36 @@ public class TagHelperTests
     }
 
     [Fact]
-    public void ParseTags_ArrayWithNonMatchingProperties_ReturnsEmptyList()
+    public void ParseTags_ArrayWithMissingNameProperty_ThrowsArgumentException()
+    {
+        // Arrange - objects missing required 'name' property
+        var json = """[{"value": "Feature"}]""";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(json));
+        exception.Message.Should().Contain("All tags must have both 'name' and 'value' properties");
+    }
+
+    [Fact]
+    public void ParseTags_ArrayWithMissingValueProperty_ThrowsArgumentException()
+    {
+        // Arrange - objects missing required 'value' property
+        var json = """[{"name": "Type"}]""";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(json));
+        exception.Message.Should().Contain("All tags must have both 'name' and 'value' properties");
+    }
+
+    [Fact]
+    public void ParseTags_ArrayWithNonMatchingProperties_ThrowsArgumentException()
     {
         // Arrange - objects don't match TagInput structure (Name/Value missing)
         var json = """[{"randomProp": "value"}]""";
 
-        // Act
-        var result = TagHelper.ParseTags(json);
-
-        // Assert - Deserialization succeeds but produces empty list (no valid TagInput objects)
-        result.Should().BeEmpty();
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(json));
+        exception.Message.Should().Contain("All tags must have both 'name' and 'value' properties");
     }
 
     [Fact]

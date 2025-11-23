@@ -32,10 +32,19 @@ public static class TagHelper
             var result = System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tagsJson, options);
             if (result != null)
             {
-                // Filter out invalid TagInput objects (null Name or Value)
-                var validTags = result.Where(t => !string.IsNullOrEmpty(t.Name) && !string.IsNullOrEmpty(t.Value)).ToList();
-                return validTags; // Return even if empty - let caller decide if that's an error
+                // Validate that all TagInput objects have required properties
+                if (result.Any(t => string.IsNullOrEmpty(t.Name) || string.IsNullOrEmpty(t.Value)))
+                {
+                    throw new ArgumentException(
+                        "Invalid tag format: All tags must have both 'name' and 'value' properties. " +
+                        "Valid formats: [{\"name\":\"Type\",\"value\":\"Feature\"}] or {\"Type\":\"Feature\"}");
+                }
+                return result; // Return even if empty - let caller decide if that's an error
             }
+        }
+        catch (ArgumentException)
+        {
+            throw; // Re-throw ArgumentException to preserve our error message
         }
         catch (Exception ex)
         {

@@ -482,11 +482,12 @@ public class QueryEntriesToolTests
         mockClient.QueryTimeEntries.Returns(mockQuery);
         var tool = new QueryEntriesTool(mockClient);
 
-        // Act - array with objects that don't match TagInput structure (deserializes to empty list)
+        // Act - array with objects missing required properties
         var result = await tool.QueryTimeEntries(tags: """[{"randomProp": "value"}]""");
 
-        // Assert - Should return empty tags error since deserialization succeeds but produces no valid tags
-        Assert.Contains("❌ Empty tags filter provided", result);
+        // Assert - Should return invalid tags format error
+        Assert.Contains("❌ Invalid tags format", result);
+        Assert.Contains("All tags must have both 'name' and 'value' properties", result);
         Assert.Contains("Valid formats:", result);
     }
 
