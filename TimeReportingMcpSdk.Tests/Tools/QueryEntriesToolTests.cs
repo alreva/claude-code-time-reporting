@@ -474,6 +474,23 @@ public class QueryEntriesToolTests
     }
 
     [Fact]
+    public async Task QueryTimeEntries_WithMalformedTagsArray_ReturnsErrorMessage()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act - array with objects that don't match TagInput structure (deserializes to empty list)
+        var result = await tool.QueryTimeEntries(tags: """[{"randomProp": "value"}]""");
+
+        // Assert - Should return empty tags error since deserialization succeeds but produces no valid tags
+        Assert.Contains("❌ Empty tags filter provided", result);
+        Assert.Contains("Valid formats:", result);
+    }
+
+    [Fact]
     public async Task QueryTimeEntries_WithInvalidTagsStructure_ReturnsErrorMessage()
     {
         // Arrange

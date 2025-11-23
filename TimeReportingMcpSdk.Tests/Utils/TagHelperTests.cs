@@ -95,6 +95,19 @@ public class TagHelperTests
     }
 
     [Fact]
+    public void ParseTags_ArrayWithNonMatchingProperties_ReturnsEmptyList()
+    {
+        // Arrange - objects don't match TagInput structure (Name/Value missing)
+        var json = """[{"randomProp": "value"}]""";
+
+        // Act
+        var result = TagHelper.ParseTags(json);
+
+        // Assert - Deserialization succeeds but produces empty list (no valid TagInput objects)
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
     public void ParseTags_EmptyDictionary_ReturnsEmptyList()
     {
         // Arrange

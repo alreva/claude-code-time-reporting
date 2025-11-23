@@ -31,7 +31,11 @@ public static class TagHelper
         {
             var result = System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tagsJson, options);
             if (result != null)
-                return result; // Return even if empty - let caller decide if that's an error
+            {
+                // Filter out invalid TagInput objects (null Name or Value)
+                var validTags = result.Where(t => !string.IsNullOrEmpty(t.Name) && !string.IsNullOrEmpty(t.Value)).ToList();
+                return validTags; // Return even if empty - let caller decide if that's an error
+            }
         }
         catch (Exception ex)
         {
