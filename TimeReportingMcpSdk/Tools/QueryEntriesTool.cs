@@ -121,163 +121,100 @@ public class QueryEntriesTool
             // Build a list of filter conditions
             var filters = new List<TimeEntryFilterInput>();
 
-            // Add date filters
-            if (startDateParsed.HasValue)
+            // Local helper function to conditionally add filters
+            void Add(Func<TimeEntryFilterInput> factory, bool condition)
             {
-                filters.Add(new TimeEntryFilterInput
-                {
-                    StartDate = new LocalDateOperationFilterInput { Gte = startDateParsed.Value }
-                });
+                if (condition) filters.Add(factory());
             }
 
-            if (endDateParsed.HasValue)
+            // Add filters using helper
+            Add(() => new TimeEntryFilterInput
             {
-                filters.Add(new TimeEntryFilterInput
-                {
-                    CompletionDate = new LocalDateOperationFilterInput { Lte = endDateParsed.Value }
-                });
-            }
+                StartDate = new LocalDateOperationFilterInput { Gte = startDateParsed!.Value }
+            }, startDateParsed.HasValue);
 
-            // Add project code filter
-            if (!string.IsNullOrEmpty(projectCode))
+            Add(() => new TimeEntryFilterInput
             {
-                filters.Add(new TimeEntryFilterInput
-                {
-                    Project = new ProjectFilterInput
-                    {
-                        Code = new StringOperationFilterInput { Eq = projectCode }
-                    }
-                });
-            }
+                CompletionDate = new LocalDateOperationFilterInput { Lte = endDateParsed!.Value }
+            }, endDateParsed.HasValue);
 
-            // Add status filter
-            if (statusParsed.HasValue)
+            Add(() => new TimeEntryFilterInput
             {
-                filters.Add(new TimeEntryFilterInput
+                Project = new ProjectFilterInput
                 {
-                    Status = new TimeEntryStatusOperationFilterInput { Eq = statusParsed.Value }
-                });
-            }
-
-            // Add user email filter
-            if (!string.IsNullOrEmpty(userEmail))
-            {
-                filters.Add(new TimeEntryFilterInput
-                {
-                    UserEmail = new StringOperationFilterInput { Eq = userEmail }
-                });
-            }
-
-            // Add task filter
-            if (!string.IsNullOrEmpty(task))
-            {
-                filters.Add(new TimeEntryFilterInput
-                {
-                    ProjectTask = new ProjectTaskFilterInput
-                    {
-                        TaskName = new StringOperationFilterInput { Eq = task }
-                    }
-                });
-            }
-
-            // Add description filter (partial match)
-            if (!string.IsNullOrEmpty(description))
-            {
-                filters.Add(new TimeEntryFilterInput
-                {
-                    Description = new StringOperationFilterInput { Contains = description }
-                });
-            }
-
-            // Add hasOvertime filter
-            if (hasOvertime.HasValue)
-            {
-                if (hasOvertime.Value)
-                {
-                    // Has overtime: OvertimeHours > 0
-                    filters.Add(new TimeEntryFilterInput
-                    {
-                        OvertimeHours = new DecimalOperationFilterInput { Gt = 0m }
-                    });
+                    Code = new StringOperationFilterInput { Eq = projectCode }
                 }
-                else
+            }, !string.IsNullOrEmpty(projectCode));
+
+            Add(() => new TimeEntryFilterInput
+            {
+                Status = new TimeEntryStatusOperationFilterInput { Eq = statusParsed!.Value }
+            }, statusParsed.HasValue);
+
+            Add(() => new TimeEntryFilterInput
+            {
+                UserEmail = new StringOperationFilterInput { Eq = userEmail }
+            }, !string.IsNullOrEmpty(userEmail));
+
+            Add(() => new TimeEntryFilterInput
+            {
+                ProjectTask = new ProjectTaskFilterInput
                 {
-                    // No overtime: OvertimeHours = 0
-                    filters.Add(new TimeEntryFilterInput
-                    {
-                        OvertimeHours = new DecimalOperationFilterInput { Eq = 0m }
-                    });
+                    TaskName = new StringOperationFilterInput { Eq = task }
                 }
-            }
+            }, !string.IsNullOrEmpty(task));
 
-            // Add minHours filter
-            if (minHours.HasValue)
+            Add(() => new TimeEntryFilterInput
             {
-                // Note: This filters on standardHours only. For total (standard + overtime),
-                // we'd need to filter results after retrieval or use a custom filter
-                filters.Add(new TimeEntryFilterInput
-                {
-                    StandardHours = new DecimalOperationFilterInput { Gte = minHours.Value }
-                });
-            }
+                Description = new StringOperationFilterInput { Contains = description }
+            }, !string.IsNullOrEmpty(description));
 
-            // Add maxHours filter
-            if (maxHours.HasValue)
+            Add(() => new TimeEntryFilterInput
             {
-                // Note: This filters on standardHours only. For total (standard + overtime),
-                // we'd need to filter results after retrieval or use a custom filter
-                filters.Add(new TimeEntryFilterInput
-                {
-                    StandardHours = new DecimalOperationFilterInput { Lte = maxHours.Value }
-                });
-            }
+                OvertimeHours = new DecimalOperationFilterInput { Gt = 0m }
+            }, hasOvertime == true);
 
-            // Add tags filter (if provided, parse and add to filters)
-            // Note: Tag filtering in GraphQL is complex - may need to filter results after retrieval
-            // For now, we'll skip this and implement it as a post-filter if needed
+            Add(() => new TimeEntryFilterInput
+            {
+                OvertimeHours = new DecimalOperationFilterInput { Eq = 0m }
+            }, hasOvertime == false);
+
+            Add(() => new TimeEntryFilterInput
+            {
+                StandardHours = new DecimalOperationFilterInput { Gte = minHours!.Value }
+            }, minHours.HasValue);
+
+            Add(() => new TimeEntryFilterInput
+            {
+                StandardHours = new DecimalOperationFilterInput { Lte = maxHours!.Value }
+            }, maxHours.HasValue);
 
             // Build the final filter input with AND logic
-            TimeEntryFilterInput? whereClause = null;
-            if (filters.Count > 0)
-            {
-                whereClause = new TimeEntryFilterInput
-                {
-                    And = filters
-                };
-            }
+            var whereClause = filters.Count > 0
+                ? new TimeEntryFilterInput { And = filters }
+                : null;
 
             // Build sorting input
-            IReadOnlyList<TimeEntrySortInput>? orderInput = null;
-            if (!string.IsNullOrEmpty(sortBy))
+            var orderInput = BuildSortInput(sortBy, sortOrder);
+
+            IReadOnlyList<TimeEntrySortInput>? BuildSortInput(string? sortByField, string? sortOrderValue)
             {
-                var order = string.IsNullOrEmpty(sortOrder) || sortOrder.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                if (string.IsNullOrEmpty(sortByField))
+                    return null;
+
+                var order = string.IsNullOrEmpty(sortOrderValue) || sortOrderValue.Equals("asc", StringComparison.OrdinalIgnoreCase)
                     ? SortEnumType.Asc
                     : SortEnumType.Desc;
 
-                var sortInput = new TimeEntrySortInput();
-
-                // Map sortBy field to the appropriate sort property
-                switch (sortBy.ToLowerInvariant())
+                var sortInput = sortByField.ToLowerInvariant() switch
                 {
-                    case "startdate":
-                        sortInput.StartDate = order;
-                        break;
-                    case "completiondate":
-                        sortInput.CompletionDate = order;
-                        break;
-                    case "standardhours":
-                        sortInput.StandardHours = order;
-                        break;
-                    default:
-                        // Invalid sortBy - ignore sorting
-                        break;
-                }
+                    "startdate" => new TimeEntrySortInput { StartDate = order },
+                    "completiondate" => new TimeEntrySortInput { CompletionDate = order },
+                    "standardhours" => new TimeEntrySortInput { StandardHours = order },
+                    _ => null // Invalid sortBy - ignore sorting
+                };
 
-                // Only add sorting if a valid field was specified
-                if (sortInput.StartDate != null || sortInput.CompletionDate != null || sortInput.StandardHours != null)
-                {
-                    orderInput = new List<TimeEntrySortInput> { sortInput };
-                }
+                return sortInput != null ? new[] { sortInput } : null;
             }
 
             // Execute query with filters, pagination, and sorting
@@ -326,18 +263,41 @@ public class QueryEntriesTool
                 try
                 {
                     var tagFilters = TagHelper.ParseTags(tags);
-                    entries = entries.Where(entry =>
-                        tagFilters.All(filter =>
-                            entry.Tags?.Any(t =>
-                                t.TagValue.ProjectTag.TagName.Equals(filter.Name, StringComparison.OrdinalIgnoreCase) &&
-                                t.TagValue.Value.Equals(filter.Value, StringComparison.OrdinalIgnoreCase)) == true
-                        )
-                    ).ToList();
+                    if (tagFilters.Count == 0)
+                    {
+                        return """
+                               ❌ Empty tags filter provided. Provide at least one tag to filter by.
+
+                               Valid formats:
+                               {"Type":"Feature"}
+                               [{"name":"Type","value":"Feature"}]
+                               """;
+                    }
+                    entries = FilterByTags(entries, tagFilters);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Invalid tag format - ignore filter
+                    return $$"""
+                            ❌ Invalid tags format: {{ex.Message}}
+
+                            Valid formats:
+                            {"Type":"Feature"}
+                            [{"name":"Type","value":"Feature"}]
+                            """;
                 }
+            }
+
+            static List<IQueryTimeEntries_TimeEntries_Items> FilterByTags(
+                List<IQueryTimeEntries_TimeEntries_Items> entries,
+                List<TagInput> tagFilters)
+            {
+                return entries.Where(entry =>
+                    tagFilters.All(filter =>
+                        entry.Tags?.Any(entryTag =>
+                            string.Equals(entryTag.TagValue.ProjectTag.TagName, filter.Name, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(entryTag.TagValue.Value, filter.Value, StringComparison.OrdinalIgnoreCase)) == true
+                    )
+                ).ToList();
             }
 
             if (entries.Count == 0)

@@ -14,6 +14,8 @@ public static class TagHelper
     /// 2. Array format: [{"name": "Type", "value": "Feature"}]
     /// Both formats are case-insensitive.
     /// </summary>
+    /// <exception cref="System.Text.Json.JsonException">Thrown when JSON is invalid</exception>
+    /// <exception cref="ArgumentException">Thrown when JSON is valid but doesn't match expected formats</exception>
     public static List<TagInput> ParseTags(string tagsJson)
     {
         var options = new System.Text.Json.JsonSerializerOptions
@@ -21,23 +23,42 @@ public static class TagHelper
             PropertyNameCaseInsensitive = true
         };
 
+        Exception? arrayException = null;
+        Exception? dictException = null;
+
         // Try parsing as array format first: [{"name": "Type", "value": "Feature"}]
         try
         {
-            return System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tagsJson, options)
-                   ?? new List<TagInput>();
+            var result = System.Text.Json.JsonSerializer.Deserialize<List<TagInput>>(tagsJson, options);
+            if (result != null)
+                return result; // Return even if empty - let caller decide if that's an error
         }
-        catch
+        catch (Exception ex)
         {
-            // If that fails, try parsing as dictionary format: {"Type": "Feature", "Environment": "Production"}
-            var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(tagsJson, options);
-            if (dict == null) return new List<TagInput>();
-
-            return dict.Select(kvp => new TagInput
-            {
-                Name = kvp.Key,
-                Value = kvp.Value
-            }).ToList();
+            arrayException = ex;
         }
+
+        // If that fails, try parsing as dictionary format: {"Type": "Feature", "Environment": "Production"}
+        try
+        {
+            var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(tagsJson, options);
+            if (dict != null)
+            {
+                return dict.Select(kvp => new TagInput
+                {
+                    Name = kvp.Key,
+                    Value = kvp.Value
+                }).ToList(); // Return even if empty - let caller decide if that's an error
+            }
+        }
+        catch (Exception ex)
+        {
+            dictException = ex;
+        }
+
+        // Both formats failed - throw helpful error
+        throw new ArgumentException(
+            $"Invalid tag format. Must be either array [{{'name':'Type','value':'Feature'}}] or dictionary {{'Type':'Feature'}}. " +
+            $"Array parse error: {arrayException?.Message}. Dictionary parse error: {dictException?.Message}");
     }
 }
