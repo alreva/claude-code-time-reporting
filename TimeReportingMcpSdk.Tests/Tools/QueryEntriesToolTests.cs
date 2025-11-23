@@ -418,4 +418,92 @@ public class QueryEntriesToolTests
     }
 
     #endregion
+
+    #region Tag Filtering Tests
+
+    [Fact]
+    public async Task QueryTimeEntries_WithInvalidTagsJson_ReturnsErrorMessage()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        var result = await tool.QueryTimeEntries(tags: "{invalid json}");
+
+        // Assert
+        Assert.Contains("❌ Invalid tags format", result);
+        Assert.Contains("Valid formats:", result);
+        Assert.Contains("{\"Type\":\"Feature\"}", result);
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithEmptyTagsArray_ReturnsErrorMessage()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        var result = await tool.QueryTimeEntries(tags: "[]");
+
+        // Assert
+        Assert.Contains("❌ Empty tags filter provided", result);
+        Assert.Contains("Valid formats:", result);
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithEmptyTagsDictionary_ReturnsErrorMessage()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        var result = await tool.QueryTimeEntries(tags: "{}");
+
+        // Assert
+        Assert.Contains("❌ Empty tags filter provided", result);
+        Assert.Contains("Valid formats:", result);
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithInvalidTagsStructure_ReturnsErrorMessage()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act - neither array nor dictionary
+        var result = await tool.QueryTimeEntries(tags: "\"just a string\"");
+
+        // Assert
+        Assert.Contains("❌ Invalid tags format", result);
+    }
+
+    [Fact]
+    public async Task QueryTimeEntries_WithNumberAsTagsInput_ReturnsErrorMessage()
+    {
+        // Arrange
+        var mockClient = Substitute.For<ITimeReportingClient>();
+        var mockQuery = Substitute.For<IQueryTimeEntriesQuery>();
+        mockClient.QueryTimeEntries.Returns(mockQuery);
+        var tool = new QueryEntriesTool(mockClient);
+
+        // Act
+        var result = await tool.QueryTimeEntries(tags: "123");
+
+        // Assert
+        Assert.Contains("❌ Invalid tags format", result);
+    }
+
+    #endregion
 }

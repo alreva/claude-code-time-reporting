@@ -152,4 +152,85 @@ public class TagHelperTests
         result.Should().Contain(t => t.Name == "Environment" && t.Value == "Staging");
         result.Should().Contain(t => t.Name == "Billable" && t.Value == "Yes");
     }
+
+    #region Negative Test Cases
+
+    [Fact]
+    public void ParseTags_InvalidJson_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidJson = "{not valid json}";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(invalidJson));
+        exception.Message.Should().Contain("Invalid tag format");
+    }
+
+    [Fact]
+    public void ParseTags_InvalidStructure_ThrowsArgumentException()
+    {
+        // Arrange - neither array nor dictionary
+        var invalidJson = "\"just a string\"";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(invalidJson));
+        exception.Message.Should().Contain("Invalid tag format");
+    }
+
+    [Fact]
+    public void ParseTags_Number_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidJson = "123";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(invalidJson));
+        exception.Message.Should().Contain("Invalid tag format");
+    }
+
+    [Fact]
+    public void ParseTags_Null_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidJson = "null";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(invalidJson));
+        exception.Message.Should().Contain("Invalid tag format");
+    }
+
+    [Fact]
+    public void ParseTags_ArrayWithMixedTypes_ThrowsArgumentException()
+    {
+        // Arrange - array contains non-object elements
+        var invalidJson = """[{"name": "Type", "value": "Feature"}, "string", 123]""";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(invalidJson));
+        exception.Message.Should().Contain("Invalid tag format");
+    }
+
+    [Fact]
+    public void ParseTags_DictionaryWithNonStringValues_ThrowsArgumentException()
+    {
+        // Arrange - dictionary with non-string value
+        var invalidJson = """{"Type": 123}""";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(invalidJson));
+        exception.Message.Should().Contain("Invalid tag format");
+    }
+
+    [Fact]
+    public void ParseTags_UnclosedBrace_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidJson = "{\"Type\": \"Feature\"";
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => TagHelper.ParseTags(invalidJson));
+        exception.Message.Should().Contain("Invalid tag format");
+    }
+
+    #endregion
 }
