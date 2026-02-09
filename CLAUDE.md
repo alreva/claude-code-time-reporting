@@ -421,7 +421,7 @@ PostgreSQL Database
 1. **PostgreSQL Database** - Core data storage with 4 tables: time_entries, projects, project_tasks, tag_configurations
 2. **GraphQL API** - ASP.NET Core with HotChocolate providing 4 queries and 8 mutations
 3. **MCP Server** - Lightweight C# console app that bridges Claude Code to the GraphQL API (just reads JSON from stdin, calls GraphQL, writes JSON to stdout)
-4. **Claude Code Integration** - MCP server provides 7 tools for time tracking operations
+4. **Claude Code Integration** - MCP server provides 11 tools for time tracking operations
 
 ### Database Schema & Seeding
 

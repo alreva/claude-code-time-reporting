@@ -36,6 +36,10 @@ This document specifies the MCP (Model Context Protocol) tools that Claude Code 
 | `delete_time_entry` | Remove entry | Delete |
 | `get_available_projects` | List projects with tasks/tags | Read |
 | `submit_time_entry` | Submit for approval | Workflow |
+| `approve_time_entry` | Approve submitted entry | Workflow |
+| `decline_time_entry` | Decline submitted entry | Workflow |
+| `hello` | Test API connectivity | Utility |
+| `who_am_i` | Display user token info and ACL permissions | Utility |
 
 ---
 
@@ -457,6 +461,151 @@ Claude: I'll submit your time entries.
 ]
 
 Response: "Submitted 5 time entries for approval"
+```
+
+---
+
+### 2.8 approve_time_entry
+
+**Description:** Approve a submitted time entry (changes status from SUBMITTED to APPROVED). Requires Approve (A) or Manage (M) permission for the project.
+
+**Input Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "UUID of the time entry to approve"
+    }
+  },
+  "required": ["id"]
+}
+```
+
+**Output:** Updated TimeEntry object with status APPROVED
+
+**Example Claude Code Usage:**
+```
+User: "Approve time entry abc-123"
+
+Claude: I'll approve that entry.
+[Calls approve_time_entry with id: "abc-123"]
+
+Response: "✅ Time entry approved successfully"
+```
+
+---
+
+### 2.9 decline_time_entry
+
+**Description:** Decline a submitted time entry with a comment (changes status from SUBMITTED to DECLINED). Requires Approve (A) or Manage (M) permission for the project.
+
+**Input Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "UUID of the time entry to decline"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Reason for declining the entry",
+      "maxLength": 500
+    }
+  },
+  "required": ["id", "comment"]
+}
+```
+
+**Output:** Updated TimeEntry object with status DECLINED
+
+**Example Claude Code Usage:**
+```
+User: "Decline entry abc-123 because the hours seem incorrect"
+
+Claude: I'll decline that entry.
+[Calls decline_time_entry with:
+  id: "abc-123"
+  comment: "Hours seem incorrect"
+]
+
+Response: "❌ Time entry declined"
+```
+
+---
+
+### 2.10 hello
+
+**Description:** Test connectivity to the GraphQL API. Returns a simple greeting message to verify the connection is working.
+
+**Input Schema:**
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+**Output:** String message from the API
+
+**Example Claude Code Usage:**
+```
+User: "Test the API connection"
+
+Claude: Let me check the API.
+[Calls hello]
+
+Response: "✅ GraphQL responded: Hello, GraphQL!"
+```
+
+---
+
+### 2.11 who_am_i
+
+**Description:** Display current user identity and ACL permissions from JWT token. Shows user ID, email, name, token expiration, and all ACL permission entries.
+
+**Input Schema:**
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+**Output:** Formatted text with:
+- User identity (oid, email, name)
+- Token metadata (issued, expires, time remaining)
+- ACL permissions (extn.TimeReportingACLv2)
+- All JWT claims
+
+**Example Claude Code Usage:**
+```
+User: "Show my whoami"
+
+Claude: Let me check your authentication.
+[Calls who_am_i]
+
+Response:
+=== Current User Identity ===
+
+User ID (oid):  a0973897-7117-454e-aa63-bc6441b5846f
+Email:          user@company.com
+Name:           John Doe
+
+=== Token Metadata ===
+
+Issued:         2026-02-09 12:40:36
+Expires:        2026-02-09 14:12:53
+Time Remaining: 1h 5m
+Audience:       api://8b3f87d7-bc23-4932-88b5-f24056999600
+
+=== ACL Permissions ===
+
+  • Project/INTERNAL=V,E,T,A,M
+  • Project/CLIENT-A=V,E,T
 ```
 
 ---
