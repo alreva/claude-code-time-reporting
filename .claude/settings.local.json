@@ -62,7 +62,8 @@
       "Skill(superpowers:systematic-debugging)",
       "Skill(superpowers:brainstorming)",
       "Skill(superpowers:using-superpowers)",
-      "Skill(superpowers:test-driven-development)"
+      "Skill(superpowers:test-driven-development)",
+      "mcp__time-reporting__who_am_i"
     ],
     "deny": [],
     "ask": []
